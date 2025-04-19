@@ -94,6 +94,7 @@ function getStoreContent($key) {
             'about_content' => '<p>We are dedicated to providing high-quality products at affordable prices. Our store features a wide range of items including bags, groceries, and shoes.</p><p>With a focus on customer satisfaction, we ensure that every purchase meets our high standards for quality and durability.</p>',
             'featured_title' => 'Shop by Category',
             'featured_subtitle' => 'Explore our popular categories and find exactly what you\'re looking for.',
+            'hero_image' => '/assets/images/demo/hero-bg.jpg'
         ];
         
         return $demoContent[$key] ?? '';
@@ -133,7 +134,7 @@ if (!$db_connected):
 <section class="relative bg-gray-900">
     <!-- Background Image -->
     <div class="absolute inset-0 overflow-hidden">
-        <img src="/assets/images/demo/hero-bg.jpg" alt="Store hero image" class="w-full h-full object-cover opacity-50">
+        <img src="<?= htmlspecialchars(getStoreContent('hero_image')) ?>" alt="Store hero image" class="w-full h-full object-cover opacity-50">
     </div>
     
     <!-- Content -->

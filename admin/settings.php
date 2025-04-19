@@ -42,6 +42,7 @@ $aboutTitle = $storeContent['about_title'] ?? '';
 $aboutContent = $storeContent['about_content'] ?? '';
 $featuredTitle = $storeContent['featured_title'] ?? '';
 $featuredSubtitle = $storeContent['featured_subtitle'] ?? '';
+$heroImage = $storeContent['hero_image'] ?? '/assets/images/demo/hero-bg.jpg'; // Fetch hero image with fallback
 
 ?>
 <!DOCTYPE html>
