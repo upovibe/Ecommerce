@@ -26,6 +26,8 @@ function getStats()
         'products_active' => 0,
         'products_inactive' => 0,
         'categories' => 0,
+        'parent_categories' => 0,
+        'sub_categories' => 0,
         'inventory_total' => 0,
         'inventory_in_stock' => 0,
         'inventory_backorder' => 0,
@@ -54,10 +56,16 @@ function getStats()
             $stats['products_inactive'] = (int)$row['inactive'];
         }
 
-        // Count categories
-        $result = $conn->query("SELECT COUNT(*) as count FROM categories");
+        // Count categories (Total, Parent, Sub)
+        $result = $conn->query("SELECT
+                                    COUNT(*) as total,
+                                    SUM(CASE WHEN parent_id IS NULL OR parent_id = 0 THEN 1 ELSE 0 END) as parent_count,
+                                    SUM(CASE WHEN parent_id IS NOT NULL AND parent_id != 0 THEN 1 ELSE 0 END) as sub_count
+                                FROM categories");
         if ($result && $row = $result->fetch_assoc()) {
-            $stats['categories'] = (int)$row['count'];
+            $stats['categories'] = (int)$row['total'];
+            $stats['parent_categories'] = (int)$row['parent_count'];
+            $stats['sub_categories'] = (int)$row['sub_count'];
         }
 
         // Inventory Counts (Stock and Backorder Status)
@@ -276,17 +284,31 @@ $categories = getAllCategories(); // Fetch categories
                     <p class="text-3xl font-bold mb-3"><?= number_format($stats['categories']) ?> <span class="text-lg font-normal">Total</span></p>
                     <div class="stat-card-grid mt-2">
                         <div class="stat-item text-green-800">
+                            <i data-lucide="folder" class="h-4 w-4"></i>
+                            <span class="text-sm font-medium">
+                                <?= number_format($stats['parent_categories']) ?> Parent
+                            </span>
+                        </div>
+                        <div class="stat-item text-blue-800">
+                            <i data-lucide="folder-symlink" class="h-4 w-4"></i>
+                            <span class="text-sm font-medium">
+                                <?= number_format($stats['sub_categories']) ?> Sub
+                            </span>
+                        </div>
+                        <div class="stat-item text-green-800">
                             <i data-lucide="trending-up" class="h-4 w-4"></i>
                             <span class="text-sm font-medium truncate" title="<?= htmlspecialchars($stats['most_used_category_name']) ?>">
-                                <?= htmlspecialchars($stats['most_used_category_name']) ?>
-                                (<?= number_format($stats['most_used_category_count']) ?>)
+                                Most: <?= htmlspecialchars($stats['most_used_category_name']) ?> <span class="text-xs text-gray-500 bg-blue-100 px-1 rounded-full font-normal">
+                                    <?= number_format($stats['most_used_category_count']) ?>
+                                </span>
                             </span>
                         </div>
                         <div class="stat-item text-red-800">
                             <i data-lucide="trending-down" class="h-4 w-4"></i>
                             <span class="text-sm font-medium truncate" title="<?= htmlspecialchars($stats['least_used_category_name']) ?>">
-                                <?= htmlspecialchars($stats['least_used_category_name']) ?>
-                                (<?= number_format($stats['least_used_category_count']) ?>)
+                                Least: <?= htmlspecialchars($stats['least_used_category_name']) ?> <span class="text-xs text-gray-500 bg-red-100 px-1 rounded-full font-normal">
+                                    <?= number_format($stats['least_used_category_count']) ?>
+                                </span>
                             </span>
                         </div>
                     </div>
