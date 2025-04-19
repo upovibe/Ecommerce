@@ -97,7 +97,7 @@ $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
 $currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '$';
 // Call the correct function name
 $initialData = getAllProductsAndCategories();
-$initialCategories = $initialData['categories'];
+$categories = $initialData['categories'];
 $initialProducts = $initialData['products'];
 
 ?>
@@ -131,7 +131,7 @@ $initialProducts = $initialData['products'];
     <?php include_once 'includes/admin_navbar.php'; ?>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-        x-data="productManager(<?= htmlspecialchars(json_encode($initialProducts, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, <?= htmlspecialchars(json_encode($initialCategories, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, '<?= htmlspecialchars($currencySymbol) ?>')" @keydown.escape.window="isModalOpen = false">
+        x-data="productManager(<?= htmlspecialchars(json_encode($initialProducts, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, <?= htmlspecialchars(json_encode($categories, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, '<?= htmlspecialchars($currencySymbol) ?>')" @keydown.escape.window="isModalOpen = false">
 
         <!-- Breadcrumbs -->
         <?php include_once 'includes/breadcrumbs.php'; ?>
@@ -181,7 +181,7 @@ $initialProducts = $initialData['products'];
     <script id="product-manager-data" type="application/json">
         <?= json_encode([ 
             'products' => $initialProducts, 
-            'categories' => $initialCategories, 
+            'categories' => $categories,
             'currencySymbol' => $currencySymbol 
         ]) ?>
     </script>

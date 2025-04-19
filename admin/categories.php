@@ -454,7 +454,7 @@ if (isset($_SESSION['flash_message'])) {
                                         required 
                                         :disabled="modalMode === 'addParent'" 
                                         class="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed">
-                                     <option :value="null">-- No Parent (Top Level) --</option>
+                                     <option value="">-- No Parent (Top Level) --</option>
                                      <template x-for="parent in categories.filter(c => c.parent_id === null && c.id !== currentCategory.id)" :key="parent.id">
                                          <option :value="parent.id" x-text="parent.name"></option>
                                      </template>

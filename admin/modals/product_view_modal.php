@@ -1,175 +1,149 @@
-<?php
-// Product View Modal
-?>
-<div x-show="isModalOpen" x-cloak 
-     class="fixed inset-0 z-50 overflow-y-auto" 
-     aria-labelledby="modal-title" role="dialog" aria-modal="true"
-     @keydown.escape.window="isModalOpen = false">
-    
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Overlay -->
-        <div x-show="isModalOpen" 
-             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
-             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" 
-             class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" 
-             @click="isModalOpen = false" aria-hidden="true"></div>
+<!-- Grid View -->
+<div x-show="viewMode === 'grid'" x-cloak
+    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <template x-for="product in filteredProducts" :key="product.id">
+        <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 overflow-hidden flex flex-col">
+            <div @click="openModal(product)" class="block h-48 overflow-hidden relative group cursor-pointer">
+                <img :src="product.image ? product.image : '../assets/images/placeholder.png'"
+                    alt=""
+                    class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
 
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <!-- Modal panel -->
-        <div x-show="isModalOpen" 
-             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-             class="inline-block align-bottom bg-white/95 backdrop-blur-xl rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full"> <!-- Wider max-w -->
-            
-             <!-- Header with ID, Copy Link, Close -->
-             <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200/50">
-                 <div class="flex items-center space-x-2">
-                    <i data-lucide="hash" class="size-4 text-gray-400 flex-shrink-0"></i>
-                    <span class="text-sm font-medium text-gray-500">ID: <span x-text="viewingProduct?.id || 'N/A'"></span></span>
-                    <span class="text-sm font-medium text-gray-500 pl-2 border-l border-gray-200/60" x-show="viewingProduct?.slug">
-                        <span class="font-mono text-blue-600">@<span x-text="viewingProduct?.slug"></span></span>
-                    </span>
-                 </div>
-                 <button type="button" @click="isModalOpen = false" class="bg-white/50 rounded-lg text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 p-2 backdrop-blur-xl">
-                    <span class="sr-only">Close</span>
-                    <i data-lucide="x" class="h-5 w-5"></i>
-                </button>
-             </div>
-
-            <!-- Modal Content -->
-            <template x-if="viewingProduct">
-                <div class="flex flex-col md:flex-row" style="max-height: 80vh;">
-                    <!-- Left Side: Image -->
-                    <div class="md:w-2/5 p-6 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border-r border-gray-200/60">
-                        <div class="aspect-w-1 aspect-h-1 w-full max-w-xs mx-auto">
-                            <img x-show="viewingProduct.image" :src="viewingProduct.image" :alt="viewingProduct.name" 
-                                 class="w-full h-full object-contain rounded-lg shadow-lg bg-white/50 backdrop-blur-sm">
-                            <img x-show="!viewingProduct.image" src="../assets/images/placeholder.png" alt="Placeholder" 
-                                 class="w-full h-full object-contain rounded-lg shadow-lg bg-white/50 backdrop-blur-sm">
+                <!-- Full Image Overlay Container -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent opacity-100 group-hover:opacity-0 transition-opacity duration-300 flex flex-col p-2 pointer-events-none">
+                    <div class="flex justify-between items-start text-xs mb-auto">
+                        <!-- Top-Left: Discount Info (Percentage + Original Price) -->
+                        <div class="flex items-center space-x-1">
+                            <template x-if="product.original_price && parseFloat(product.original_price) > parseFloat(product.price)">
+                                <span class="bg-red-500/90 text-white px-1.5 py-0.5 rounded text-[10px] font-semibold shadow"
+                                    x-text="'-' + parseFloat(product.discount_percentage).toFixed(0) + '%'">
+                                </span>
+                            </template>
                         </div>
+
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium shadow"
+                            :class="{
+                                  'bg-green-100/90 text-green-900': product.availability_status === 'in_stock',
+                                  'bg-yellow-100/90 text-yellow-900': product.availability_status === 'backorder',
+                                  'bg-red-100/90 text-red-900': product.availability_status === 'sold_out',
+                                  'bg-gray-100/90 text-gray-800': !product.is_active // Override if inactive
+                              }"
+                            x-text="product.is_active ? 
+                                        (product.availability_status === 'in_stock' ? (product.stock + ' In Stock') : 
+                                         (product.availability_status === 'backorder' ? 'Backorder' : 'Sold Out')) 
+                                       : 'Inactive'">
+                        </span>
                     </div>
 
-                    <!-- Right Side: Details -->
-                    <div class="md:w-3/5 p-6 overflow-y-auto">
-                        <h3 class="text-3xl leading-9 font-bold text-gray-900 mb-6" id="modal-title" x-text="viewingProduct.name"></h3>
-                        
-                        <!-- Key Details Section - Card Style -->
-                        <div class="bg-white border border-gray-200/80 rounded-lg shadow-sm p-4 mb-6 space-y-3">
-                            <!-- Price -->
-                            <div class="flex items-center justify-between">
-                                 <span class="text-sm font-medium text-gray-600 flex items-center"><i data-lucide="dollar-sign" class="size-4 mr-2 text-blue-500"></i>Price</span>
-                                 <div class="text-lg font-semibold text-right">
-                                     <template x-if="viewingProduct.original_price && parseFloat(viewingProduct.original_price) > parseFloat(viewingProduct.price)">
-                                         <span class="text-gray-500 line-through mr-1.5 text-base font-normal" x-text="formatCurrency(viewingProduct.original_price)"></span>
-                                     </template>
-                                     <span class="text-gray-900" x-text="formatCurrency(viewingProduct.price)"></span>
-                                     <template x-if="viewingProduct.discount_percentage && parseFloat(viewingProduct.discount_percentage) > 0">
-                                         <span class="ml-1.5 inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded-full" 
-                                                 x-text="'-' + parseFloat(viewingProduct.discount_percentage).toFixed(0) + '%'"></span>
-                                     </template>
-                                 </div>
-                            </div>
-                             <!-- Divider -->
-                             <hr class="border-gray-100">
-                            <!-- Category -->
-                            <div class="flex items-center justify-between">
-                                 <span class="text-sm font-medium text-gray-600 flex items-center"><i data-lucide="tag" class="size-4 mr-2 text-purple-500"></i>Category</span>
-                                 <span class="text-sm font-semibold text-gray-800" x-text="viewingProduct.category_name || 'Uncategorized'"></span>
-                            </div>
-                             <!-- Divider -->
-                             <hr class="border-gray-100">
-                             <!-- Stock -->
-                             <div class="flex items-center justify-between">
-                                 <span class="text-sm font-medium text-gray-600 flex items-center"><i data-lucide="package" class="size-4 mr-2 text-orange-500"></i>Availability</span>
-                                 <span class="px-2.5 py-1 rounded-full text-xs font-medium" 
-                                       :class="{
-                                            'bg-green-100 text-green-800': viewingProduct.availability_status === 'in_stock',
-                                            'bg-yellow-100 text-yellow-800': viewingProduct.availability_status === 'backorder',
-                                            'bg-red-100 text-red-800': viewingProduct.availability_status === 'sold_out',
-                                            'bg-gray-100 text-gray-700': !viewingProduct.is_active // Override color if inactive
-                                        }">
-                                        <span x-text="viewingProduct.is_active ? 
-                                                       (viewingProduct.availability_status === 'in_stock' ? (viewingProduct.stock + ' In Stock') : 
-                                                        (viewingProduct.availability_status === 'backorder' ? 'Backorder' : 'Sold Out')) 
-                                                      : 'Inactive'">
-                                        </span>
-                                 </span>
-                             </div>
-                             <!-- Backorder Status -->
-                             <div class="flex items-center justify-between" x-show="viewingProduct.backorder">
-                                 <hr class="border-gray-100 w-full my-1 sm:hidden"> <!-- Divider on small screens -->
-                                 <span class="text-sm font-medium text-gray-600 flex items-center"><i data-lucide="history" class="size-4 mr-2 text-cyan-500"></i>Backorder</span>
-                                 <span class="text-xs font-semibold text-cyan-800 bg-cyan-100 px-2.5 py-0.5 rounded-full inline-flex items-center">
-                                     Allowed
-                                 </span>
-                             </div>
-                             <!-- Featured Status -->
-                             <div class="flex items-center justify-between" x-show="viewingProduct.featured == 1">
-                                 <hr class="border-gray-100 w-full my-1 sm:hidden"> <!-- Divider on small screens -->
-                                 <span class="text-sm font-medium text-gray-600 flex items-center"><i data-lucide="star" class="size-4 mr-2 text-yellow-500"></i>Status</span>
-                                 <span class="text-xs font-semibold text-yellow-800 bg-yellow-100 px-2.5 py-0.5 rounded-full inline-flex items-center">
-                                     Featured
-                                 </span>
-                            </div>
+                    <div class="flex justify-between items-end">
+                        <div class="text-white">
+                            <h4 class="text-white text-sm font-semibold truncate max-w-20 md:max-w-full" x-text="product.name"></h4>
+                            <!-- Updated Price Display Logic (Grid) -->
+                            <p class="text-xs text-blue-300 font-medium">
+                                <template x-if="product.original_price && parseFloat(product.original_price) > parseFloat(product.price)">
+                                    <span>
+                                        <span x-text="formatCurrency(product.price)" class="mr-1"></span>
+                                        <del class="text-gray-50 mr-1" x-text="formatCurrency(product.original_price)"></del>
+                                    </span>
+                                </template>
+                                <template x-if="!product.original_price || parseFloat(product.original_price) <= parseFloat(product.price)">
+                                    <span x-text="formatCurrency(product.price)"></span>
+                                </template>
+                            </p>
                         </div>
-
-                         <!-- Description Section -->
-                         <div class="mb-6">
-                              <h4 class="text-lg font-semibold text-gray-800 mb-2">Description</h4>
-                              <div class="prose prose-sm max-w-none text-gray-600 bg-gray-50/50 p-4 rounded-lg border border-gray-200/60 shadow-inner" 
-                                    x-html="viewingProduct.description || '<p>No description available.</p>'">
-                              </div>
-                         </div>
-
-                         <!-- Loading Indicator for Options -->
-                         <div x-show="isLoadingDetails" class="text-center py-8">
-                             <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                             <p class="text-sm text-gray-500 mt-2">Loading options...</p>
-                         </div>
-
-                         <!-- Product Options Display -->
-                         <div x-show="!isLoadingDetails && viewingProductOptions.length > 0" x-cloak class="space-y-3 mb-6 pt-4 border-t border-gray-200/60">
-                             <h4 class="text-lg font-semibold text-gray-800">Available Options</h4>
-                             <template x-for="(optionGroup, index) in viewingProductOptions" :key="index">
-                                 <div class="text-sm">
-                                     <span class="font-medium text-gray-600 block mb-1.5" x-text="optionGroup.name"></span>
-                                     <div class="flex flex-wrap gap-2 mt-1">
-                                         <template x-for="value in optionGroup.values" :key="value + index + '_view'">
-                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-gray-800 border border-gray-300/70 shadow-sm">
-                                                 <span x-text="value"></span>
-                                             </span>
-                                         </template>
-                                     </div>
-                                 </div>
-                             </template>
-                         </div>
                     </div>
                 </div>
-            </template>
 
-            <!-- Footer with Buttons -->
-            <div class="bg-gray-50/70 px-4 py-3 sm:px-6 flex justify-between items-center md:justify-end md:items-end gap-2 border-t border-gray-200">
-                <button type="button" @click="isModalOpen = false" 
-                        class="w-full inline-flex justify-center gap-1 items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                    <i data-lucide="x" class="size-4"></i>Close
-                </button>
-                <!-- Delete Button -->
-                <button type="button" 
-                        @click="confirmDelete(viewingProduct.id); isModalOpen = false;" 
-                        x-show="viewingProduct" 
-                        class="w-full inline-flex justify-center gap-1 items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
-                     <i data-lucide="trash-2" class="size-4"></i>Delete
-                </button>
-                <!-- Edit Button -->
-                <button type="button" 
-                        @click="isModalOpen = false; openEditModal(viewingProduct.id)" 
-                        x-show="viewingProduct" 
-                        class="w-full inline-flex justify-center gap-1 items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                    <i data-lucide="edit" class="size-4"></i>Edit
-                </button>
+                <!-- Action Buttons (Now always visible) -->
+                <div class="absolute bottom-2 right-2 flex space-x-1 pointer-events-auto">
+                    <button type="button" @click.stop="openEditModal(product.id)"
+                        title="Edit Product"
+                        class="text-indigo-200 hover:text-white bg-black/80 hover:bg-indigo-600 p-1.5 rounded-md shadow transition-colors">
+                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                    </button>
+                    <button type="button" @click.stop="confirmDelete(product.id)"
+                        title="Delete Product"
+                        class="text-red-300 hover:text-white bg-black/80 hover:bg-red-600 p-1.5 rounded-md shadow transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>
+
+<!-- List View -->
+<div x-show="viewMode === 'list'" x-cloak class="space-y-4">
+    <template x-for="product in filteredProducts" :key="product.id">
+        <!-- Individual Product Card -->
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 shadow-gray-50 overflow-hidden flex items-center p-2 space-x-3">
+            <!-- Image Container -->
+            <div class="relative flex-shrink-0">
+                <img :src="product.image ? product.image : '../assets/images/placeholder.png'" alt=""
+                    class="h-16 w-16 rounded-md object-cover"
+                    :class="{ 'opacity-50 grayscale': !product.is_active }">
+                <!-- Stock Badge Overlay -->
+                <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[10px] font-medium shadow"
+                    :class="{
+                           'bg-green-100/90 text-green-900': product.availability_status === 'in_stock',
+                           'bg-yellow-100/90 text-yellow-900': product.availability_status === 'backorder',
+                           'bg-red-100/90 text-red-900': product.availability_status === 'sold_out'
+                           // We show inactive state elsewhere
+                       }"
+                    x-text="product.availability_status === 'in_stock' ? product.stock 
+                               : (product.availability_status === 'backorder' ? 'B/O' : 'Sold')">
+                </span>
+                <!-- Inactive Indicator -->
+                <span x-show="!product.is_active" x-cloak class="absolute bottom-1 right-1 bg-gray-500 text-white p-0.5 rounded-full">
+                    <i data-lucide="zap-off" class="w-3 h-3"></i>
+                </span>
             </div>
 
-        </div> 
-    </div>
+            <!-- Main Info Area (Grows) -->
+            <div class="flex-grow min-w-0">
+                <h3 class="text-md font-semibold text-gray-900 truncate" x-text="product.name"></h3>
+                <p class="text-sm text-gray-500 truncate" x-text="product.category_name || 'Uncategorized'"></p>
+                <!-- Corrected Price Display Logic (List) -->
+                <div class="mt-1">
+                    <template x-if="product.original_price && parseFloat(product.original_price) > parseFloat(product.price)">
+                        <span>
+                            <span class="text-sm text-gray-500 line-through mr-1" x-text="formatCurrency(product.original_price)"></span>
+                            <span class="text-md font-medium text-blue-600 mr-1" x-text="formatCurrency(product.price)"></span>
+                            <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-1.5 py-0.5 rounded-md"
+                                x-text="'-' + parseFloat(product.discount_percentage).toFixed(0) + '%'"></span>
+                        </span>
+                    </template>
+                    <template x-if="!product.original_price || parseFloat(product.original_price) <= parseFloat(product.price)">
+                        <span class="text-md font-medium text-blue-600" x-text="formatCurrency(product.price)"></span>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Actions Area (Fixed Width, Pushed Right) -->
+            <div class="flex flex-shrink-0 space-x-1 ml-auto">
+                <button type="button" @click.stop="openModal(product)"
+                    title="View Details"
+                    class="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-100 rounded transition-colors">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+                <button type="button" @click.stop="openEditModal(product.id)"
+                    title="Edit Product"
+                    class="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-100 rounded transition-colors">
+                    <i data-lucide="edit-2" class="w-4 h-4"></i>
+                </button>
+                <button type="button" @click.stop="confirmDelete(product.id)"
+                    title="Delete Product"
+                    class="text-red-600 hover:text-red-900 p-1 hover:bg-red-100 rounded transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </template>
+</div>
+
+<!-- No Results Message -->
+<div x-show="filteredProducts.length === 0" x-cloak class="text-center py-10 px-6 bg-white rounded-lg shadow-sm">
+    <i data-lucide="search-x" class="w-16 h-16 mx-auto text-gray-300"></i>
+    <p class="mt-4 text-lg font-medium text-gray-600">No products found</p>
+    <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filters.</p>
+    <button @click="searchTerm = ''; minPrice = null; maxPrice = null" class="mt-4 text-sm text-blue-600 hover:underline">Clear Filters</button>
 </div> 
