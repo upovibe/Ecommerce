@@ -8,6 +8,12 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
+// Page specific variables
+$pageTitle = "Settings";
+$breadcrumbs = [
+    ['name' => $pageTitle] // Current page - no URL needed
+];
+
 // Get current store settings from constant
 $storeName = STORE_SETTINGS['store_name'] ?? '';
 $storeDescription = STORE_SETTINGS['store_description'] ?? '';
@@ -40,23 +46,29 @@ $featuredSubtitle = $storeContent['featured_subtitle'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Store Settings - <?= htmlspecialchars($storeName) ?></title>
+    <title><?= htmlspecialchars($pageTitle) ?> - <?= htmlspecialchars($storeName) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body class="bg-gray-50 font-sans antialiased">
     <!-- Navigation -->
     <?php include_once 'includes/admin_navbar.php'; ?>
-    
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Store Settings</h1>
-                <p class="mt-2 text-gray-500">Customize your store's appearance and configurations</p>
+        <!-- Breadcrumbs -->
+        <?php include_once 'includes/breadcrumbs.php'; ?>
+
+        <div class="mb-8">
+            <div class="shrink-0 space-y-0.5 w-fit">
+                <h1 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2"><i data-lucide="settings" class="h-6 w-6"></i> <?= htmlspecialchars($pageTitle) ?></h1>
+                <div class="h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full mb-4"></div>
             </div>
+            <p class="text-gray-600">Manage your store settings and appearance.</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -121,64 +133,59 @@ $featuredSubtitle = $storeContent['featured_subtitle'] ?? '';
                 }">
                 <div class="border-b border-gray-200 mb-4">
                     <nav class="flex space-x-4">
-                        <button 
+                        <button
                             class="flex items-center px-4 py-2 text-sm font-medium rounded-t-lg focus:outline-none"
-                            :class="tab === 'general' ? 'bg-white border-l border-t border-r text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'" 
-                            @click="tab = 'general'"
-                        >
+                            :class="tab === 'general' ? 'bg-white border-l border-t border-r text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'"
+                            @click="tab = 'general'">
                             <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
                             General
                         </button>
-                        <button 
+                        <button
                             class="flex items-center px-4 py-2 text-sm font-medium rounded-t-lg focus:outline-none"
-                            :class="tab === 'content' ? 'bg-white border-l border-t border-r text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'" 
-                            @click="tab = 'content'"
-                        >
+                            :class="tab === 'content' ? 'bg-white border-l border-t border-r text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'"
+                            @click="tab = 'content'">
                             <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
                             Store
                         </button>
                     </nav>
-                                </div>
+                </div>
 
                 <div class="tab-content relative">
-                    <div x-show="tab === 'general'" x-cloak 
-                         x-transition:enter="transition ease-out duration-300" 
-                         x-transition:enter-start="opacity-0 transform scale-95" 
-                         x-transition:enter-end="opacity-100 transform scale-100" 
-                         x-transition:leave="transition ease-in duration-150 absolute w-full" 
-                         x-transition:leave-start="opacity-100 transform scale-100" 
-                         x-transition:leave-end="opacity-0 transform scale-95">
+                    <div x-show="tab === 'general'" x-cloak
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform scale-95"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-150 absolute w-full"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-95">
                         <?php include_once 'includes/settings_general_form.php'; ?>
-                            </div>
-                    <div x-show="tab === 'content'" x-cloak 
-                         x-transition:enter="transition ease-out duration-300" 
-                         x-transition:enter-start="opacity-0 transform scale-95" 
-                         x-transition:enter-end="opacity-100 transform scale-100" 
-                         x-transition:leave="transition ease-in duration-150 absolute w-full" 
-                         x-transition:leave-start="opacity-100 transform scale-100" 
-                         x-transition:leave-end="opacity-0 transform scale-95">
+                    </div>
+                    <div x-show="tab === 'content'" x-cloak
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform scale-95"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-150 absolute w-full"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-95">
                         <?php include_once 'includes/settings_store_content.php'; ?>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <?php include_once '../includes/toast.php'; ?>
-    
+
     <!-- Include logo settings modal -->
     <?php include_once 'modals/logo_settings_modal.php'; ?>
 
-    <?php 
+    <?php
     // Include change password modal for navbar trigger
     if (!defined('ALLOW_ACCESS')) {
-        define('ALLOW_ACCESS', true); 
+        define('ALLOW_ACCESS', true);
     }
-    include_once 'modals/change_password_modal.php'; 
+    include_once 'modals/change_password_modal.php';
     ?>
-
-    <!-- Include Alpine.js -->
-    <script src="//unpkg.com/alpinejs" defer></script>
 
     <!-- JavaScript for Modal Control -->
     <script>
@@ -188,7 +195,7 @@ $featuredSubtitle = $storeContent['featured_subtitle'] ?? '';
                 modal.classList.remove('hidden');
                 // Re-render icons if needed when modal opens
                 if (typeof lucide !== 'undefined') {
-                   setTimeout(() => lucide.createIcons(), 50); // Delay ensures elements are visible
+                    setTimeout(() => lucide.createIcons(), 50); // Delay ensures elements are visible
                 }
             } else {
                 console.error('Logo settings modal not found!');
@@ -214,9 +221,10 @@ $featuredSubtitle = $storeContent['featured_subtitle'] ?? '';
             const tabParam = urlParams.get('tab');
 
             if (tabParam === 'logo') {
-                 openLogoModal(); // Directly call the function to open
+                openLogoModal(); // Directly call the function to open
             }
         });
     </script>
 </body>
+
 </html>

@@ -9,6 +9,70 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
+// Page specific variables
+$pageTitle = "Manage Products";
+$breadcrumbs = [
+    ['name' => $pageTitle] // Current page - no URL needed
+];
+
+// Fetch initial data - Categories for modals, Products for the table
+// Renamed function call
+function getAllProductsAndCategories() {
+    global $conn, $db_connected;
+    $products = [];
+    $categories = [];
+
+    // Fetch Categories first (needed by products)
+    if ($db_connected && $conn) {
+        $sql_cat = "SELECT id, name FROM categories ORDER BY name ASC";
+        $result_cat = $conn->query($sql_cat);
+        if ($result_cat) {
+            while ($row = $result_cat->fetch_assoc()) {
+                $categories[] = $row;
+            }
+        }
+    }
+
+    // Fetch Products
+    if ($db_connected && $conn) {
+        $sql_prod = "SELECT 
+                        p.id, p.name, p.slug, p.description, p.price, 
+                        p.original_price, p.discount_percentage, 
+                        p.image, p.category_id, p.stock, p.featured, 
+                        p.is_active, p.backorder,
+                        p.created_at, p.updated_at, 
+                        c.name as category_name 
+                     FROM products p 
+                     LEFT JOIN categories c ON p.category_id = c.id 
+                     ORDER BY p.name ASC"; 
+        $result_prod = $conn->query($sql_prod);
+        if ($result_prod) {
+            while ($row = $result_prod->fetch_assoc()) {
+                // Ensure correct types
+                $row['id'] = (int)$row['id'];
+                $row['price'] = (float)$row['price'];
+                $row['original_price'] = $row['original_price'] === null ? null : (float)$row['original_price'];
+                $row['discount_percentage'] = $row['discount_percentage'] === null ? null : (float)$row['discount_percentage'];
+                $row['stock'] = (int)$row['stock'];
+                $row['featured'] = (bool)$row['featured'];
+                $row['is_active'] = (bool)$row['is_active'];
+                $row['backorder'] = (bool)$row['backorder'];
+                $row['category_id'] = $row['category_id'] ? (int)$row['category_id'] : null;
+                 // Calculate availability status
+                 if ($row['stock'] > 0) {
+                    $row['availability_status'] = 'in_stock';
+                } elseif ($row['backorder']) {
+                    $row['availability_status'] = 'backorder';
+                 } else {
+                    $row['availability_status'] = 'out_of_stock';
+                 }
+                $products[] = $row;
+            }
+        }
+    }
+    return ['products' => $products, 'categories' => $categories];
+}
+
 // Process actions (delete, etc.) - Placeholder
 $message = '';
 if (isset($_GET['action']) && isset($_GET['id'])) {
@@ -28,68 +92,14 @@ if (isset($_SESSION['flash_message'])) {
     unset($_SESSION['flash_message']);
 }
 
-// Get products
-function getAdminProducts()
-{
-    global $conn, $db_connected;
-    $products = []; // Initialize as empty array
-
-    if ($db_connected && $conn) {
-        $sql = "SELECT p.*, c.name as category_name, 
-                       p.is_active, p.backorder -- Select new columns
-                FROM products p
-                LEFT JOIN categories c ON p.category_id = c.id
-                ORDER BY p.id DESC";
-
-        $result = $conn->query($sql);
-
-        if ($result && $result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                // Ensure price is float
-                $row['price'] = (float)$row['price'];
-                // Ensure correct boolean types for new flags
-                $row['is_active'] = (bool)$row['is_active'];
-                $row['backorder'] = (bool)$row['backorder'];
-                $row['featured'] = (bool)$row['featured']; // Also ensure featured is boolean
-
-                // Calculate availability_status
-                if ($row['stock'] > 0) {
-                    $row['availability_status'] = 'in_stock';
-                } elseif ($row['backorder']) { // stock is <= 0 and backorder is true
-                    $row['availability_status'] = 'backorder';
-                } else { // stock is <= 0 and backorder is false
-                    $row['availability_status'] = 'sold_out';
-                }
-
-                $products[] = $row;
-            }
-        }
-    }
-
-    return $products;
-}
-
-// Get all categories for dropdown
-function getAllCategories()
-{
-    global $conn, $db_connected;
-    $categories = [];
-    if ($db_connected && $conn) {
-        $sql = "SELECT id, name FROM categories ORDER BY name ASC";
-        $result = $conn->query($sql);
-        if ($result && $result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $categories[] = $row;
-            }
-        }
-    }
-    return $categories;
-}
-
-$products = getAdminProducts();
-$categories = getAllCategories(); // Fetch categories
+// Get store settings
 $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
 $currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '$';
+// Call the correct function name
+$initialData = getAllProductsAndCategories();
+$initialCategories = $initialData['categories'];
+$initialProducts = $initialData['products'];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -97,7 +107,7 @@ $currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '$';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Products - <?= htmlspecialchars($storeName) ?></title>
+    <title><?= htmlspecialchars($pageTitle) ?> - <?= htmlspecialchars($storeName) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Alpine Plugins -->
@@ -110,19 +120,25 @@ $currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '$';
         [x-cloak] {
             display: none !important;
         }
+        /* Add other styles as needed */
+        tbody tr:nth-child(odd) { background-color: #f9fafb; /* gray-50 */ }
+        tbody tr:hover { background-color: #f3f4f6; /* gray-100 */ }
     </style>
 </head>
 
-<body class="bg-gray-50 font-sans antialiased">
+<body class="bg-gray-100 font-sans antialiased">
     <!-- Navigation -->
     <?php include_once 'includes/admin_navbar.php'; ?>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-        x-data="productManager()" @keydown.escape.window="isModalOpen = false">
+        x-data="productManager(<?= htmlspecialchars(json_encode($initialProducts, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, <?= htmlspecialchars(json_encode($initialCategories, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, '<?= htmlspecialchars($currencySymbol) ?>')" @keydown.escape.window="isModalOpen = false">
+
+        <!-- Breadcrumbs -->
+        <?php include_once 'includes/breadcrumbs.php'; ?>
 
         <div class="flex justify-between items-center mb-4 gap-4 ">
             <div class="shrink-0 space-y-0.5">
-                <h1 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2"><i data-lucide="box" class="size-4 md:size-5"></i> Manage Products</h1>
+                <h1 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2"><i data-lucide="package" class="h-6 w-6"></i> <?= htmlspecialchars($pageTitle) ?></h1>
                 <div class="h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full mb-4"></div>
             </div>
             <button @click="openAddModal()" type="button" class="flex items-center inline-flex items-center justify-center gap-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 size-8 md:w-fit md:px-2">
@@ -164,8 +180,8 @@ $currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '$';
     <!-- Pass initial data to JavaScript -->
     <script id="product-manager-data" type="application/json">
         <?= json_encode([ 
-            'products' => $products, 
-            'categories' => $categories, 
+            'products' => $initialProducts, 
+            'categories' => $initialCategories, 
             'currencySymbol' => $currencySymbol 
         ]) ?>
     </script>

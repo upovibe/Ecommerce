@@ -8,6 +8,12 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
     exit;
 }
 
+// Page specific variables
+$pageTitle = "Manage Categories";
+$breadcrumbs = [
+    ['name' => $pageTitle] // Current page - no URL needed
+];
+
 // Fetch initial categories - This is now primarily for the JS data initialization
 function getAllAdminCategoriesForJS() {
     global $conn, $db_connected;
@@ -55,7 +61,7 @@ if (isset($_SESSION['flash_message'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Categories - <?= htmlspecialchars($storeName) ?></title>
+    <title><?= htmlspecialchars($pageTitle) ?> - <?= htmlspecialchars($storeName) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Load component definition FIRST -->
@@ -83,14 +89,16 @@ if (isset($_SESSION['flash_message'])) {
 
     <!-- Main Content Area -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="categoryManager()">
+        
+        <!-- Breadcrumbs -->
+        <?php include_once 'includes/breadcrumbs.php'; ?>
 
         <!-- Header & Add Button -->
         <div class="flex justify-between items-center mb-6 gap-4">
-            <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <i data-lucide="folder-tree" class="h-6 w-6"></i> Manage Categories
-            </h1>
-            <!-- Removed global Add button -->
-            <!-- <button @click="openAddModal()" type="button" ... > -->
+            <div class="shrink-0 space-y-0.5">
+                <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2"><i data-lucide="folder-tree" class="h-6 w-6"></i> <?= htmlspecialchars($pageTitle) ?></h1>
+            <div class="h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full mb-4"></div>
+            </div>
         </div>
 
         <!-- Flash Messages -->

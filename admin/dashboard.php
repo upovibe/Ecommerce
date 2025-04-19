@@ -197,10 +197,13 @@ $categories = getAllCategories(); // Fetch categories
     ?>
 
     <!-- Main container with Alpine data scope -->
-    <div class="container mx-auto px-4 py-8" x-data="productManager()">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="productManager()">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div class="flex-grow">
-                <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+                <div class="shrink-0 space-y-0.5 w-fit">
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2"><i data-lucide="home" class="h-6 w-6"></i> Dashboard </h1>
+                <div class="h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full mb-4"></div>
+                </div>
                 <p class="text-gray-600">Overview of your store performance</p>
             </div>
             <!-- Button Group -->
@@ -337,17 +340,9 @@ $categories = getAllCategories(); // Fetch categories
                         <i data-lucide="user-cog" class="h-5 w-5 mr-2"></i>
                         <span>Manage Account</span>
                     </a>
-                    <a href="settings.php?tab=general" class="flex items-center p-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition">
+                    <a href="settings.php" class="flex items-center p-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition">
                         <i data-lucide="settings" class="h-5 w-5 mr-2"></i>
-                        <span>General Settings</span>
-                    </a>
-                    <a href="settings.php?tab=content" class="flex items-center p-3 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition">
-                        <i data-lucide="file-text" class="h-5 w-5 mr-2"></i>
-                        <span>Store Content Settings</span>
-                    </a>
-                    <a href="settings.php?tab=logo" class="flex items-center p-3 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition">
-                        <i data-lucide="image" class="h-5 w-5 mr-2"></i>
-                        <span>Change Logo</span>
+                        <span>Settings Page</span>
                     </a>
                 </div>
             </div>
@@ -358,7 +353,7 @@ $categories = getAllCategories(); // Fetch categories
                     <i data-lucide="bar-chart-2" class="h-5 w-5 text-blue-500 mr-2"></i>
                     <h2 class="text-lg font-semibold text-gray-800">Product Statistics</h2>
                 </div>
-                <div class="h-80 mt-auto">
+                <div class="h-64 mt-auto">
                     <canvas id="productsChart"></canvas>
                 </div>
             </div>
