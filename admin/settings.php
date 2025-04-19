@@ -120,6 +120,7 @@ $aboutImage = $storeContent['about_image'] ?? '/assets/images/demo/about-image.j
                             const result = await response.json();
                             if (result.success) {
                                 toast.success(result.message || 'Store content updated successfully!');
+                                setTimeout(() => { window.location.reload(); }, 1000); // Reload after 1 second to show toast
                             } else {
                                 toast.error(result.message || 'Failed to update store content.');
                             }

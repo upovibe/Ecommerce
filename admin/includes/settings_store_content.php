@@ -25,21 +25,39 @@
         <!-- Hero Image Section -->
         <fieldset class="space-y-4 border-t pt-4">
             <legend class="text-md font-medium text-gray-600 mb-2">Hero Background Image</legend>
-            <div>
-                <label for="hero_image" class="block text-sm font-medium text-gray-700 mb-1">Upload New Image (Optional)</label>
-                <input type="file" name="hero_image" id="hero_image" accept="image/jpeg, image/png, image/webp, image/gif"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                <p class="text-xs text-gray-500 mt-1">Recommended size: 1920x1080. Max 2MB. Formats: JPG, PNG, WEBP, GIF.</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
-                <?php if (!empty($heroImage)): ?>
-                    <img src="<?= htmlspecialchars($heroImage) ?>" alt="Current Hero Image" class="mt-2 rounded-lg border h-32 w-auto object-contain bg-gray-100">
-                    <p class="text-xs text-gray-500 mt-1">Current path: <?= htmlspecialchars($heroImage) ?></p>
-                <?php else: ?>
-                    <p class="text-sm text-gray-500 mt-2">No hero image set.</p>
-                <?php endif; ?>
-            </div>
+            
+            <label class="block text-sm font-medium text-gray-700 mb-1">Image (Optional)</label>
+            <label for="hero_image" id="hero_image_dropzone"
+                   class="relative mt-1 flex justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200 min-h-[150px]">
+
+                <!-- Placeholder Content -->
+                <div id="hero_image_placeholder" class="space-y-1 text-center" <?= !empty($heroImage) ? 'style="display: none;"' : '' ?>>
+                    <i data-lucide="image" class="mx-auto h-12 w-12 text-gray-400"></i>
+                    <div class="flex text-sm text-gray-600">
+                        <span class="relative bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                            <span>Upload a file</span>
+                            <input type="file" name="hero_image" id="hero_image" accept="image/jpeg, image/png, image/webp, image/gif"
+                                   onchange="previewSettingsImage('hero_image', 'hero_image_preview', 'hero_image_placeholder', 'hero_image_remove_button', '<?= htmlspecialchars($heroImage ?? '') ?>')"
+                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        </span>
+                        <p class="pl-1">or drag and drop</p>
+                    </div>
+                    <p class="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 2MB. Rec: 1920x1080</p>
+                </div>
+
+                <!-- Image Preview -->
+                <div id="hero_image_preview_container" class="relative w-full h-full flex justify-center items-center" <?= empty($heroImage) ? 'style="display: none;"' : '' ?>>
+                    <img id="hero_image_preview" src="<?= htmlspecialchars($heroImage ?? '') ?>" alt="Hero Image Preview"
+                         class="max-h-48 max-w-full rounded-lg object-contain shadow-sm">
+                    <button type="button" id="hero_image_remove_button" onclick="removeSettingsImage('hero_image', 'hero_image_preview', 'hero_image_placeholder', 'hero_image_remove_button', 'remove_hero_image', '<?= htmlspecialchars($heroImage ?? '') ?>')"
+                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 z-10"
+                            title="Remove Image">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>
+                <input type="hidden" name="remove_hero_image" id="remove_hero_image" value="0">
+            </label>
+            <p class="text-xs text-gray-500 mt-1">Current path (if set): <?= !empty($heroImage) ? htmlspecialchars($heroImage) : 'None' ?></p>
         </fieldset>
 
         <!-- Featured Section -->
@@ -79,21 +97,39 @@
         <!-- About Image Section -->
         <fieldset class="space-y-4 border-t pt-4">
             <legend class="text-md font-medium text-gray-600 mb-2">About Section Image</legend>
-            <div>
-                <label for="about_image" class="block text-sm font-medium text-gray-700 mb-1">Upload New Image (Optional)</label>
-                <input type="file" name="about_image" id="about_image" accept="image/jpeg, image/png, image/webp, image/gif"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                <p class="text-xs text-gray-500 mt-1">Recommended aspect ratio: 4:3 or 16:9. Max 2MB. Formats: JPG, PNG, WEBP, GIF.</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
-                <?php if (!empty($aboutImage)): ?>
-                    <img src="<?= htmlspecialchars($aboutImage) ?>" alt="Current About Image" class="mt-2 rounded-lg border h-32 w-auto object-contain bg-gray-100">
-                    <p class="text-xs text-gray-500 mt-1">Current path: <?= htmlspecialchars($aboutImage) ?></p>
-                <?php else: ?>
-                    <p class="text-sm text-gray-500 mt-2">No about image set.</p>
-                <?php endif; ?>
-            </div>
+            
+            <label class="block text-sm font-medium text-gray-700 mb-1">Image (Optional)</label>
+            <label for="about_image" id="about_image_dropzone"
+                   class="relative mt-1 flex justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200 min-h-[150px]">
+
+                <!-- Placeholder Content -->
+                <div id="about_image_placeholder" class="space-y-1 text-center" <?= !empty($aboutImage) ? 'style="display: none;"' : '' ?>>
+                    <i data-lucide="image" class="mx-auto h-12 w-12 text-gray-400"></i>
+                    <div class="flex text-sm text-gray-600">
+                        <span class="relative bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                            <span>Upload a file</span>
+                            <input type="file" name="about_image" id="about_image" accept="image/jpeg, image/png, image/webp, image/gif"
+                                   onchange="previewSettingsImage('about_image', 'about_image_preview', 'about_image_placeholder', 'about_image_remove_button', '<?= htmlspecialchars($aboutImage ?? '') ?>')"
+                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        </span>
+                        <p class="pl-1">or drag and drop</p>
+                    </div>
+                    <p class="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 2MB. Rec: 4:3 or 16:9</p>
+                </div>
+
+                <!-- Image Preview -->
+                <div id="about_image_preview_container" class="relative w-full h-full flex justify-center items-center" <?= empty($aboutImage) ? 'style="display: none;"' : '' ?>>
+                     <img id="about_image_preview" src="<?= htmlspecialchars($aboutImage ?? '') ?>" alt="About Image Preview"
+                         class="max-h-48 max-w-full rounded-lg object-contain shadow-sm">
+                    <button type="button" id="about_image_remove_button" onclick="removeSettingsImage('about_image', 'about_image_preview', 'about_image_placeholder', 'about_image_remove_button', 'remove_about_image', '<?= htmlspecialchars($aboutImage ?? '') ?>')"
+                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 z-10"
+                            title="Remove Image">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>
+                 <input type="hidden" name="remove_about_image" id="remove_about_image" value="0">
+            </label>
+             <p class="text-xs text-gray-500 mt-1">Current path (if set): <?= !empty($aboutImage) ? htmlspecialchars($aboutImage) : 'None' ?></p>
         </fieldset>
 
         <div class="pt-6 border-t border-gray-100 flex justify-end">
@@ -109,3 +145,130 @@
         </div>
     </form>
 </div> 
+
+<script>
+function previewSettingsImage(inputId, previewId, placeholderId, removeButtonId, originalImagePath) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const previewContainer = preview.parentNode; // Get the container div
+    const placeholder = document.getElementById(placeholderId);
+    const removeButton = document.getElementById(removeButtonId);
+    const file = input.files[0];
+    const removeFlagInput = document.getElementById('remove_' + inputId); // Get the hidden input
+
+    if (file) {
+        // Check size (e.g., 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Image size exceeds 2MB limit.');
+            input.value = null; // Clear the input
+            // Optionally revert to original preview if exists
+             if (originalImagePath) {
+                preview.src = originalImagePath;
+                previewContainer.style.display = 'flex';
+                placeholder.style.display = 'none';
+                removeButton.style.display = 'block';
+                if(removeFlagInput) removeFlagInput.value = '0'; 
+            } else {
+                preview.src = '';
+                previewContainer.style.display = 'none';
+                placeholder.style.display = 'block';
+                removeButton.style.display = 'none';
+                 if(removeFlagInput) removeFlagInput.value = '0'; 
+            }
+            return;
+        }
+        
+        // Check type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+             alert('Invalid image file type (PNG, JPG, GIF, WEBP allowed).');
+             input.value = null; // Clear the input
+             // Optionally revert preview
+             if (originalImagePath) {
+                preview.src = originalImagePath;
+                previewContainer.style.display = 'flex';
+                placeholder.style.display = 'none';
+                removeButton.style.display = 'block';
+                 if(removeFlagInput) removeFlagInput.value = '0'; 
+            } else {
+                preview.src = '';
+                previewContainer.style.display = 'none';
+                placeholder.style.display = 'block';
+                removeButton.style.display = 'none';
+                if(removeFlagInput) removeFlagInput.value = '0'; 
+            }
+            return;
+        }
+
+        // Use FileReader to preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewContainer.style.display = 'flex'; // Show preview container
+            placeholder.style.display = 'none'; // Hide placeholder
+            removeButton.style.display = 'block'; // Show remove button
+             if(removeFlagInput) removeFlagInput.value = '0'; // File selected, so don't remove
+        }
+        reader.readAsDataURL(file);
+    } else {
+        // No file selected (e.g., user cancelled) - revert to original or empty state
+        if (originalImagePath) {
+            preview.src = originalImagePath;
+            previewContainer.style.display = 'flex';
+            placeholder.style.display = 'none';
+            removeButton.style.display = 'block';
+             if(removeFlagInput) removeFlagInput.value = '0'; 
+        } else {
+            preview.src = '';
+            previewContainer.style.display = 'none';
+            placeholder.style.display = 'block';
+            removeButton.style.display = 'none';
+            if(removeFlagInput) removeFlagInput.value = '0'; 
+        }
+    }
+}
+
+function removeSettingsImage(inputId, previewId, placeholderId, removeButtonId, removeFlagInputId, originalImagePath) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const previewContainer = preview.parentNode;
+    const placeholder = document.getElementById(placeholderId);
+    const removeButton = document.getElementById(removeButtonId);
+    const removeFlagInput = document.getElementById(removeFlagInputId);
+
+    input.value = null; // Clear the file input
+    preview.src = ''; // Clear the preview image source
+    previewContainer.style.display = 'none'; // Hide preview container
+    placeholder.style.display = 'block'; // Show placeholder
+    removeButton.style.display = 'none'; // Hide remove button
+
+    if (originalImagePath) {
+        // If there was an original image, set the flag to remove it
+        if(removeFlagInput) removeFlagInput.value = '1';
+    } else {
+         // If there was no original image, ensure flag is 0
+        if(removeFlagInput) removeFlagInput.value = '0';
+    }
+}
+
+// Ensure Lucide icons are rendered if this include is loaded dynamically
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    // Initial setup in case there's already an image on load
+    const heroImageInput = document.getElementById('hero_image');
+    if (heroImageInput && '<?= !empty($heroImage) ?>') {
+         document.getElementById('hero_image_placeholder').style.display = 'none';
+         document.getElementById('hero_image_preview_container').style.display = 'flex';
+         document.getElementById('hero_image_remove_button').style.display = 'block';
+    }
+    const aboutImageInput = document.getElementById('about_image');
+     if (aboutImageInput && '<?= !empty($aboutImage) ?>') {
+         document.getElementById('about_image_placeholder').style.display = 'none';
+         document.getElementById('about_image_preview_container').style.display = 'flex';
+         document.getElementById('about_image_remove_button').style.display = 'block';
+    }
+});
+
+</script> 
