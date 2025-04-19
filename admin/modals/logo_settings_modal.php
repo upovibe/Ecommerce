@@ -137,6 +137,7 @@ document.getElementById('logoSettingsForm').addEventListener('submit', async fun
             // Close the modal after a short delay
             setTimeout(() => {
                 document.getElementById('logoSettingsModal').classList.add('hidden');
+                window.location.reload(); // Reload the page to show updated navbar logo
             }, 1500);
         } else {
             toast.error(result.message || 'Failed to update logo.');

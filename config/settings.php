@@ -35,7 +35,7 @@ function getStoreSettings() {
 $defaultSettings = [
     'store_name' => 'E-Commerce Store',
     'store_description' => 'Your one-stop shop for all your needs',
-    'store_logo' => '/uploads/logos/logo_6804070f95393.png',
+    'store_logo' => '/uploads/logos/logo_680417c7db815.png',
     'whatsapp_number' => '2348012345678', // Without the "+" prefix
     'whatsapp_message_template' => "Hello, I want to inquire about:\n{ITEMS}\nTotal: {CURRENCY}{TOTAL}",
     'currency_symbol' => '$',

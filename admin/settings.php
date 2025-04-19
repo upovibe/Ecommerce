@@ -96,6 +96,7 @@ $aboutImage = $storeContent['about_image'] ?? '/assets/images/demo/about-image.j
                             if (result.success) {
                                 toast.success(result.message || 'General settings updated successfully!');
                                 // Maybe update displayed values if needed, or rely on refresh
+                                setTimeout(() => { window.location.reload(); }, 1000); // Reload after 1 second to show toast
                             } else {
                                 toast.error(result.message || 'Failed to update general settings.');
                             }
