@@ -8,7 +8,7 @@ $adminThemeColor = defined('STORE_SETTINGS') && isset(STORE_SETTINGS['theme_colo
 $brandTextColor = defined('STORE_SETTINGS') && isset(STORE_SETTINGS['brand_text_color']) ? STORE_SETTINGS['brand_text_color'] : '#FFFFFF'; // Default text
 ?>
 <nav class="shadow-md" style="background-color: <?= htmlspecialchars($adminThemeColor) ?>;">
-    <div class="container mx-auto px-4">
+    <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center justify-between h-16">
             <!-- Logo/Store Name -->
             <a href="dashboard.php" class="flex items-center font-bold text-lg" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
