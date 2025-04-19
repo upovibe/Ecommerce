@@ -206,7 +206,7 @@ $categories = getAllCategories(); // Fetch categories
 
     <!-- Main container with Alpine data scope -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="productManager()">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div class="flex justify-between items-start md:items-center mb-8 gap-4">
             <div class="flex-grow">
                 <div class="shrink-0 space-y-0.5 w-fit">
                 <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2"><i data-lucide="home" class="h-6 w-6"></i> Dashboard </h1>
@@ -217,7 +217,7 @@ $categories = getAllCategories(); // Fetch categories
             <!-- Button Group -->
             <div class="flex items-center gap-3 flex-shrink-0">
                 <button @click="openAddModal()" type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md hover:shadow-lg">
-                    <i data-lucide="plus" class="h-4 w-4"></i> Add Product
+                    <i data-lucide="plus" class="h-4 w-4"></i> <span class="hidden sm:inline">Add Product</span>
                 </button>
             </div>
         </div>

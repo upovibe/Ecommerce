@@ -28,20 +28,20 @@ $brandTextColor = defined('STORE_SETTINGS') && isset(STORE_SETTINGS['brand_text_
             <div class="flex items-center space-x-4">
                 <!-- View Store Link -->
                 <a href="../index.php" target="_blank" 
-                   class="hidden sm:flex items-center hover:opacity-80 text-sm" 
-                   style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;" 
+                   class="flex items-center hover:opacity-80 text-sm px-2 py-1 rounded hover:bg-white/10 transition-colors duration-150" 
+                   style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.9;" 
                    title="View Store">
-                    <i data-lucide="external-link" class="w-5 h-5 mr-1" style="color: <?= htmlspecialchars($brandTextColor) ?>;"></i>
-                    <span>View Store</span>
+                    <i data-lucide="external-link" class="w-5 h-5" style="color: <?= htmlspecialchars($brandTextColor) ?>;"></i>
+                    <span class="ml-1.5 hidden sm:inline">View Store</span>
                 </a>
 
                 <!-- Logout Link -->
                  <a href="logout.php" 
-                    class="hidden sm:flex items-center hover:opacity-80 text-sm" 
-                    style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;" 
+                    class="flex items-center hover:opacity-80 text-sm px-2 py-1 rounded hover:bg-white/10 transition-colors duration-150" 
+                    style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.9;" 
                     title="Logout">
-                     <i data-lucide="log-out" class="w-5 h-5 mr-1" style="color: <?= htmlspecialchars($brandTextColor) ?>;"></i>
-                     <span>Logout</span>
+                     <i data-lucide="log-out" class="w-5 h-5" style="color: <?= htmlspecialchars($brandTextColor) ?>;"></i>
+                     <span class="ml-1.5 hidden sm:inline">Logout</span>
                  </a>
             </div>
         </div>
