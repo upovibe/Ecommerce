@@ -93,7 +93,8 @@ INSERT INTO store_settings (setting_key, setting_value) VALUES
 ('whatsapp_message_template', 'Hello, I want to inquire about:\n{ITEMS}\nTotal: {CURRENCY}{TOTAL}'),
 ('currency_symbol', '₦'),
 ('footer_text', '© 2023 E-Commerce Store. All rights reserved.'),
-('theme_color', '#3B82F6');
+('theme_color', '#3B82F6'),
+('brand_text_color', '#FFFFFF');
 
 -- Insert default content
 INSERT INTO store_content (content_key, content_value) VALUES
@@ -101,6 +102,7 @@ INSERT INTO store_content (content_key, content_value) VALUES
 ('hero_subtitle', 'Find everything you need, from essentials to luxuries.'),
 ('about_title', 'About Our Store'),
 ('about_content', '<p>We are dedicated to providing high-quality products at affordable prices. Our store features a wide range of items including bags, groceries, and shoes.</p><p>With a focus on customer satisfaction, we ensure that every purchase meets our high standards for quality and durability.</p>'),
+('about_image', '/assets/images/demo/about-image.jpg'),
 ('featured_title', 'Shop by Category'),
 ('featured_subtitle', 'Explore our popular categories and find exactly what you\'re looking for.'),
 ('hero_image', '/assets/images/demo/hero-bg.jpg');

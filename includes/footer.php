@@ -1,24 +1,29 @@
     </div> <!-- Closing flex-grow div from header -->
     
-    <footer class="bg-gray-800 text-white py-8">
+    <?php
+    $footerBgColor = STORE_SETTINGS['theme_color'] ?? '#1F2937'; // Default bg
+    $brandTextColor = STORE_SETTINGS['brand_text_color'] ?? '#FFFFFF'; // Default text
+    $borderColorClass = 'border-white/20'; // Default semi-transparent white border
+    ?>
+    <footer class="py-8" style="background-color: <?= htmlspecialchars($footerBgColor) ?>; color: <?= htmlspecialchars($brandTextColor) ?>;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold mb-4"><?= STORE_SETTINGS['store_name'] ?? 'E-Commerce Store' ?></h3>
-                    <p class="text-gray-300 text-sm">
+                    <h3 class="text-lg font-semibold mb-4" style="color: <?= htmlspecialchars($brandTextColor) ?>;"><?= STORE_SETTINGS['store_name'] ?? 'E-Commerce Store' ?></h3>
+                    <p class="text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;">
                         <?= STORE_SETTINGS['store_description'] ?? 'Your one-stop shop for all your needs' ?>
                     </p>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul class="space-y-2 text-gray-300 text-sm">
-                        <li><a href="/" class="hover:text-white">Home</a></li>
-                        <li><a href="/pages/products.php" class="hover:text-white">Products</a></li>
+                    <h3 class="text-lg font-semibold mb-4" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Quick Links</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/" class="hover:opacity-80" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Home</a></li>
+                        <li><a href="/pages/products.php" class="hover:opacity-80" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Products</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
-                    <p class="text-gray-300 text-sm mb-2">
+                    <h3 class="text-lg font-semibold mb-4" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Contact Us</h3>
+                    <p class="text-sm mb-2" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;">
                         Have questions? Reach out to us on WhatsApp.
                     </p>
                     <a href="https://wa.me/<?= STORE_SETTINGS['whatsapp_number'] ?? '2348012345678' ?>" 
@@ -31,7 +36,7 @@
                     </a>
                 </div>
             </div>
-            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-400">
+            <div class="mt-8 pt-8 border-t <?= $borderColorClass ?> text-center text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.7;">
                 <?= STORE_SETTINGS['footer_text'] ?? '© ' . date('Y') . ' E-Commerce Store. All rights reserved.' ?>
             </div>
         </div>

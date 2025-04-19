@@ -86,6 +86,43 @@
                 </div>
             </fieldset>
 
+            <!-- Brand Colors Fieldset -->
+            <fieldset class="space-y-4 border-t pt-4">
+                <legend class="text-md font-medium text-gray-600 mb-2">Brand Colors</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Brand Color -->
+                    <div>
+                        <label for="theme_color" class="block text-sm font-medium text-gray-700 mb-1">Brand Background Color</label>
+                        <div class="flex items-center gap-3">
+                            <input type="color" name="theme_color" id="theme_color" 
+                                   class="h-[42px] w-[60px] rounded-lg border border-gray-300 p-1 cursor-pointer bg-white"
+                                   value="<?= htmlspecialchars($themeColor) ?>">
+                            <div class="flex-1">
+                                <input type="text" id="color_text" readonly
+                                       class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 uppercase font-mono text-sm bg-white"
+                                       value="<?= htmlspecialchars($themeColor) ?>">
+                            </div>
+                        </div>
+                        <p class="mt-1.5 text-xs text-gray-500">Background for Navbar, Footer, Admin Navbar.</p>
+                    </div>
+                    <!-- Brand Text Color -->
+                    <div>
+                        <label for="brand_text_color" class="block text-sm font-medium text-gray-700 mb-1">Brand Text Color</label>
+                        <div class="flex items-center gap-3">
+                            <input type="color" name="brand_text_color" id="brand_text_color" 
+                                   class="h-[42px] w-[60px] rounded-lg border border-gray-300 p-1 cursor-pointer bg-white"
+                                   value="<?= htmlspecialchars($brandTextColor) ?>">
+                            <div class="flex-1">
+                                <input type="text" id="brand_text_color_text" readonly
+                                       class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 uppercase font-mono text-sm bg-white"
+                                       value="<?= htmlspecialchars($brandTextColor) ?>">
+                            </div>
+                        </div>
+                        <p class="mt-1.5 text-xs text-gray-500">Text color for Navbar, Footer, Admin Navbar.</p>
+                    </div>
+                </div>
+            </fieldset>
+
             <div class="pt-6 border-t border-gray-100 flex justify-end">
                 <button type="submit" id="settingsSubmitButton" :disabled="isSavingGeneral" 
                         class="flex items-center px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
@@ -99,4 +136,30 @@
             </div>
         </form>
     </div>
-</div> 
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Link color picker changes to text input for Brand Color
+    const themeColorPicker = document.getElementById('theme_color');
+    const themeColorText = document.getElementById('color_text');
+    if (themeColorPicker && themeColorText) {
+        themeColorPicker.addEventListener('input', function() {
+            themeColorText.value = this.value.toUpperCase();
+        });
+        // Initial sync in case loaded value differs (though PHP should handle this)
+        themeColorText.value = themeColorPicker.value.toUpperCase();
+    }
+
+    // Link color picker changes to text input for Brand Text Color
+    const brandTextColorPicker = document.getElementById('brand_text_color');
+    const brandTextColorText = document.getElementById('brand_text_color_text');
+    if (brandTextColorPicker && brandTextColorText) {
+        brandTextColorPicker.addEventListener('input', function() {
+            brandTextColorText.value = this.value.toUpperCase();
+        });
+        // Initial sync
+        brandTextColorText.value = brandTextColorPicker.value.toUpperCase();
+    }
+});
+</script> 

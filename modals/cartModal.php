@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../utils/cart.php';
 require_once __DIR__ . '/../utils/whatsapp.php';
 
-$cartItems = getCartContents();
+$cartItems = getCartItems();
 $cartTotal = getCartTotal();
 $currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '₦';
 ?>

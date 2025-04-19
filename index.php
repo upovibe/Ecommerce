@@ -94,7 +94,8 @@ function getStoreContent($key) {
             'about_content' => '<p>We are dedicated to providing high-quality products at affordable prices. Our store features a wide range of items including bags, groceries, and shoes.</p><p>With a focus on customer satisfaction, we ensure that every purchase meets our high standards for quality and durability.</p>',
             'featured_title' => 'Shop by Category',
             'featured_subtitle' => 'Explore our popular categories and find exactly what you\'re looking for.',
-            'hero_image' => '/assets/images/demo/hero-bg.jpg'
+            'hero_image' => '/assets/images/demo/hero-bg.jpg',
+            'about_image' => '/assets/images/demo/about-image.jpg'
         ];
         
         return $demoContent[$key] ?? '';
@@ -131,20 +132,26 @@ if (!$db_connected):
 <?php endif; ?>
 
 <!-- Hero Section -->
-<section class="relative bg-gray-900">
-    <!-- Background Image -->
-    <div class="absolute inset-0 overflow-hidden">
-        <img src="<?= htmlspecialchars(getStoreContent('hero_image')) ?>" alt="Store hero image" class="w-full h-full object-cover opacity-50">
-    </div>
-    
-    <!-- Content -->
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-        <div class="md:w-2/3">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4"><?= htmlspecialchars(getStoreContent('hero_title')) ?></h1>
-            <p class="text-xl text-gray-200 mb-8"><?= htmlspecialchars(getStoreContent('hero_subtitle')) ?></p>
-            <a href="/pages/products.php" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
-                Shop Now
-            </a>
+<section class="bg-white py-16 md:py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:flex lg:items-center lg:gap-12">
+            <!-- Text Content (Left) -->
+            <div class="lg:w-1/2 text-center lg:text-left mb-10 lg:mb-0">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 leading-tight">
+                    <?= htmlspecialchars(getStoreContent('hero_title')) ?>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-600 mb-8">
+                    <?= htmlspecialchars(getStoreContent('hero_subtitle')) ?>
+                </p>
+                <a href="/pages/products.php" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-indigo-700 transition duration-150 ease-in-out md:py-4 md:text-lg md:px-10 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    Shop Now
+                </a>
+            </div>
+            
+            <!-- Image (Right) -->
+            <div class="lg:w-1/2">
+                <img src="<?= htmlspecialchars(getStoreContent('hero_image')) ?>" alt="Hero Image" class="w-full h-auto rounded-xl shadow-2xl object-cover max-h-[500px]">
+            </div>
         </div>
     </div>
 </section>
@@ -157,14 +164,17 @@ if (!$db_connected):
             <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4"><?= htmlspecialchars(getStoreContent('featured_subtitle')) ?></p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             <?php foreach ($featuredCategories as $category): ?>
-                <a href="/pages/products.php?category=<?= $category['id'] ?>" class="group">
-                    <div class="relative h-80 rounded-lg overflow-hidden bg-white shadow-md">
-                        <img src="<?= htmlspecialchars($category['image'] ?? '/assets/images/placeholder.png') ?>" alt="<?= htmlspecialchars($category['name']) ?>" class="w-full h-full object-center object-cover group-hover:opacity-75 transition-opacity">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black opacity-60"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-6">
-                            <h3 class="text-xl font-bold text-white"><?= htmlspecialchars($category['name']) ?></h3>
+                <a href="/pages/products.php?category=<?= $category['id'] ?>" 
+                   class="group block rounded-lg overflow-hidden shadow-lg hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 ease-in-out transform hover:-translate-y-1">
+                    <div class="relative h-64 w-full">
+                        <img src="<?= htmlspecialchars($category['image'] ?? '/assets/images/placeholder.png') ?>" 
+                             alt="<?= htmlspecialchars($category['name']) ?>" 
+                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-70 group-hover:opacity-80 transition-opacity duration-300"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <h3 class="text-lg font-semibold text-white mb-1"><?= htmlspecialchars($category['name']) ?></h3>
                             <p class="text-sm text-gray-200"><?= $category['product_count'] ?> Products</p>
                         </div>
                     </div>
@@ -198,8 +208,8 @@ if (!$db_connected):
                     </a>
                 </div>
             </div>
-            <div class="lg:w-1/2">
-                <img src="/assets/images/demo/about-image.jpg" alt="About our store" class="rounded-lg shadow-xl">
+            <div class="lg:w-1/2 mt-8 lg:mt-0">
+                <img src="<?= htmlspecialchars(getStoreContent('about_image')) ?>" alt="About our store" class="rounded-xl shadow-xl w-full h-auto object-cover max-h-[450px]">
             </div>
         </div>
     </div>

@@ -24,14 +24,16 @@
                     <div class="h-1 w-24 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full"></div>
                 </div>
 
-                <form action="logo_settings.php" method="POST" enctype="multipart/form-data" class="space-y-6" id="logoSettingsForm">
+                <form action="utils/update_logo.php" method="POST" enctype="multipart/form-data" class="space-y-6" id="logoSettingsForm">
                     <div class="flex flex-col items-center bg-gray-50 rounded-xl p-6 border-2 border-dashed border-gray-200">
                         <div class="w-full h-40 flex items-center justify-center mb-4">
                             <?php 
                             $logoVersion = isset($_SESSION['logo_version']) ? "?v=" . $_SESSION['logo_version'] : '';
-                            if ($logoPath && file_exists(__DIR__ . '/../..' . $logoPath)): 
+                            // Use correct relative path for admin area
+                            $logoDisplayPath = ($logoPath && file_exists(__DIR__ . '/../../' . ltrim($logoPath, '/'))) ? '../' . ltrim($logoPath, '/') : null; 
+                            if ($logoDisplayPath): 
                             ?>
-                                <img src="<?= htmlspecialchars($logoPath . $logoVersion) ?>" alt="Store Logo" class="max-h-40 max-w-full object-contain" id="logoPreview">
+                                <img src="<?= htmlspecialchars($logoDisplayPath . $logoVersion) ?>" alt="Store Logo" class="max-h-40 max-w-full object-contain" id="logoPreview">
                             <?php else: ?>
                                 <div class="text-gray-300 flex flex-col items-center" id="logoPreview">
                                     <i data-lucide="image" class="w-16 h-16 mb-2"></i>
@@ -96,7 +98,11 @@ function previewImage(input) {
 }
 
 // Add form submission handling
-document.getElementById('logoSettingsForm').addEventListener('submit', function(e) {
+document.getElementById('logoSettingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); // Prevent default form submission
+
+    const form = e.target;
+    const formData = new FormData(form);
     const button = document.getElementById('logoSubmitButton');
     const spinner = document.getElementById('logoLoadingSpinner');
     const saveIcon = document.getElementById('logoSaveIcon');
@@ -107,6 +113,44 @@ document.getElementById('logoSettingsForm').addEventListener('submit', function(
     spinner.classList.remove('hidden');
     saveIcon.classList.add('hidden');
     buttonText.textContent = 'Saving...';
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            toast.success(result.message || 'Logo updated successfully!');
+            // Update the preview image in the Brand Identity section if it exists
+            const brandIdentityPreview = document.querySelector('#brandIdentityLogoPreview'); // Need to add this ID
+            if (brandIdentityPreview) {
+                brandIdentityPreview.src = result.newLogoPath + '?v=' + new Date().getTime(); // Add cache buster
+            }
+            // Update the preview in the modal as well
+            const modalPreview = document.getElementById('logoPreview');
+             if (modalPreview.tagName === 'IMG') {
+                modalPreview.src = result.newLogoPath + '?v=' + new Date().getTime();
+            } // Handle case where it was placeholder
+            
+            // Close the modal after a short delay
+            setTimeout(() => {
+                document.getElementById('logoSettingsModal').classList.add('hidden');
+            }, 1500);
+        } else {
+            toast.error(result.message || 'Failed to update logo.');
+        }
+    } catch (error) {
+        console.error('Error uploading logo:', error);
+        toast.error('An unexpected error occurred during upload.');
+    } finally {
+        // Re-enable button and reset state
+        button.disabled = false;
+        spinner.classList.add('hidden');
+        saveIcon.classList.remove('hidden');
+        buttonText.textContent = 'Save Changes';
+    }
 });
 
 // Initialize Lucide icons

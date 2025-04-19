@@ -120,6 +120,83 @@ if ($hero_image_path !== null) {
     }
 }
 
+// --- Handle About Image Upload ---
+$about_image_path = null;
+if (isset($_FILES['about_image']) && $_FILES['about_image']['error'] == UPLOAD_ERR_OK) {
+    // Re-use upload dir and validation settings
+    $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/images/';
+    $allowed_types = [
+        'image/jpeg' => '.jpg',
+        'image/png' => '.png',
+        'image/webp' => '.webp',
+        'image/gif' => '.gif'
+    ];
+    $max_size = 2 * 1024 * 1024; // 2MB
+
+    $file_tmp_name = $_FILES['about_image']['tmp_name'];
+    $file_size = $_FILES['about_image']['size'];
+    $file_type = mime_content_type($file_tmp_name);
+
+    if (!isset($allowed_types[$file_type])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid about image file type. Allowed types: JPG, PNG, WEBP, GIF.']);
+        exit;
+    }
+
+    if ($file_size > $max_size) {
+        echo json_encode(['success' => false, 'message' => 'About image file size exceeds the 2MB limit.']);
+        exit;
+    }
+
+    // Ensure upload directory exists (might be created by hero image upload)
+    if (!file_exists($upload_dir)) {
+        if (!mkdir($upload_dir, 0777, true)) {
+             echo json_encode(['success' => false, 'message' => 'Failed to create upload directory.']);
+             exit;
+        }
+    }
+
+    // Generate unique filename for about image
+    $file_ext = $allowed_types[$file_type];
+    $unique_name = 'about_' . uniqid() . $file_ext;
+    $destination = $upload_dir . $unique_name;
+
+    if (!move_uploaded_file($file_tmp_name, $destination)) {
+        echo json_encode(['success' => false, 'message' => 'Failed to upload about image.']);
+        exit;
+    }
+    
+    $about_image_path = '/uploads/images/' . $unique_name;
+
+    // Optional: Delete old about image
+    $old_image_sql = "SELECT content_value FROM store_content WHERE content_key = 'about_image'";
+    $old_image_result = $conn->query($old_image_sql);
+    if ($old_image_result && $old_image_result->num_rows > 0) {
+        $old_image_row = $old_image_result->fetch_assoc();
+        $old_image_db_path = $old_image_row['content_value'];
+        if ($old_image_db_path && strpos($old_image_db_path, '/uploads/') === 0) {
+            $old_image_server_path = $_SERVER['DOCUMENT_ROOT'] . $old_image_db_path;
+            if (file_exists($old_image_server_path)) {
+                @unlink($old_image_server_path);
+            }
+        }
+    }
+}
+
+// Add about image path to content data if it was uploaded
+if ($about_image_path !== null) {
+    $content_data['about_image'] = $about_image_path;
+} else {
+    // Ensure about_image key exists if no new file uploaded
+    if (!isset($content_data['about_image'])) {
+        $current_image_sql = "SELECT content_value FROM store_content WHERE content_key = 'about_image'";
+        $current_image_result = $conn->query($current_image_sql);
+        if ($current_image_result && $current_image_result->num_rows > 0) {
+            $current_image_row = $current_image_result->fetch_assoc();
+            $content_data['about_image'] = $current_image_row['content_value'];
+        } // else: don't insert if it wasn't there and wasn't uploaded
+    }
+}
+
 // --- Update Database --- 
 $conn->begin_transaction();
 try {

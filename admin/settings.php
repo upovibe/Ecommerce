@@ -23,6 +23,7 @@ $themeColor = STORE_SETTINGS['theme_color'] ?? '#3B82F6';
 $logoPath = STORE_SETTINGS['store_logo'] ?? '';
 $whatsappTemplate = STORE_SETTINGS['whatsapp_message_template'] ?? '';
 $footerText = STORE_SETTINGS['footer_text'] ?? '© ' . date('Y') . ' ' . ($storeName ?: 'E-Commerce Store') . '. All rights reserved.';
+$brandTextColor = STORE_SETTINGS['brand_text_color'] ?? '#FFFFFF';
 
 // Get current content settings from database
 $storeContent = [];
@@ -43,6 +44,7 @@ $aboutContent = $storeContent['about_content'] ?? '';
 $featuredTitle = $storeContent['featured_title'] ?? '';
 $featuredSubtitle = $storeContent['featured_subtitle'] ?? '';
 $heroImage = $storeContent['hero_image'] ?? '/assets/images/demo/hero-bg.jpg'; // Fetch hero image with fallback
+$aboutImage = $storeContent['about_image'] ?? '/assets/images/demo/about-image.jpg'; // Fetch about image with fallback
 
 ?>
 <!DOCTYPE html>
@@ -83,12 +85,7 @@ $heroImage = $storeContent['hero_image'] ?? '/assets/images/demo/hero-bg.jpg'; /
 
                     async saveGeneralSettings(event) {
                         this.isSavingGeneral = true;
-                        const formData = new FormData(event.target);
-                        // Append brand color since it's outside the form but part of general settings
-                        const themeColorInput = document.getElementById('theme_color');
-                        if (themeColorInput) {
-                            formData.append('theme_color', themeColorInput.value);
-                        }
+                        const formData = new FormData(event.target); 
                         
                         try {
                             const response = await fetch('utils/update_settings.php', {

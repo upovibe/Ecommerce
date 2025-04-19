@@ -58,7 +58,7 @@ switch ($action) {
         
         // Update quantity
         $newQuantity = $_SESSION['cart'][$index]['quantity'] + $change;
-        $success = updateCartItemQuantity($index, $newQuantity);
+        $success = updateCartItem($index, $newQuantity);
         
         // Return response
         echo json_encode([
@@ -101,7 +101,7 @@ switch ($action) {
         header('Content-Type: text/html');
         
         // Get cart data
-        $cartItems = getCartContents();
+        $cartItems = getCartItems();
         $cartTotal = getCartTotal();
         $currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '₦';
         

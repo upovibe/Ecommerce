@@ -35,12 +35,13 @@ function getStoreSettings() {
 $defaultSettings = [
     'store_name' => 'E-Commerce Store',
     'store_description' => 'Your one-stop shop for all your needs',
-    'store_logo' => 'assets/images/logo.png',
+    'store_logo' => '/uploads/logos/logo_6804070f95393.png',
     'whatsapp_number' => '2348012345678', // Without the "+" prefix
     'whatsapp_message_template' => "Hello, I want to inquire about:\n{ITEMS}\nTotal: {CURRENCY}{TOTAL}",
     'currency_symbol' => '$',
     'footer_text' => '© 2023 E-Commerce Store. All rights reserved.',
-    'theme_color' => '#3b82f6', // Tailwind blue-500
+    'theme_color' => '#1a6aea', // Tailwind blue-500
+    'brand_text_color' => '#FFFFFF'
 ];
 
 // Ensure database is connected before continuing in admin areas
@@ -60,4 +61,6 @@ $storeSettings = array_merge($defaultSettings, getStoreSettings());
 define('STORE_SETTINGS', $storeSettings);
 
 // Also define the database connection status for backward compatibility
-define('DB_CONNECTED', $db_connected); 
+define('DB_CONNECTED', $db_connected);
+
+?> 
