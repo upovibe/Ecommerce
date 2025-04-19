@@ -218,7 +218,7 @@ if (isset($_SESSION['flash_message'])) {
                                     <tr>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
-                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">In Use</th>
                                         <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Featured</th>
                                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
@@ -239,7 +239,11 @@ if (isset($_SESSION['flash_message'])) {
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="category.name"></td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="category.slug || 'N/A'"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center" x-text="category.product_count"></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                                      :class="category.product_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
+                                                      x-text="category.product_count > 0 ? 'Yes' : 'No'"></span>
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                                                       :class="category.featured ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
@@ -353,7 +357,7 @@ if (isset($_SESSION['flash_message'])) {
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent</th>
-                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">In Use</th>
                                         <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Featured</th>
                                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
@@ -375,7 +379,11 @@ if (isset($_SESSION['flash_message'])) {
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="category.name"></td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="category.slug || 'N/A'"></td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getParentName(category.parent_id)"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center" x-text="category.product_count"></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                                      :class="category.product_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
+                                                      x-text="category.product_count > 0 ? 'Yes' : 'No'"></span>
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                                                       :class="category.featured ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"

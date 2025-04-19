@@ -361,13 +361,14 @@ document.addEventListener('alpine:init', () => {
                 console.log('Resetting parent filters...');
                 this.parentSearchTerm = '';
                 this.parentFeaturedFilter = 'all';
+                // Fetch fresh data after resetting filters
+                this.fetchCategories(); 
                 if (typeof toast !== 'undefined' && typeof toast.success === 'function') {
                     // Using success level as info might not exist
-                    toast.success('Parent category filters reset.'); 
+                    toast.success('Parent category filters reset and data refreshed.'); 
                 } else {
                     console.warn('Toast function not available for filter reset message.');
                 }
-                // Icons should refresh automatically due to $watch
             },
             
             resetSubFilters() {
@@ -375,13 +376,14 @@ document.addEventListener('alpine:init', () => {
                 this.subSearchTerm = '';
                 this.subParentFilter = 'all';
                 this.subFeaturedFilter = 'all';
+                // Fetch fresh data after resetting filters
+                this.fetchCategories(); 
                  if (typeof toast !== 'undefined' && typeof toast.success === 'function') {
                      // Using success level as info might not exist
-                    toast.success('Subcategory filters reset.'); 
+                    toast.success('Subcategory filters reset and data refreshed.'); 
                 } else {
                     console.warn('Toast function not available for filter reset message.');
                 }
-                // Icons should refresh automatically due to $watch
             }
         }; // End of returned component object
     });
