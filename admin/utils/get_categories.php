@@ -25,7 +25,7 @@ if (!$db_connected || !$conn) {
 
 // Fetch categories
 try {
-    $sql = "SELECT c.id, c.name, c.slug, c.parent_id, c.featured, c.description, COUNT(p.id) as product_count 
+    $sql = "SELECT c.id, c.name, c.slug, c.parent_id, c.featured, c.description, c.image, COUNT(p.id) as product_count 
             FROM categories c 
             LEFT JOIN products p ON c.id = p.category_id 
             GROUP BY c.id 
@@ -40,6 +40,7 @@ try {
             $row['featured'] = (bool)$row['featured'];
             $row['product_count'] = (int)$row['product_count'];
             $row['parent_id'] = $row['parent_id'] ? (int)$row['parent_id'] : null;
+            $row['image'] = $row['image'];
             $categories[] = $row;
         }
         $response['success'] = true;

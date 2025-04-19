@@ -19,7 +19,7 @@ function getAllAdminCategoriesForJS() {
     global $conn, $db_connected;
     $categories = [];
     if ($db_connected && $conn) {
-        $sql = "SELECT c.id, c.name, c.slug, c.parent_id, c.featured, c.description, COUNT(p.id) as product_count 
+        $sql = "SELECT c.id, c.name, c.slug, c.parent_id, c.featured, c.description, c.image, COUNT(p.id) as product_count 
                 FROM categories c 
                 LEFT JOIN products p ON c.id = p.category_id 
                 GROUP BY c.id 
@@ -32,6 +32,7 @@ function getAllAdminCategoriesForJS() {
                 $row['featured'] = (bool)$row['featured'];
                 $row['product_count'] = (int)$row['product_count'];
                 $row['parent_id'] = $row['parent_id'] ? (int)$row['parent_id'] : null;
+                $row['image'] = $row['image']; // Ensure image is included
                 $categories[] = $row;
             }
         } else {
@@ -224,6 +225,7 @@ if (isset($_SESSION['flash_message'])) {
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-100">
                                     <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
                                         <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">In Use</th>
@@ -245,6 +247,16 @@ if (isset($_SESSION['flash_message'])) {
                                     </template>
                                     <template x-for="category in parentCategories" :key="category.id">
                                         <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <template x-if="category.image">
+                                                    <img :src="getImageUrl(category.image)" :alt="category.name" class="h-10 w-10 rounded-md object-cover shadow-sm border border-gray-200">
+                                                </template>
+                                                <template x-if="!category.image">
+                                                    <div class="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center">
+                                                        <i data-lucide="image" class="h-5 w-5 text-gray-400"></i>
+                                                    </div>
+                                                </template>
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="category.name"></td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="category.slug || 'N/A'"></td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
@@ -362,6 +374,7 @@ if (isset($_SESSION['flash_message'])) {
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-100">
                                     <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent</th>
@@ -384,6 +397,16 @@ if (isset($_SESSION['flash_message'])) {
                                     </template>
                                      <template x-for="category in subCategories" :key="category.id">
                                         <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <template x-if="category.image">
+                                                    <img :src="getImageUrl(category.image)" :alt="category.name" class="h-10 w-10 rounded-md object-cover shadow-sm border border-gray-200">
+                                                </template>
+                                                <template x-if="!category.image">
+                                                    <div class="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center">
+                                                        <i data-lucide="image" class="h-5 w-5 text-gray-400"></i>
+                                                    </div>
+                                                </template>
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="category.name"></td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="category.slug || 'N/A'"></td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getParentName(category.parent_id)"></td>
@@ -451,16 +474,54 @@ if (isset($_SESSION['flash_message'])) {
                                 <label for="parent_id" class="block text-sm font-medium text-gray-700 mb-1">Parent Category <span class="text-red-500">*</span></label>
                                 <select name="parent_id" id="parent_id"
                                         x-model="currentCategory.parent_id"
-                                        required 
+                                        :required="(modalMode === 'edit' && currentCategory.parent_id !== null) || modalMode === 'addSub'" 
                                         :disabled="modalMode === 'addParent'" 
                                         class="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed">
                                      <option value="">-- No Parent (Top Level) --</option>
-                                     <template x-for="parent in categories.filter(c => c.parent_id === null && c.id !== currentCategory.id)" :key="parent.id">
+                                     <template x-for="parent in categories.filter(c => c.parent_id === null && String(c.id) !== String(currentCategory.id))" :key="parent.id">
                                          <option :value="parent.id" x-text="parent.name"></option>
                                      </template>
                                 </select>
                                 <p class="text-xs text-gray-500 mt-1" x-show="modalMode === 'edit' && currentCategory.parent_id !== null">Changing parent reclassifies the category.</p>
                             </div>
+
+                            <!-- Category Image (Visible for Parent Add/Edit only) -->
+                             <div x-show="modalMode === 'addParent' || (modalMode === 'edit' && currentCategory.parent_id === null)">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Image (Optional)</label>
+                                <label for="category_image"
+                                    class="relative mt-1 flex justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200 min-h-[150px]">
+
+                                    <!-- Placeholder Content (Icon & Text) -->
+                                    <div x-show="!categoryImageUrl" class="space-y-1 text-center">
+                                        <i data-lucide="image" class="mx-auto h-12 w-12 text-gray-400"></i>
+                                        <div class="flex text-sm text-gray-600">
+                                            <span class="relative bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                                <span>Upload a file</span>
+                                                <input type="file" name="category_image" id="category_image" accept="image/*"
+                                                    @change="handleCategoryImageSelect($event)"
+                                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                            </span>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 2MB</p>
+                                    </div>
+
+                                    <!-- Image Preview -->
+                                    <div x-show="categoryImageUrl" class="relative w-full h-full flex justify-center items-center" x-cloak>
+                                        <img :src="categoryImageUrl" alt="Category Image Preview"
+                                            class="max-h-48 max-w-full rounded-lg object-contain shadow-sm">
+                                        <button type="button" @click.prevent.stop="removeCategoryImage()"
+                                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 z-10">
+                                            <i data-lucide="x" class="w-3 h-3"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Fallback for browsers without JS or if Alpine fails -->
+                                    <input type="file" name="category_image_fallback" id="category_image_input_fallback" accept="image/*"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer sr-only">
+                                </label>
+                            </div>
+                            <!-- End Category Image Upload -->
 
                             <div>
                                 <label for="category_name" class="block text-sm font-medium text-gray-700 mb-1">Category Name <span class="text-red-500">*</span></label>

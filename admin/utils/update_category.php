@@ -8,6 +8,7 @@ require_once '../../config/db.php';
 require_once 'helpers.php';             // Include helpers from same directory
 
 $response = ['success' => false, 'message' => 'An error occurred.'];
+$imageUpdated = false; // Flag to track image changes
 
 // Security Check
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
@@ -58,9 +59,108 @@ if ($id === $parentId) {
 }
 // Prevent making a parent category a child of one of its descendants (complex check, omitted for brevity)
 
-// --- Fetch Current Category Data (No longer need image) ---
+// --- Fetch Current Category Data (Including Image) ---
+$currentImagePath = null;
+try {
+    $stmt_fetch = $conn->prepare("SELECT image, parent_id FROM categories WHERE id = ?");
+    if (!$stmt_fetch) throw new Exception("Failed to prepare fetch statement: " . $conn->error);
+    $stmt_fetch->bind_param('i', $id);
+    $stmt_fetch->execute();
+    $result_fetch = $stmt_fetch->get_result();
+    if ($result_fetch->num_rows === 0) {
+        throw new Exception("Category with ID {$id} not found.");
+    }
+    $currentCategory = $result_fetch->fetch_assoc();
+    $currentImagePath = $currentCategory['image'];
+    $currentParentId = $currentCategory['parent_id']; // Get current parent status
+    $stmt_fetch->close();
+} catch (Exception $e) {
+    $response['message'] = $e->getMessage();
+    error_log("Update Category - Fetch Error: " . $e->getMessage());
+    echo json_encode($response);
+    exit;
+}
 
-// --- Removed Image Update/Removal Logic --- 
+// --- Handle Image Upload/Removal (Only for Parent Categories) ---
+$newImagePath = $currentImagePath; // Start with the current path
+
+// Image operations only apply if it IS a parent or is BEING MADE a parent
+$isParentOrBecomingParent = ($parentId === null);
+
+if ($isParentOrBecomingParent) {
+    // Define project root and upload dir
+    $projectRoot = dirname(__DIR__, 2);
+    $relativeUploadDir = 'assets/images/categories/';
+    $absoluteUploadDir = $projectRoot . '/' . trim($relativeUploadDir, '/');
+
+    // 1. Check for new image upload
+    if (isset($_FILES['category_image']) && $_FILES['category_image']['error'] === UPLOAD_ERR_OK) {
+        $uploadedPath = handleImageUpload($_FILES['category_image'], $relativeUploadDir, 'category');
+        
+        if ($uploadedPath !== null) {
+            // Delete old image if it exists
+            if ($currentImagePath) {
+                $oldImageFullPath = $projectRoot . '/' . $currentImagePath;
+                if (file_exists($oldImageFullPath)) {
+                    @unlink($oldImageFullPath); // Suppress errors if file not found
+                }
+            }
+            $newImagePath = $uploadedPath; // Use the new path
+            $imageUpdated = true;
+        } else {
+            // Upload failed
+            $response['message'] = 'New image upload failed. Please check file type and size.';
+            error_log("Update Category - New image upload failed for ID: {$id}");
+            echo json_encode($response);
+            exit;
+        }
+    } 
+    // 2. Check for image removal flag (only if no new image was uploaded)
+    else if ($removeImageFlag) { 
+        // Delete old image if it exists
+        if ($currentImagePath) {
+            $oldImageFullPath = $projectRoot . '/' . $currentImagePath;
+            if (file_exists($oldImageFullPath)) {
+                if (@unlink($oldImageFullPath)) {
+                     $newImagePath = null; // Set path to null after successful delete
+                     $imageUpdated = true;
+                } else {
+                     error_log("Update Category - Failed to delete image file: {$oldImageFullPath} for ID: {$id}");
+                     // Optionally: report error, but maybe continue update without image change?
+                     // $response['message'] = 'Failed to delete the existing image file. Update aborted.';
+                     // echo json_encode($response);
+                     // exit;
+                } 
+            } else {
+                 // File didn't exist, still consider it removed
+                 $newImagePath = null; 
+                 $imageUpdated = true;
+            }
+        } else {
+            // No current image, nothing to remove
+             $newImagePath = null;
+        }
+    }
+    // 3. Handle upload errors other than NO_FILE
+    else if (isset($_FILES['category_image']) && $_FILES['category_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+         $response['message'] = 'An error occurred during image upload (Error code: ' . $_FILES['category_image']['error'] . '). Update aborted.';
+         error_log("Update Category - Image upload error code: " . $_FILES['category_image']['error'] . " for ID: {$id}");
+         echo json_encode($response);
+         exit;
+    }
+} else {
+    // If category is being made a child, remove its image
+    if ($currentImagePath) {
+         $projectRoot = dirname(__DIR__, 2);
+         $oldImageFullPath = $projectRoot . '/' . $currentImagePath;
+         if (file_exists($oldImageFullPath)) {
+             @unlink($oldImageFullPath); // Suppress errors
+         }
+         $newImagePath = null;
+         $imageUpdated = true; // Mark as updated because image was removed
+    }
+}
+// --- End Image Handling ---
 
 
 // --- Generate Slug (Check uniqueness ignoring current ID) ---
@@ -68,7 +168,7 @@ $slug = generateSlug($name);
 $slug = ensureUniqueSlug($conn, $slug, 'categories', 'slug', $id);
 
 // --- Prepare SQL statement (Remove image) ---
-$sql = "UPDATE categories SET name = ?, slug = ?, description = ?, parent_id = ?, featured = ? WHERE id = ?";
+$sql = "UPDATE categories SET name = ?, slug = ?, description = ?, parent_id = ?, image = ?, featured = ? WHERE id = ?";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -79,8 +179,8 @@ if (!$stmt) {
 }
 
 $featuredInt = $featured ? 1 : 0;
-// Bind parameters (types: sssiii - name, slug, desc, parentId, featured, id)
-$stmt->bind_param('sssiii', $name, $slug, $description, $parentId, $featuredInt, $id);
+// Bind parameters (types: sssisii - name, slug, desc, parentId, image, featured, id)
+$stmt->bind_param('sssisii', $name, $slug, $description, $parentId, $newImagePath, $featuredInt, $id);
 
 // --- Execute statement ---
 $executed = $stmt->execute();
@@ -90,7 +190,7 @@ $stmt->close();
 
 if ($executed) {
     // Check if any row was updated 
-    if ($affected_rows > 0) { // Removed || $imageUpdated check
+    if ($affected_rows > 0 || $imageUpdated) {
         $response['success'] = true;
         $response['message'] = 'Category updated successfully!';
     } else {

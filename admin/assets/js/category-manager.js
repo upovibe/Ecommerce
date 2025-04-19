@@ -17,7 +17,7 @@ document.addEventListener('alpine:init', () => {
                 // slug: '', // Removed - Handled by backend
                 parent_id: null,
                 is_featured: 0, // Use boolean/int here, convert on send
-                // image: null, // REMOVED image property
+                image: null, // Added back - holds existing image path
                 description: '' 
             },
             categories: [], // Main array holding ALL categories
@@ -28,8 +28,11 @@ document.addEventListener('alpine:init', () => {
             subSearchTerm: '',
             subParentFilter: 'all', // 'all' or parent_id
             subFeaturedFilter: 'all', // 'all', 'yes', 'no'
-            // imageUrl: null, // REMOVED image preview URL state
-            // selectedImageFile: null, // REMOVED selected file state
+            
+            // Image upload state
+            categoryImageUrl: null, // URL for preview (blob or existing path)
+            selectedCategoryImageFile: null, // The File object for upload
+            categoryImageRemoved: false, // Flag to signal removal on update
 
             init() {
                 console.log("category-manager.js: categoryManager component init() started"); // DEBUG: Component init
@@ -91,16 +94,17 @@ document.addEventListener('alpine:init', () => {
                 this.currentCategory = { 
                     id: null, name: '', 
                     // slug: '', // Removed
-                    parent_id: null, is_featured: 0, /* image: null, */ description: '' // Removed image
+                    parent_id: null, is_featured: 0, image: null, description: '' // Removed image
                 }; 
                 this.errors = {};
-                // REMOVED Image preview/file reset
-                // this.imageUrl = null; 
-                // this.selectedImageFile = null; 
-                // const fileInput = document.getElementById('category_image');
-                // if (fileInput) {
-                //     fileInput.value = ''; 
-                // }
+                // Reset Image state
+                this.categoryImageUrl = null; 
+                this.selectedCategoryImageFile = null; 
+                this.categoryImageRemoved = false;
+                const fileInput = document.getElementById('category_image');
+                if (fileInput) {
+                    fileInput.value = ''; 
+                }
             },
 
             openAddParentModal() {
@@ -130,13 +134,19 @@ document.addEventListener('alpine:init', () => {
                     // slug: category.slug || '', // Removed
                     parent_id: category.parent_id || null,
                     is_featured: category.featured || 0, // Ensure boolean/int 0/1
-                    // image: category.image || null, // REMOVED
+                    image: category.image || null, // Keep track of the existing image path
                     description: category.description || ''
                 }));
                 
-                // REMOVED Image preview logic
-                // this.imageUrl = null;
-                // this.selectedImageFile = null;
+                // Set initial image preview if an image exists
+                if (this.currentCategory.image) {
+                    this.categoryImageUrl = this.getImageUrl(this.currentCategory.image);
+                } else {
+                    this.categoryImageUrl = null;
+                }
+                this.selectedCategoryImageFile = null; // Clear any previously selected file
+                this.categoryImageRemoved = false; // Reset removal flag
+                
                 this.isModalOpen = true;
             },
 
@@ -146,10 +156,46 @@ document.addEventListener('alpine:init', () => {
                 // setTimeout(() => { this.modalMode = 'edit'; }, 300);
             },
 
-            // --- REMOVED Image Handling Functions ---
-            // handleImagePreview(event) { ... }
-            // removeImagePreview() { ... }
-            // --- End REMOVED Image Handling ---
+            // --- Image Handling Functions ---
+            handleCategoryImageSelect(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // Basic validation (same as product upload)
+                    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                        toast.error('Image size exceeds 2MB limit.');
+                        event.target.value = null; // Clear the input
+                        return;
+                    }
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    if (!allowedTypes.includes(file.type)) {
+                        toast.error('Invalid image file type (PNG, JPG, GIF, WEBP allowed).');
+                        event.target.value = null; // Clear the input
+                        return;
+                    }
+                    
+                    this.selectedCategoryImageFile = file;
+                    this.categoryImageUrl = URL.createObjectURL(file); // Create blob URL for preview
+                    this.categoryImageRemoved = false; // Selecting a file cancels removal
+                } else {
+                    // If the file selection is cancelled, reset
+                    this.selectedCategoryImageFile = null;
+                    // Keep existing image preview if editing, otherwise clear
+                    if (this.modalMode !== 'edit' || !this.currentCategory.image) {
+                         this.categoryImageUrl = null;
+                    }
+                }
+            },
+
+            removeCategoryImage() {
+                this.selectedCategoryImageFile = null; // Clear selected file
+                this.categoryImageUrl = null; // Clear preview URL
+                this.categoryImageRemoved = true; // Flag that the image should be removed (if editing)
+                // Reset the file input visually
+                const fileInput = document.getElementById('category_image');
+                if (fileInput) {
+                    fileInput.value = ''; 
+                }
+            },
 
             // --- Removed Slug Generation ---
             
@@ -190,9 +236,16 @@ document.addEventListener('alpine:init', () => {
                     formData.append(key, value);
                 }
                 
-                // --- REMOVED Image Handling for Form Data ---
-                // No need to append category_image or remove_image flag
-                // --- End REMOVED Image Handling for Form Data ---
+                // --- Handle Image Upload --- 
+                if (this.selectedCategoryImageFile) {
+                    formData.append('category_image', this.selectedCategoryImageFile, this.selectedCategoryImageFile.name);
+                } else if (this.modalMode === 'edit' && this.categoryImageRemoved) {
+                    // Send a flag only if editing and image was explicitly removed
+                    formData.append('remove_image', '1');
+                }
+                // If neither selectedCategoryImageFile nor categoryImageRemoved is set,
+                // the backend should not touch the existing image during an update.
+                // --- End Image Handling ---
 
                 try {
                     const response = await fetch(url, {
@@ -384,6 +437,17 @@ document.addEventListener('alpine:init', () => {
                 } else {
                     console.warn('Toast function not available for filter reset message.');
                 }
+            },
+
+            // Helper to construct full image URL
+            getImageUrl(imagePath) {
+                if (!imagePath) {
+                    // Return a placeholder or handle as needed
+                    return ''; // Or return placeholder path: '../assets/images/placeholder.png'
+                }
+                // Prepend '../' because the path is stored relative to the project root,
+                // but this script runs on a page inside the 'admin' directory.
+                return `../${imagePath}`; 
             }
         }; // End of returned component object
     });

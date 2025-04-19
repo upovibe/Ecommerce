@@ -16,6 +16,7 @@ CREATE TABLE categories (
     slug VARCHAR(150) UNIQUE,
     description TEXT,
     parent_id INT NULL,
+    image VARCHAR(255) NULL,
     featured BOOLEAN DEFAULT 0,
     display_order INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

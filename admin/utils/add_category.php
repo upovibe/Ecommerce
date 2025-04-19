@@ -44,14 +44,32 @@ if (empty($name)) {
     exit;
 }
 
-// Removed Image Upload Handling
+// Handle Image Upload (Only for Parent Categories - parentId is null)
+$imagePath = null;
+if ($parentId === null && isset($_FILES['category_image']) && $_FILES['category_image']['error'] === UPLOAD_ERR_OK) {
+    $relativeUploadDir = 'assets/images/categories/'; // Relative to project root
+    $imagePath = handleImageUpload($_FILES['category_image'], $relativeUploadDir, 'category');
+    
+    if ($imagePath === null) {
+        $response['message'] = 'Image upload failed. Please check file type (jpg, png, gif, webp) and size (max 2MB).';
+        error_log("Category image upload failed for file: " . ($_FILES['category_image']['name'] ?? 'N/A'));
+        echo json_encode($response);
+        exit;
+    }
+} else if ($parentId === null && isset($_FILES['category_image']) && $_FILES['category_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+    // Handle other upload errors if a file was submitted but failed
+    $response['message'] = 'An error occurred during image upload (Error code: ' . $_FILES['category_image']['error'] . ').';
+    error_log("Category image upload error code: " . $_FILES['category_image']['error'] . " for file: " . ($_FILES['category_image']['name'] ?? 'N/A'));
+    echo json_encode($response);
+    exit;
+}
 
 // Generate slug
 $slug = generateSlug($name);
 $slug = ensureUniqueSlug($conn, $slug, 'categories');
 
 // Prepare SQL statement (remove image column)
-$sql = "INSERT INTO categories (name, slug, description, parent_id, featured) VALUES (?, ?, ?, ?, ?)";
+$sql = "INSERT INTO categories (name, slug, description, parent_id, image, featured) VALUES (?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -67,7 +85,7 @@ if (!$stmt) {
 // image is removed
 $featuredInt = $featured ? 1 : 0;
 // Change bind_param types back to 'sssii'
-$stmt->bind_param('sssii', $name, $slug, $description, $parentId, $featuredInt);
+$stmt->bind_param('sssisi', $name, $slug, $description, $parentId, $imagePath, $featuredInt);
 
 // Execute statement
 if ($stmt->execute()) {
