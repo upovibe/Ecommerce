@@ -63,7 +63,7 @@ function formatCurrency(amount, currencySymbol = '₦') {
 function handleAjaxError(error) {
     console.error('AJAX Error:', error);
     alert('An error occurred. Please try again later.');
-}
+} 
 
 // --- Homepage Category/Subcategory Logic ---
 
@@ -140,4 +140,4 @@ function showParentCategory(event, buttonElement) {
     
     if (subcategoryContent) subcategoryContent.style.display = 'none';
     if (parentContent) parentContent.style.display = 'block';
-} 
+}

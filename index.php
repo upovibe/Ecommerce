@@ -32,34 +32,31 @@ function getFeaturedCategories() {
         }
     }
     
-    // If no categories found in database, use demo categories
+    // If no categories found in database, try loading from demo JSON file
     if (empty($categories)) {
-        $categories = [
-            [
-                'id' => 1,
-                'name' => 'Bags',
-                'image' => '/assets/images/demo/bags-category.jpg',
-                'subcategory_count' => 3
-            ],
-            [
-                'id' => 2,
-                'name' => 'Groceries',
-                'image' => '/assets/images/demo/groceries-category.jpg',
-                'subcategory_count' => 3
-            ],
-            [
-                'id' => 3,
-                'name' => 'Shoes',
-                'image' => '/assets/images/demo/shoes-category.jpg',
-                'subcategory_count' => 3
-            ]
-        ];
+        $jsonFilePath = __DIR__ . '/config/demo_data/demo_data.json';
+        if (file_exists($jsonFilePath)) {
+            $jsonContent = file_get_contents($jsonFilePath);
+            $decodedData = json_decode($jsonContent, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $categories = $decodedData;
+            } else {
+                // Handle JSON decode error, perhaps log it or use a default empty array
+                error_log('Error decoding demo categories JSON: ' . json_last_error_msg());
+                $categories = []; // Fallback to empty array
+            }
+        } else {
+             // Fallback: Keep the original hardcoded array if JSON file doesn't exist (optional)
+             // Or set to empty array if JSON is the only source for demo data
+             error_log('Demo data JSON file not found: ' . $jsonFilePath);
+             $categories = []; // Fallback to empty array
+        }
     }
     
-    // Ensure image key exists even if fetched from DB (set to placeholder)
+    // Ensure image key exists even if fetched from DB or JSON (set to placeholder)
     foreach ($categories as &$category) {
         if (empty($category['image'])) {
-            $category['image'] = '/assets/images/placeholder.png';
+            $category['image'] = '/assets/images/demo/bags-category.png';
         }
     }
     unset($category);
@@ -96,8 +93,8 @@ function getStoreContent($key) {
             'about_content' => '<p>We are dedicated to providing high-quality products at affordable prices. Our store features a wide range of items including bags, groceries, and shoes.</p><p>With a focus on customer satisfaction, we ensure that every purchase meets our high standards for quality and durability.</p>',
             'featured_title' => 'Shop by Category',
             'featured_subtitle' => 'Explore our popular categories and find exactly what you\'re looking for.',
-            'hero_image' => '/assets/images/demo/hero-bg.jpg',
-            'about_image' => '/assets/images/demo/about-image.jpg'
+            'hero_image' => '/assets/images/demo/hero-bg.png',
+            'about_image' => '/assets/images/demo/about-image.png'
         ];
         
         return $demoContent[$key] ?? '';
@@ -119,25 +116,9 @@ include_once 'includes/header.php';
 <!-- Link to Custom CSS -->
 <link rel="stylesheet" href="assets/css/style.css">
 <?php
-// Include navbar
-include_once 'includes/navbar.php';
-
-// Show database connection notice if needed
-if (!$db_connected):
+// Include the database connection notice component
+include __DIR__ . '/includes/components/db_notice.php'; 
 ?>
-<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4" data-aos="fade-down">
-    <div class="flex">
-        <div class="flex-shrink-0">
-            <i data-lucide="alert-triangle" class="h-5 w-5 text-yellow-400"></i>
-        </div>
-        <div class="ml-3">
-            <p class="text-sm text-yellow-700">
-                <strong>Note:</strong> The site is running in demo mode because the database connection failed. Demo products and content are being displayed. To connect to a database, please check your configuration in <code>config/db.php</code>.
-            </p>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
 
 <!-- Hero Section -->
 <section class="bg-white py-16 md:py-24 overflow-hidden">
@@ -152,15 +133,18 @@ if (!$db_connected):
                     <?= htmlspecialchars(getStoreContent('hero_subtitle')) ?>
                 </p>
                 <a href="/pages/products.php" 
-                   class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-indigo-700 transition duration-150 ease-in-out md:py-4 md:text-lg md:px-10 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" 
+                   class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md transition duration-150 ease-in-out md:py-4 md:text-lg md:px-10 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" 
+                   style="background-color: <?= htmlspecialchars(STORE_SETTINGS['theme_color']) ?>; color: <?= htmlspecialchars(STORE_SETTINGS['brand_text_color']) ?>;"
                    data-aos="fade-up" data-aos-delay="300">
+                    <!-- Shopping Cart SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 mr-2" fill="currentColor" viewBox="0 0 24 24"" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
                     Shop Now
                 </a>
             </div>
             
             <!-- Image (Right) -->
             <div class="lg:w-1/2" data-aos="fade-left">
-                <img src="<?= htmlspecialchars(getStoreContent('hero_image')) ?>" alt="Hero Image" class="w-full h-auto rounded-xl shadow-2xl object-cover max-h-[500px]">
+                <img src="<?= htmlspecialchars(getStoreContent('hero_image')) ?>" alt="Hero Image" class="w-full h-auto rounded-xl object-cover max-h-[500px]">
             </div>
         </div>
     </div>
@@ -202,7 +186,10 @@ if (!$db_connected):
                 <?php endforeach; ?>
             </div>
         <div class="text-center mt-12" data-aos="fade-up">
-            <a href="/pages/products.php" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary ">
+            <a href="/pages/products.php" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm"
+               style="background-color: <?= htmlspecialchars(STORE_SETTINGS['theme_color']) ?>; color: <?= htmlspecialchars(STORE_SETTINGS['brand_text_color']) ?>;">
+                 <!-- Layout Grid SVG -->
+                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5 mr-2" fill="currentColor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
                 View All Products
             </a>
         </div>
@@ -222,7 +209,7 @@ if (!$db_connected):
                 </div>
                 <div class="mt-8">
                     <a href="https://wa.me/<?= STORE_SETTINGS['whatsapp_number'] ?? '2348012345678' ?>" target="_blank" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg class="size-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                         </svg>
                         Contact Us on WhatsApp

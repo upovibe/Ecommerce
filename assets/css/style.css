@@ -96,4 +96,35 @@ body.modal-open {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
-} 
+}
+
+/* Active Link Styling */
+.active-link {
+    font-weight: 600; /* Semi-bold */
+    border-bottom-width: 2px;
+    border-color: currentColor; /* Use the text color for the border */
+}
+
+/* Mobile Menu Dropdown */
+.mobile-menu-container {
+    position: absolute; /* Ensure positioning context for z-index */
+    left: 0;
+    right: 0;
+    z-index: 40; /* Ensure it's above content, but below modals if any */
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    /* Smoother transition */
+    transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+    border-top: 1px solid rgba(255, 255, 255, 0.2); 
+}
+
+.mobile-menu-container.mobile-menu-open {
+    max-height: 500px; /* Adjust as needed */
+    opacity: 1;
+    /* Match transition timing */
+    transition: max-height 0.4s ease-in, opacity 0.3s ease-in;
+}
+
+/* Remove previous slide-in/overlay styles (if any conflicting ones existed) */
+/* (No specific styles to remove based on previous code, but good practice) */ 

@@ -40,6 +40,12 @@ $cartCount = getCartItemCount();
 include_once __DIR__ . '/../includes/header.php';
 ?>
 
+<?php 
+// Include the database connection notice component right after the header
+// This needs $db_connected which should be available from settings.php (included via header/cart.php)
+include __DIR__ . '/../includes/components/db_notice.php'; 
+?>
+
 <div class="container my-5">
     <h1>Your Shopping Cart</h1>
     
