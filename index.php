@@ -181,9 +181,10 @@ if (!$db_connected):
                 <!-- Slides -->
                 <?php foreach ($featuredCategories as $category): ?>
                     <div class="swiper-slide">
-                         <a href="#" data-category-id="<?= $category['id'] ?>" 
+                         <a href="/pages/products.php?category=<?= $category['id'] ?>" 
+                           target="_blank" 
+                           data-category-id="<?= $category['id'] ?>" 
                            data-category-name="<?= htmlspecialchars($category['name']) ?>" 
-                           onclick="fetchSubcategories(event, this)"
                            class="category-card group block rounded-lg overflow-hidden shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 ease-in-out transform hover:-translate-y-1 bg-white">
                             <!-- Existing Card Content -->
                              <div class="category-parent-content relative h-64 w-full">
@@ -254,6 +255,6 @@ include_once 'includes/footer.php';
         once: true // Only animate elements once
     });
 
-    // Subcategory fetching and display logic moved to assets/js/main.js
+    // Subcategory fetching and display logic removed from here
 
 </script> 
