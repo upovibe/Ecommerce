@@ -9,7 +9,16 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold mb-4" style="color: <?= htmlspecialchars($brandTextColor) ?>;"><?= STORE_SETTINGS['store_name'] ?? 'E-Commerce Store' ?></h3>
+                    <!-- Logo and Store Name (Header Style) -->
+                    <a href="/" class="flex items-center space-x-2 mb-4">
+                         <img class="h-8 w-auto" 
+                              src="<?= htmlspecialchars(STORE_SETTINGS['store_logo'] ?? '/assets/images/logo.png') ?>" 
+                              alt="<?= htmlspecialchars(STORE_SETTINGS['store_name'] ?? 'E-Commerce Store') ?> Logo">
+                         <span class="text-lg font-semibold" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
+                            <?= STORE_SETTINGS['store_name'] ?? 'E-Commerce Store' ?>
+                         </span>
+                    </a>
+                    <!-- Store Description -->
                     <p class="text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;">
                         <?= STORE_SETTINGS['store_description'] ?? 'Your one-stop shop for all your needs' ?>
                     </p>
@@ -42,7 +51,8 @@
         </div>
     </footer>
 
-    <!-- Custom JS -->
-    <script src="/assets/js/main.js"></script>
+    <!-- ======= Custom JS Scripts ======= -->
+    <!-- Scripts moved to header.php -->
+
 </body>
 </html> 

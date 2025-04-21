@@ -2,13 +2,72 @@
 require_once __DIR__ . '/../config/settings.php';
 require_once __DIR__ . '/../utils/cart.php';
 
+// Function to get store content (copied from index.php)
+function getStoreContent($key)
+{
+    global $conn, $db_connected;
+
+    $content = '';
+
+    // Try to get content from database
+    if ($db_connected && $conn) {
+        $sql = "SELECT content_value FROM store_content WHERE content_key = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('s', $key);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $content = $row['content_value'];
+        }
+    }
+
+    // Return demo content if not found in database
+    // Note: The demo content array might need adjustment if specific keys are needed only on product page
+    if (empty($content)) {
+        $demoContent = [
+            'hero_title' => 'Welcome to our Online Store',
+            'hero_subtitle' => 'Find everything you need, from essentials to luxuries.',
+            'about_title' => 'About Our Store',
+            'about_content' => '<p>...</p>', // Truncated for brevity
+            'featured_title' => 'Shop by Category',
+            'featured_subtitle' => 'Explore our popular categories...',
+            'hero_image' => '/assets/images/demo/hero-bg.png',
+            'about_image' => '/assets/images/demo/about-image.png',
+            'product_page_banner_image' => '/assets/images/demo/product-banner.png', // Ensure this key exists here
+            'product_banner_title' => 'Benguy Fashion', // Added demo title
+            'product_banner_subtitle' => 'Your go-to destination for high-quality ladies\' bags, heels and apparel. Elevate your style with our exquisite collection.' // Added demo subtitle
+        ];
+
+        return $demoContent[$key] ?? '';
+    }
+
+    return $content;
+}
+
+// Function to load demo data from JSON file
+function loadDemoData() {
+    $jsonPath = __DIR__ . '/../config/demo_data.json';
+    if (file_exists($jsonPath)) {
+        $jsonContent = file_get_contents($jsonPath);
+        $data = json_decode($jsonContent, true); // Decode as associative array
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $data;
+        }
+    }
+    // Return empty structure if file not found or JSON error
+    return ['categories' => [], 'products' => []]; 
+}
+
 // Get categories from database (fallback to demo categories if database not set up)
-function getCategories() {
+function getCategories()
+{
     global $conn, $db_connected;
     
     $categories = [];
     
-    $sql = "SELECT id, name, parent_id FROM categories WHERE parent_id IS NULL ORDER BY name";
+    $sql = "SELECT id, name, parent_id, image FROM categories WHERE parent_id IS NULL ORDER BY name";
     
     // Only query database if connection is available
     if ($db_connected && $conn) {
@@ -19,6 +78,7 @@ function getCategories() {
                 $category = [
                     'id' => $row['id'],
                     'name' => $row['name'],
+                    'image' => $row['image'],
                     'subcategories' => []
                 ];
                 
@@ -43,44 +103,25 @@ function getCategories() {
         }
     }
     
-    // If no categories found in database or connection failed, use demo categories
+    // If no categories found in database or connection failed, use demo categories from JSON
     if (empty($categories)) {
-        $categories = [
-            [
-                'id' => 1,
-                'name' => 'Bags',
-                'subcategories' => [
-                    ['id' => 101, 'name' => 'School Bags'],
-                    ['id' => 102, 'name' => 'Travel Bags'],
-                    ['id' => 103, 'name' => "Girl's Bags"]
-                ]
-            ],
-            [
-                'id' => 2,
-                'name' => 'Groceries',
-                'subcategories' => [
-                    ['id' => 201, 'name' => 'Fresh Produce'],
-                    ['id' => 202, 'name' => 'Canned Goods'],
-                    ['id' => 203, 'name' => 'Dairy']
-                ]
-            ],
-            [
-                'id' => 3,
-                'name' => 'Shoes',
-                'subcategories' => [
-                    ['id' => 301, 'name' => 'Sneakers'],
-                    ['id' => 302, 'name' => 'Formal Shoes'],
-                    ['id' => 303, 'name' => "Ladies' Heels"]
-                ]
-            ]
-        ];
+        $demoData = loadDemoData();
+        $categories = $demoData['categories'] ?? [];
+        // If using demo data, ensure 'subcategories' key exists even if empty
+        foreach ($categories as &$cat) { // Use reference to modify array directly
+            if (!isset($cat['subcategories'])) {
+                $cat['subcategories'] = [];
+            }
+        }
+        unset($cat); // Unset reference after loop
     }
     
     return $categories;
 }
 
 // Get products with optional filters
-function getProducts($search = '', $categoryId = null, $subcategoryId = null) {
+function getProducts($search = '', $categoryId = null, $subcategoryId = null)
+{
     global $conn, $db_connected;
     
     $products = [];
@@ -111,10 +152,10 @@ function getProducts($search = '', $categoryId = null, $subcategoryId = null) {
     
     // Check if database connection exists and try to get products
     if ($db_connected && $conn) {
-        $sql = "SELECT p.id, p.name, p.price, p.description, p.image, p.category_id, c.name as category_name 
+        $sql = "SELECT p.id, p.name, p.slug, p.price, p.original_price, p.discount_percentage, p.description, p.image, p.category_id, c.name as category_name, p.stock, p.is_active, p.backorder
                 FROM products p 
                 LEFT JOIN categories c ON p.category_id = c.id 
-                WHERE 1=1";
+                WHERE p.is_active = TRUE";
         $params = [];
         $types = '';
         
@@ -170,12 +211,18 @@ function getProducts($search = '', $categoryId = null, $subcategoryId = null) {
                 $products[] = [
                     'id' => $row['id'],
                     'name' => $row['name'],
+                    'slug' => $row['slug'],
                     'price' => $row['price'],
+                    'original_price' => $row['original_price'],
+                    'discount_percentage' => $row['discount_percentage'],
                     'description' => $row['description'],
                     'image' => $row['image'],
                     'category_id' => $row['category_id'],
                     'category_name' => $row['category_name'],
-                    'options' => $options
+                    'options' => $options,
+                    'stock' => $row['stock'],
+                    'is_active' => (bool)$row['is_active'],
+                    'backorder' => (bool)$row['backorder']
                 ];
             }
         }
@@ -183,174 +230,51 @@ function getProducts($search = '', $categoryId = null, $subcategoryId = null) {
     
     // Use demo products if database connection failed or no products found
     if (empty($products)) {
-        // Demo products if database is not set up
-        $demoProducts = [
-            [
-                'id' => 1,
-                'name' => 'School Backpack',
-                'price' => 4500,
-                'description' => 'Sturdy school backpack with multiple compartments and padded shoulder straps.',
-                'image' => '/assets/images/demo/backpack.png',
-                'category_id' => 101,
-                'category_name' => 'School Bags',
-                'options' => [
-                    'color' => ['Black', 'Blue', 'Red']
-                ]
-            ],
-            [
-                'id' => 2,
-                'name' => 'Travel Duffel Bag',
-                'price' => 8500,
-                'description' => 'Spacious travel duffel bag with wheels and telescopic handle.',
-                'image' => '/assets/images/demo/duffel.png',
-                'category_id' => 102,
-                'category_name' => 'Travel Bags',
-                'options' => [
-                    'color' => ['Black', 'Navy', 'Grey'],
-                    'size' => ['Medium', 'Large']
-                ]
-            ],
-            [
-                'id' => 3,
-                'name' => 'Pink Sequin Purse',
-                'price' => 3200,
-                'description' => 'Stylish pink sequin purse for girls, perfect for special occasions.',
-                'image' => '/assets/images/demo/purse.png',
-                'category_id' => 103,
-                'category_name' => "Girl's Bags",
-                'options' => [
-                    'color' => ['Pink', 'Purple', 'Gold']
-                ]
-            ],
-            [
-                'id' => 4,
-                'name' => 'Long Body Wave Lace Front Wig',
-                'price' => 25000.00,
-                'description' => 'Beautiful long body wave wig with realistic lace front.',
-                'image' => '/assets/images/demo/wig-lace-bodywave.png',
-                'category_id' => 201,
-                'category_name' => 'Lace Front Wigs',
-                'options' => [
-                     'color' => ['Natural Black', 'Brown', 'Blonde'],
-                     'length' => ['18 inch', '22 inch', '26 inch']
-                ]
-            ],
-            [
-                'id' => 5,
-                'name' => 'Short Bob Synthetic Wig - Black',
-                'price' => 7500.00,
-                'description' => 'Chic and easy-to-manage short black bob wig.',
-                'image' => '/assets/images/demo/wig-synth-bob.png',
-                'category_id' => 202,
-                'category_name' => 'Synthetic Wigs',
-                'options' => [
-                     'color' => ['Black', 'Red', 'Blue']
-                ]
-            ],
-            [
-                'id' => 6,
-                'name' => 'Straight Human Hair Wig 18inch',
-                'price' => 45000.00,
-                'description' => 'Silky straight 18-inch human hair wig.',
-                'image' => '/assets/images/demo/wig-human-straight.png',
-                'category_id' => 203,
-                'category_name' => 'Human Hair Wigs',
-                'options' => [
-                    'color' => ['Natural Black'], 
-                    'length' => ['18 inch', '20 inch', '22 inch']
-                ]
-            ],
-            [
-                'id' => 7,
-                'name' => 'Running Sneakers',
-                'price' => 12000,
-                'description' => 'Comfortable running sneakers with cushioned soles for maximum comfort.',
-                'image' => '/assets/images/demo/sneakers.png',
-                'category_id' => 301,
-                'category_name' => 'Sneakers',
-                'options' => [
-                    'color' => ['White', 'Black', 'Blue'],
-                    'size' => ['40', '41', '42', '43', '44', '45']
-                ]
-            ],
-            [
-                'id' => 8,
-                'name' => 'Oxford Dress Shoes',
-                'price' => 15000,
-                'description' => 'Classic Oxford dress shoes made from genuine leather.',
-                'image' => '/assets/images/demo/oxford.png',
-                'category_id' => 302,
-                'category_name' => 'Formal Shoes',
-                'options' => [
-                    'color' => ['Black', 'Brown'],
-                    'size' => ['40', '41', '42', '43', '44', '45']
-                ]
-            ],
-            [
-                'id' => 9,
-                'name' => 'Stiletto Heels',
-                'price' => 9500,
-                'description' => 'Elegant stiletto heels for special occasions and formal events.',
-                'image' => '/assets/images/demo/heels.png',
-                'category_id' => 303,
-                'category_name' => "Ladies' Heels",
-                'options' => [
-                    'color' => ['Black', 'Red', 'Nude'],
-                    'size' => ['36', '37', '38', '39', '40']
-                ]
-            ],
-        ];
+        $demoData = loadDemoData();
+        $demoProducts = $demoData['products'] ?? [];
         
         // Apply filters to demo products
+        $filteredDemoProducts = []; // Use a new array for filtered results
         foreach ($demoProducts as $product) {
+            // *** Skip inactive products first ***
+            if (!($product['is_active'] ?? true)) { // Default to true if key missing, skip if false
+                continue;
+            }
+            
+            $keep = true; // Assume we keep the product initially
+
             // Apply search filter
             if (!empty($search)) {
                 $nameMatch = stripos($product['name'], $search) !== false;
                 $descMatch = stripos($product['description'], $search) !== false;
-                
                 if (!$nameMatch && !$descMatch) {
-                    continue; // Skip this product
+                    $keep = false; // Mark for removal
                 }
             }
-            
-            // Apply category filter
-            if (!empty($subcategoryId) && $product['category_id'] != $subcategoryId) {
-                continue; // Skip this product
-            } elseif (!empty($categoryId)) {
-                // Check if product category ID matches category ID or is a subcategory of it
-                $categoryMatches = false;
-                $allDemoCategories = getCategories(); // Get all categories for checking
 
-                if ($product['category_id'] == $categoryId) {
-                    $categoryMatches = true;
-                } else {
-                    // Check if product category is a subcategory of the selected category
-                    foreach ($allDemoCategories as $parentCategory) {
-                        if ($parentCategory['id'] == $categoryId) {
-                            foreach ($parentCategory['subcategories'] as $sub) {
-                                if ($sub['id'] == $product['category_id']) {
-                                    $categoryMatches = true;
-                                    break 2;
-                                }
-                            }
-                        }
+            // Apply category/subcategory filter (only if search didn't already exclude it)
+            if ($keep) {
+                if (!empty($relevantCategoryIds)) {
+                    // Check if the product's category ID is in the list of relevant IDs
+                    if (!in_array($product['category_id'], $relevantCategoryIds)) {
+                        $keep = false; // Mark for removal
                     }
                 }
-                
-                if (!$categoryMatches) {
-                    continue; // Skip this product
-                }
             }
-            
-            $products[] = $product;
+
+            if ($keep) {
+                $filteredDemoProducts[] = $product; // Add product if it passed filters
+            }
         }
+        $products = $filteredDemoProducts; // Assign filtered demo products
     }
     
     return $products;
 }
 
 // Function to get the name of the currently selected category or subcategory
-function getCategoryName($categoryId = null, $subcategoryId = null, $categories = []) {
+function getCategoryName($categoryId = null, $subcategoryId = null, $categories = [])
+{
     if (!empty($subcategoryId)) {
         foreach ($categories as $parentCategory) {
             foreach ($parentCategory['subcategories'] as $sub) {
@@ -369,70 +293,230 @@ function getCategoryName($categoryId = null, $subcategoryId = null, $categories 
     return 'All Products'; // Default if no specific category/subcategory is selected
 }
 
-// Get filter parameters
+// --- Start of AJAX Handling ---
+if (isset($_GET['fetch']) && $_GET['fetch'] == 'true') {
+    // This is an AJAX request for products
+
+    // Get filter parameters from the request
 $search = $_GET['search'] ?? '';
 $categoryId = isset($_GET['category']) ? (int) $_GET['category'] : null;
 $subcategoryId = isset($_GET['subcategory']) ? (int) $_GET['subcategory'] : null;
 
-// Get categories and products
-$categories = getCategories();
+    // Get categories (needed for getCategoryName) and products
+    $categories = getCategories(); // Fetch categories to determine the name
 $products = getProducts($search, $categoryId, $subcategoryId);
 $categoryName = getCategoryName($categoryId, $subcategoryId, $categories);
 
 // Get currency symbol
 $currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '₦';
 
+    // Prepare the response data
+    $responseData = [
+        'products' => $products,
+        'categoryName' => htmlspecialchars($categoryName), // Ensure name is safe
+        'searchQuery' => htmlspecialchars($search), // Send back the search query used
+        'currencySymbol' => $currencySymbol
+    ];
+
+    // Send JSON response
+    header('Content-Type: application/json');
+    echo json_encode($responseData);
+    exit; // Stop script execution after sending JSON
+}
+// --- End of AJAX Handling ---
+
+// --- Regular Page Load Logic ---
+
+// Get filter parameters for initial page load
+$search = $_GET['search'] ?? '';
+$categoryId = isset($_GET['category']) ? (int) $_GET['category'] : null;
+$subcategoryId = isset($_GET['subcategory']) ? (int) $_GET['subcategory'] : null;
+
+// Get categories and products for initial page load
+$categories = getCategories();
+$products = getProducts($search, $categoryId, $subcategoryId);
+$categoryName = getCategoryName($categoryId, $subcategoryId, $categories);
+
+// Get currency symbol for initial page load
+$currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '₦';
+
+// Get WhatsApp Number for banner button
+$whatsappNumber = STORE_SETTINGS['whatsapp_number'] ?? ''; // Use your setting key
+$whatsappMessage = "Hello! I'm interested in your products."; // Default message
+$whatsappURL = '';
+if (!empty($whatsappNumber)) {
+    // Basic number cleaning (remove non-digits)
+    $cleanedNumber = preg_replace('/[^0-9]/', '', $whatsappNumber);
+    // Construct URL
+    $whatsappURL = 'https://wa.me/' . $cleanedNumber . '?text=' . urlencode($whatsappMessage);
+}
+
 // Include header
 include_once __DIR__ . '/../includes/header.php';
 
-// Include the database connection notice component right after the header
-include __DIR__ . '/../includes/components/db_notice.php'; 
-
+// Include the database connection notice component
+include __DIR__ . '/../includes/db_notice.php'; 
 ?>
 
-<div class="container mx-auto px-4 py-8">
+<!-- Product Page Banner -->
+<?php
+$bannerImageUrl = getStoreContent('product_page_banner_image');
+if (!empty($bannerImageUrl)):
+?>
+    <section class="relative w-full mb-8 rounded-b-lg shadow overflow-hidden">
+        <!-- Image -->
+        <img src="<?= htmlspecialchars($bannerImageUrl) ?>"
+            alt="Products Banner"
+            class="w-full h-auto object-cover max-h-64 md:max-h-80 lg:max-h-96">
+        <!-- Dark Overlay -->
+        <div class="absolute inset-0 bg-black/60"></div>
+        <!-- Text Content -->
+        <div class="absolute inset-0 flex flex-col gap-2 md:gap-4 items-center justify-center text-center p-4">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight shadow-text">
+                <?= htmlspecialchars(getStoreContent('product_banner_title')) // Use dynamic title 
+                ?>
+            </h1>
+            <p class="text-base md:text-lg text-gray-200 max-w-xl shadow-text">
+                <?= htmlspecialchars(getStoreContent('product_banner_subtitle')) // Use dynamic subtitle 
+                ?>
+            </p>
+            <!-- WhatsApp Button -->
+            <?php if ($whatsappURL): ?>
+                <a href="<?= htmlspecialchars($whatsappURL) ?>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center px-6 h-10 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition ease-in-out duration-150">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                    </svg>
+                    Chat on WhatsApp
+                </a>
+            <?php endif; ?>
+        </div>
+    </section>
+<?php endif; ?>
 
-    <div class="flex flex-col md:flex-row gap-8">
-        <!-- Sidebar -->
-        <div class="w-full md:w-1/4">
-            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                <form action="/pages/products.php" method="GET" class="space-y-6">
-                    <!-- Search -->
-                    <div>
-                        <label for="search" class="block text-sm font-medium text-gray-700">Search Products</label>
-                        <div class="mt-1 flex rounded-md shadow-sm">
-                            <input type="text" name="search" id="search" class="focus:ring-primary focus:border-primary flex-1 block w-full rounded-md sm:text-sm border-gray-300" placeholder="Enter product name or keyword" value="<?= htmlspecialchars($search) ?>">
-                            <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                                Search
+<div class="container mx-auto px-4 py-8" id="product-page-container" data-currency-symbol="<?= htmlspecialchars($currencySymbol) ?>"> <!-- Added ID and data attribute -->
+
+    <!-- Filter/View Controls Bar -->
+    <div class="bg-white p-3 rounded-lg shadow-sm mb-6 flex items-center justify-between gap-4">
+
+        <!-- "Showing: ..." Title -->
+        <div class="flex items-center gap-2 flex-row-reverse">
+            <h1 id="productsTitle" class="text-lg font-semibold text-gray-700 order-1 flex-shrink-0">
+                Showing: <?= htmlspecialchars($categoryName) ?>
+            </h1>
+            <!-- Reset Filters Button (Initially Hidden) -->
+            <button id="resetFiltersBtn" type="button" title="Reset Filters"
+                class="hidden text-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded-md px-2 py-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 inline mr-0.5">
+                    <path d="M15 2H9a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z" />
+                    <path d="M19 5H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z" />
+                    <path d="M15 9.5 9 15.5" />
+                    <path d="m9 9.5 6 6" />
+                </svg>
+                Reset
                             </button>
-                        </div>
                     </div>
                     
-                    <!-- Category Filters -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Filters Container (Includes Button and Panel) -->
+        <div class="order-2 relative flex items-center gap-2"> <!-- Added flex/gap, kept relative -->
+            <!-- Mobile Filter Trigger Button -->
+            <button id="mobileFilterTrigger" type="button"
+                class="md:hidden inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-1">
+                    <path d="M21 4H3" />
+                    <path d="M17 4v6" />
+                    <path d="M13 4v10" />
+                    <path d="M9 4v14" />
+                    <path d="M5 4v16" />
+                </svg>
+                Filters
+            </button>
+
+
+
+            <!-- Category Filters Controls / Panel -->
+            <div id="filterControls" class="hidden md:flex items-center gap-3 justify-end absolute md:static top-full right-0 md:right-auto mt-1 md:mt-0 bg-white md:bg-transparent shadow-lg md:shadow-none rounded-md md:rounded-none p-4 md:p-0 z-20 md:z-auto w-64 md:w-auto">
+                <!-- Custom Category Dropdown -->
+                <div class="relative inline-block text-left w-full md:w-auto" id="categoryDropdownContainer">
                         <div>
-                            <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-                            <select id="category" name="category" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
-                                <option value="">All Categories</option>
+                        <button type="button" class="inline-flex justify-between w-56 rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-primary" id="categoryDropdownButton" aria-haspopup="true" aria-expanded="true">
+                            <span class="flex items-center overflow-hidden whitespace-nowrap" id="categoryDropdownSelected">
+                                <!-- Initially set based on $categoryId -->
+                                <?php
+                                $selectedCatImage = '';
+                                $selectedCatName = 'All Categories';
+                                if ($categoryId) {
+                                    foreach ($categories as $category) {
+                                        if ($category['id'] == $categoryId) {
+                                            $selectedCatImage = $category['image'];
+                                            $selectedCatName = $category['name'];
+                                            break;
+                                        }
+                                    }
+                                }
+                                if ($selectedCatImage) {
+                                    echo '<img src="' . htmlspecialchars($selectedCatImage) . '" alt="" class="h-5 w-5 mr-2 flex-shrink-0 rounded-sm object-cover">';
+                                } else {
+                                    // Optional: Placeholder icon if no image or "All Categories"
+                                    echo '<svg class="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM8.707 14.707a1 1 0 001.414 0L14 10.414V12a1 1 0 102 0V8a1 1 0 00-1-1h-4a1 1 0 100 2h1.586l-4.293 4.293a1 1 0 000 1.414z" clip-rule="evenodd" /></svg>';
+                                }
+                                echo '<span>' . htmlspecialchars($selectedCatName) . '</span>';
+                                ?>
+                            </span>
+                            <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Hidden Input -->
+                    <input type="hidden" id="categoryValue" name="category" value="<?= htmlspecialchars($categoryId ?? '') ?>">
+
+                    <!-- Dropdown panel -->
+                    <div id="categoryDropdownPanel" class="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 hidden min-w-max" role="menu" aria-orientation="vertical" aria-labelledby="categoryDropdownButton">
+                        <ul class="py-1" role="none">
+                            <!-- All Categories Option -->
+                            <li class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer category-option" role="menuitem" data-value="" data-image="">
+                                <span class="flex items-center">
+                                    <svg class="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM8.707 14.707a1 1 0 001.414 0L14 10.414V12a1 1 0 102 0V8a1 1 0 00-1-1h-4a1 1 0 100 2h1.586l-4.293 4.293a1 1 0 000 1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>All Categories</span>
+                                </span>
+                            </li>
+                            <!-- PHP Loop for Categories -->
                                 <?php foreach ($categories as $category): ?>
-                                    <option value="<?= $category['id'] ?>" <?= $categoryId == $category['id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($category['name']) ?>
-                                    </option>
+                                <li class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer category-option" role="menuitem" data-value="<?= $category['id'] ?>" data-image="<?= htmlspecialchars($category['image'] ?? '') ?>">
+                                    <span class="flex items-center">
+                                        <?php if (!empty($category['image'])): ?>
+                                            <img src="<?= htmlspecialchars($category['image']) ?>" alt="" class="h-5 w-5 mr-2 flex-shrink-0 rounded-sm object-cover">
+                                        <?php else: ?>
+                                            <!-- Optional: Placeholder if a specific category lacks an image -->
+                                            <span class="h-5 w-5 mr-2 flex-shrink-0 rounded-sm bg-gray-200"></span>
+                                        <?php endif; ?>
+                                        <span><?= htmlspecialchars($category['name']) ?></span>
+                                    </span>
+                                </li>
                                 <?php endforeach; ?>
-                            </select>
+                        </ul>
+                    </div>
                         </div>
                         
-                        <div>
-                            <label for="subcategory" class="block text-sm font-medium text-gray-700">Subcategory</label>
-                            <select id="subcategory" name="subcategory" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" <?= empty($categoryId) ? 'disabled' : '' ?>>
+                <!-- Subcategory Select -->
+                <div class="w-full md:w-auto">
+                    <label for="subcategory" class="sr-only">Subcategory</label>
+                    <select id="subcategory" name="subcategory" class="block w-full py-2 pl-3 pr-8 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" <?= empty($categoryId) ? 'disabled' : '' ?>>
                                 <option value="">All Subcategories</option>
-                                <?php
+                        <?php // Options populated by JS or initially if category is set
                                 if (!empty($categoryId)) {
                                     foreach ($categories as $category) {
                                         if ($category['id'] == $categoryId) {
+                                    if (!empty($category['subcategories'])) { // Check if subcategories exist
                                             foreach ($category['subcategories'] as $subcategory) {
                                                 $selected = $subcategoryId == $subcategory['id'] ? 'selected' : '';
                                                 echo "<option value=\"{$subcategory['id']}\" {$selected}>" . htmlspecialchars($subcategory['name']) . "</option>";
+                                        }
                                             }
                                             break;
                                         }
@@ -442,117 +526,72 @@ include __DIR__ . '/../includes/components/db_notice.php';
                             </select>
                         </div>
                     </div>
-                </form>
             </div>
         </div>
         
-        <!-- Products Grid -->
-        <div class="w-full md:w-3/4">
-            <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Products</h1>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <?php if (empty($products)): ?>
-                    <div class="col-span-full text-center py-12">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <h3 class="mt-2 text-lg font-medium text-gray-900">No products found for your selection.</h3>
-                        <p class="mt-1 text-sm text-gray-500">Try changing your search or filter criteria.</p>
-                        <div class="mt-6">
-                            <a href="/pages/products.php" class="text-primary hover:text-indigo-700">
-                                View all products
-                            </a>
+    <!-- Product Grid/List Container -->
+    <div id="productContainer"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-300 ease-in-out"
+        style="opacity: 1;"> <!-- Make visible initially -->
+        <!-- Render Grid Skeletons by Default in PHP -->
+        <?php
+        $gridSkeletonHTML_php = '
+        <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse h-80">
+            <div class="product-image-container h-48 bg-gray-300"></div>
+            <div class="product-details p-4 flex flex-col justify-between flex-grow">
+                 <div>
+                     <div class="product-header">
+                         <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                         <div class="h-4 bg-gray-300 rounded w-1/4"></div>
                         </div>
+                     <div class="h-3 bg-gray-300 rounded w-full mt-2"></div>
+                     <div class="h-3 bg-gray-300 rounded w-5/6 mt-1"></div>
                     </div>
-                <?php else: ?>
-                    <?php foreach ($products as $product): ?>
-                        <div class="bg-white rounded-lg shadow overflow-hidden transition-shadow duration-300 hover:shadow-lg">
-                            <div class="aspect-ratio bg-gray-200">
-                                <img src="<?= htmlspecialchars($product['image']) ?>" alt="<?= htmlspecialchars($product['name']) ?>" class="w-full h-full object-center object-cover">
+                 <div class="product-actions mt-3">
+                     <div class="h-9 bg-gray-300 rounded w-full"></div>
                             </div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-center">
-                                    <h3 class="text-lg font-medium text-gray-900 truncate"><?= htmlspecialchars($product['name']) ?></h3>
-                                    <p class="text-lg font-medium text-primary"><?= $currencySymbol . number_format($product['price'], 2) ?></p>
                                 </div>
-                                <p class="mt-1 text-sm text-gray-500 line-clamp-2"><?= htmlspecialchars($product['description']) ?></p>
-                                <div class="mt-3">
-                                    <button type="button" 
-                                            class="view-product-btn w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-indigo-700"
-                                            data-product-id="<?= $product['id'] ?>"
-                                            data-product-name="<?= htmlspecialchars($product['name']) ?>"
-                                            data-product-price="<?= $product['price'] ?>"
-                                            data-product-image="<?= htmlspecialchars($product['image']) ?>"
-                                            data-product-description="<?= htmlspecialchars($product['description']) ?>"
-                                            data-product-options='<?= htmlspecialchars(json_encode($product['options'])) ?>'>
-                                        View Details
-                                    </button>
                                 </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        </div>
+    ';
+        for ($i = 0; $i < 12; $i++) {
+            echo $gridSkeletonHTML_php;
+        }
+        ?>
     </div>
 </div>
 
 <!-- Include modals -->
 <?php include_once __DIR__ . '/../modals/productModal.php'; ?>
 <?php include_once __DIR__ . '/../modals/cartModal.php'; ?>
-<?php include_once __DIR__ . '/../modals/orderModal.php'; ?>
+<?php include_once __DIR__ . '/../modals/searchModal.php'; // Keep this one
+?>
+
+<style>
+    #productContainer .animate-pulse {
+        animation-duration: 3s !important;
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    #product-page-container {
+        /* Make this container grow */
+        flex-grow: 1;
+    }
+</style>
 
 <script>
-    // Category-Subcategory filter relationship
-    document.addEventListener('DOMContentLoaded', function() {
-        const categorySelect = document.getElementById('category');
-        const subcategorySelect = document.getElementById('subcategory');
-        
-        if (categorySelect && subcategorySelect) {
-            // Category change event
-            categorySelect.addEventListener('change', function() {
-                const categoryId = this.value;
-                
-                // Clear subcategory options
-                subcategorySelect.innerHTML = '<option value="">All Subcategories</option>';
-                
-                if (categoryId) {
-                    // Enable subcategory select
-                    subcategorySelect.disabled = false;
-                    
-                    // Get subcategories for selected category
-                    const subcategories = getSubcategoriesForCategory(categoryId);
-                    
-                    // Add subcategory options
-                    subcategories.forEach(function(subcategory) {
-                        const option = document.createElement('option');
-                        option.value = subcategory.id;
-                        option.textContent = subcategory.name;
-                        subcategorySelect.appendChild(option);
-                    });
-                } else {
-                    // Disable subcategory select if no category selected
-                    subcategorySelect.disabled = true;
-                }
-                
-                // Submit form to apply filter
-                // document.querySelector('form').submit();
-            });
-        }
-        
-        // Helper function to get subcategories for a category
-        function getSubcategoriesForCategory(categoryId) {
-            const categories = <?= json_encode($categories) ?>;
-            let subcategories = [];
-            
-            categories.forEach(function(category) {
-                if (category.id == categoryId) {
-                    subcategories = category.subcategories;
-                }
-            });
-            
-            return subcategories;
-        }
-    });
+  // Pass PHP data to JavaScript
+  window.PHP_DATA = {
+    allCategories: <?= json_encode($categories) ?>,
+    // Use json_encode for null/empty string safety
+    initialCategoryId: <?= json_encode($categoryId ?? null) ?>, 
+    initialSubcategoryId: <?= json_encode($subcategoryId ?? null) ?>, 
+    currencySymbol: <?= json_encode($currencySymbol) ?>
+  };
 </script>
 
 <?php

@@ -132,6 +132,57 @@
              <p class="text-xs text-gray-500 mt-1">Current path (if set): <?= !empty($aboutImage) ? htmlspecialchars($aboutImage) : 'None' ?></p>
         </fieldset>
 
+        <!-- Product Page Banner Image Section -->
+        <fieldset class="space-y-4 border-t pt-4">
+            <legend class="text-md font-medium text-gray-600 mb-2">Product Page Banner</legend>
+            
+             <div>
+                <label for="product_banner_title" class="block text-sm font-medium text-gray-700 mb-1">Banner Title</label>
+                <input type="text" name="product_banner_title" id="product_banner_title" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    value="<?= htmlspecialchars($productBannerTitle) ?>">
+            </div>
+            <div>
+                <label for="product_banner_subtitle" class="block text-sm font-medium text-gray-700 mb-1">Banner Subtitle</label>
+                <textarea name="product_banner_subtitle" id="product_banner_subtitle" rows="2"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    ><?= htmlspecialchars($productBannerSubtitle) ?></textarea>
+            </div>
+
+            <label class="block text-sm font-medium text-gray-700 mb-1 pt-2">Banner Image (Optional)</label>
+            <label for="product_page_banner_image" id="product_page_banner_image_dropzone"
+                   class="relative mt-1 flex justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200 min-h-[150px]">
+
+                <!-- Placeholder Content -->
+                <div id="product_page_banner_image_placeholder" class="space-y-1 text-center" <?= !empty($productPageBannerImage) ? 'style="display: none;"' : '' ?>>
+                    <i data-lucide="image" class="mx-auto h-12 w-12 text-gray-400"></i>
+                    <div class="flex text-sm text-gray-600">
+                        <span class="relative bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                            <span>Upload a file</span>
+                            <input type="file" name="product_page_banner_image" id="product_page_banner_image" accept="image/jpeg, image/png, image/webp, image/gif"
+                                   onchange="previewSettingsImage('product_page_banner_image', 'product_page_banner_image_preview', 'product_page_banner_image_placeholder', 'product_page_banner_image_remove_button', '<?= htmlspecialchars($productPageBannerImage ?? '') ?>')"
+                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        </span>
+                        <p class="pl-1">or drag and drop</p>
+                    </div>
+                    <p class="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 2MB. Rec: 1920x300 (Wide Banner)</p>
+                </div>
+
+                <!-- Image Preview -->
+                <div id="product_page_banner_image_preview_container" class="relative w-full h-full flex justify-center items-center" <?= empty($productPageBannerImage) ? 'style="display: none;"' : '' ?>>
+                     <img id="product_page_banner_image_preview" src="<?= htmlspecialchars($productPageBannerImage ?? '') ?>" alt="Product Page Banner Preview"
+                         class="max-h-48 max-w-full rounded-lg object-contain shadow-sm">
+                    <button type="button" id="product_page_banner_image_remove_button" onclick="removeSettingsImage('product_page_banner_image', 'product_page_banner_image_preview', 'product_page_banner_image_placeholder', 'product_page_banner_image_remove_button', 'remove_product_page_banner_image', '<?= htmlspecialchars($productPageBannerImage ?? '') ?>')"
+                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 z-10"
+                            title="Remove Image" <?= empty($productPageBannerImage) ? 'style="display: none;"' : '' ?>>
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>
+                 <input type="hidden" name="remove_product_page_banner_image" id="remove_product_page_banner_image" value="0">
+            </label>
+             <p class="text-xs text-gray-500 mt-1">Current path (if set): <?= !empty($productPageBannerImage) ? htmlspecialchars($productPageBannerImage) : 'None' ?></p>
+        </fieldset>
+
         <div class="pt-6 border-t border-gray-100 flex justify-end">
             <button type="submit" id="contentSubmitButton" :disabled="isSavingContent"
                     class="flex items-center px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
@@ -268,6 +319,12 @@ document.addEventListener('DOMContentLoaded', () => {
          document.getElementById('about_image_placeholder').style.display = 'none';
          document.getElementById('about_image_preview_container').style.display = 'flex';
          document.getElementById('about_image_remove_button').style.display = 'block';
+    }
+    const productBannerInput = document.getElementById('product_page_banner_image');
+     if (productBannerInput && '<?= !empty($productPageBannerImage) ?>') {
+         document.getElementById('product_page_banner_image_placeholder').style.display = 'none';
+         document.getElementById('product_page_banner_image_preview_container').style.display = 'flex';
+         document.getElementById('product_page_banner_image_remove_button').style.display = 'block';
     }
 });
 

@@ -45,6 +45,9 @@ $featuredTitle = $storeContent['featured_title'] ?? '';
 $featuredSubtitle = $storeContent['featured_subtitle'] ?? '';
 $heroImage = $storeContent['hero_image'] ?? '/assets/images/demo/hero-bg.jpg'; // Fetch hero image with fallback
 $aboutImage = $storeContent['about_image'] ?? '/assets/images/demo/about-image.jpg'; // Fetch about image with fallback
+$productPageBannerImage = $storeContent['product_page_banner_image'] ?? '/assets/images/demo/product-banner.png'; // Fetch product banner image
+$productBannerTitle = $storeContent['product_banner_title'] ?? 'Product Banner Title'; // Fetch product banner title
+$productBannerSubtitle = $storeContent['product_banner_subtitle'] ?? 'Product subtile text goes here, edit it from settings in your admin panel'; // Fetch product banner subtitle
 
 ?>
 <!DOCTYPE html>

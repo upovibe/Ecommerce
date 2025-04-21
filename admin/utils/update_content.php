@@ -29,7 +29,12 @@ if (!$db_connected || !$conn) {
 
 // --- Retrieve POST data ---
 // Define expected keys from the form
-$content_keys = ['hero_title', 'hero_subtitle', 'featured_title', 'featured_subtitle', 'about_title', 'about_content'];
+$content_keys = [
+    'hero_title', 'hero_subtitle', 
+    'featured_title', 'featured_subtitle', 
+    'about_title', 'about_content',
+    'product_banner_title', 'product_banner_subtitle' // Added banner text keys
+];
 $content_data = [];
 foreach ($content_keys as $key) {
     // Allow empty values, trim whitespace
@@ -196,6 +201,83 @@ if ($about_image_path !== null) {
         } // else: don't insert if it wasn't there and wasn't uploaded
     }
 }
+
+// --- Handle Product Page Banner Image Upload ---
+$product_banner_path = null;
+$removeProductBannerFlag = isset($_POST['remove_product_page_banner_image']) && $_POST['remove_product_page_banner_image'] === '1';
+
+// Fetch the current banner path first, needed for deletion logic
+$currentBannerSql = "SELECT content_value FROM store_content WHERE content_key = 'product_page_banner_image'";
+$currentBannerResult = $conn->query($currentBannerSql);
+$currentBannerDbPath = ($currentBannerResult && $currentBannerResult->num_rows > 0) ? $currentBannerResult->fetch_assoc()['content_value'] : null;
+
+if ($removeProductBannerFlag) {
+    // User wants to remove the existing banner
+    $product_banner_path = ''; // Set path to empty string
+    // Delete the file from server if it exists and is in uploads
+    if ($currentBannerDbPath && strpos($currentBannerDbPath, '/uploads/') === 0) {
+        $bannerServerPath = $_SERVER['DOCUMENT_ROOT'] . $currentBannerDbPath;
+        if (file_exists($bannerServerPath)) {
+            @unlink($bannerServerPath);
+        }
+    }
+} elseif (isset($_FILES['product_page_banner_image']) && $_FILES['product_page_banner_image']['error'] == UPLOAD_ERR_OK) {
+    // New banner image uploaded
+    $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/images/';
+    $allowed_types = [
+        'image/jpeg' => '.jpg',
+        'image/png' => '.png',
+        'image/webp' => '.webp',
+        'image/gif' => '.gif'
+    ];
+    $max_size = 2 * 1024 * 1024; // 2MB
+
+    $file_tmp_name = $_FILES['product_page_banner_image']['tmp_name'];
+    $file_size = $_FILES['product_page_banner_image']['size'];
+    $file_type = mime_content_type($file_tmp_name);
+
+    if (!isset($allowed_types[$file_type])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid product banner image file type. Allowed types: JPG, PNG, WEBP, GIF.']);
+        exit;
+    }
+
+    if ($file_size > $max_size) {
+        echo json_encode(['success' => false, 'message' => 'Product banner image file size exceeds the 2MB limit.']);
+        exit;
+    }
+
+    if (!file_exists($upload_dir)) {
+        if (!mkdir($upload_dir, 0777, true)) {
+             echo json_encode(['success' => false, 'message' => 'Failed to create upload directory.']);
+             exit;
+        }
+    }
+
+    $file_ext = $allowed_types[$file_type];
+    $unique_name = 'product_banner_' . uniqid() . $file_ext;
+    $destination = $upload_dir . $unique_name;
+
+    if (!move_uploaded_file($file_tmp_name, $destination)) {
+        echo json_encode(['success' => false, 'message' => 'Failed to upload product banner image.']);
+        exit;
+    }
+    
+    $product_banner_path = '/uploads/images/' . $unique_name;
+
+    // Delete old banner image file if it exists and is in uploads
+    if ($currentBannerDbPath && strpos($currentBannerDbPath, '/uploads/') === 0) {
+        $oldBannerServerPath = $_SERVER['DOCUMENT_ROOT'] . $currentBannerDbPath;
+        if (file_exists($oldBannerServerPath)) {
+            @unlink($oldBannerServerPath);
+        }
+    }
+} else {
+    // No new upload and no removal flag: Keep the existing path
+    $product_banner_path = $currentBannerDbPath;
+}
+
+// Add product banner image path to content data (could be new path, empty string, or existing path)
+$content_data['product_page_banner_image'] = $product_banner_path;
 
 // --- Update Database --- 
 $conn->begin_transaction();

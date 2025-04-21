@@ -1,8 +1,8 @@
 {
   "categories": [
     {
-        "id": 1,
-        "name": "Bags",
+      "id": 1,
+      "name": "Bags",
       "image": "/assets/images/demo/category-bags.png",
       "subcategories": [
         {"id": 101, "name": "School Bags"},
@@ -11,7 +11,7 @@
       ]
     },
     {
-        "id": 2,
+      "id": 2,
       "name": "Wigs",
       "image": "/assets/images/demo/category-wigs.png",
       "subcategories": [
@@ -21,8 +21,8 @@
       ]
     },
     {
-        "id": 3,
-        "name": "Shoes",
+      "id": 3,
+      "name": "Shoes",
       "image": "/assets/images/demo/category-shoes.png",
       "subcategories": [
         {"id": 301, "name": "Sneakers"},
@@ -35,7 +35,6 @@
     {
       "id": 1,
       "name": "School Backpack",
-      "slug": "school-backpack",
       "price": 4050,
       "original_price": 4500,
       "discount_percentage": 10.00,
@@ -53,7 +52,6 @@
     {
       "id": 2,
       "name": "Travel Duffel Bag",
-      "slug": "travel-duffel-bag",
       "price": 8500,
       "original_price": null,
       "discount_percentage": null,
@@ -72,7 +70,6 @@
     {
       "id": 3,
       "name": "Pink Sequin Purse",
-      "slug": "pink-sequin-purse",
       "price": 3200,
       "original_price": null,
       "discount_percentage": null,
@@ -90,7 +87,6 @@
     {
       "id": 4,
       "name": "Long Body Wave Lace Front Wig",
-      "slug": "long-body-wave-lace-wig",
       "price": 25000.00,
       "original_price": 28000.00,
       "discount_percentage": 10.71,
@@ -109,7 +105,6 @@
     {
       "id": 5,
       "name": "Short Bob Synthetic Wig - Black",
-      "slug": "short-bob-synth-wig-black",
       "price": 7500.00,
       "original_price": null,
       "discount_percentage": null,
@@ -127,7 +122,6 @@
     {
       "id": 6,
       "name": "Straight Human Hair Wig 18inch",
-      "slug": "straight-human-hair-wig-18",
       "price": 45000.00,
       "original_price": null,
       "discount_percentage": null,
@@ -146,7 +140,6 @@
     {
       "id": 7,
       "name": "Running Sneakers",
-      "slug": "running-sneakers",
       "price": 10200,
       "original_price": 12000,
       "discount_percentage": 15.00,
@@ -165,7 +158,6 @@
     {
       "id": 8,
       "name": "Oxford Dress Shoes",
-      "slug": "oxford-dress-shoes",
       "price": 15000,
       "original_price": null,
       "discount_percentage": null,
@@ -184,7 +176,6 @@
     {
       "id": 9,
       "name": "Stiletto Heels",
-      "slug": "stiletto-heels",
       "price": 9500,
       "original_price": 10000,
       "discount_percentage": 5.00,

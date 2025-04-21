@@ -34,7 +34,7 @@ function getFeaturedCategories() {
     
     // If no categories found in database, try loading from demo JSON file
     if (empty($categories)) {
-        $jsonFilePath = __DIR__ . '/config/demo_data/demo_data.json';
+        $jsonFilePath = __DIR__ . '/config/demo_data.json';
         if (file_exists($jsonFilePath)) {
             $jsonContent = file_get_contents($jsonFilePath);
             $decodedData = json_decode($jsonContent, true);
@@ -117,7 +117,7 @@ include_once 'includes/header.php';
 <link rel="stylesheet" href="assets/css/style.css">
 <?php
 // Include the database connection notice component
-include __DIR__ . '/includes/components/db_notice.php'; 
+include __DIR__ . '/includes/db_notice.php'; 
 ?>
 
 <!-- Hero Section -->
@@ -226,6 +226,7 @@ include __DIR__ . '/includes/components/db_notice.php';
 <!-- Include modals -->
 <?php include_once 'modals/cartModal.php'; ?>
 <?php include_once 'modals/orderModal.php'; ?>
+<?php include_once 'modals/searchModal.php'; ?>
 
 <?php
 // Include footer
