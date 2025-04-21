@@ -78,3 +78,38 @@ function showParentCategory(event, buttonElement) {
     if (subcategoryContent) subcategoryContent.style.display = 'none';
     if (parentContent) parentContent.style.display = 'block';
 }
+
+// --- Search Modal Logic --- 
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('modal-search-input');
+    const searchTrigger = document.getElementById('modal-search-trigger');
+
+    // Check if the elements exist on the current page
+    if (!searchInput || !searchTrigger) {
+        // console.log('Search modal elements not found on this page.');
+        return; // Exit if modal elements aren't present
+    }
+
+    function performSearch() {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm) {
+            // Redirect to products page with search query
+            window.location.href = `/products.php?search=${encodeURIComponent(searchTerm)}`;
+        } else {
+            // Optional: Provide feedback if search term is empty
+            // console.log('Search term is empty.');
+             searchInput.focus(); // Focus input if empty search attempted
+        }
+    }
+
+    // Trigger search on button click
+    searchTrigger.addEventListener('click', performSearch);
+
+    // Trigger search on Enter key press in input
+    searchInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent default form submission (if any)
+            performSearch();
+        }
+    });
+});

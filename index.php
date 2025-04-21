@@ -36,7 +36,7 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
                 <p class="text-lg md:text-xl text-gray-600 mb-8" data-aos="fade-right" data-aos-delay="200">
                     <?= htmlspecialchars($heroSubtitle) ?>
                 </p>
-                <a href="/pages/products.php" 
+                <a href="/products.php" 
                    class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md transition duration-150 ease-in-out md:py-4 md:text-lg md:px-10 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" 
                    style="background-color: <?= htmlspecialchars(STORE_SETTINGS['theme_color']) ?>; color: <?= htmlspecialchars(STORE_SETTINGS['brand_text_color']) ?>;"
                    data-aos="fade-up" data-aos-delay="300">
@@ -76,14 +76,16 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
                         // Use null coalescing operator for safety
                         $categoryId = $category['id'] ?? null; 
                         $categoryName = $category['name'] ?? 'Unknown Category';
+                        $categorySlug = $category['slug'] ?? 'unknown-category'; // Define slug variable
                         $categoryImage = $category['image'] ?? '/assets/images/placeholder.png';
                         $subcategoryCount = $category['subcategory_count'] ?? 0;
                     ?>
                     <div class="swiper-slide">
-                         <a href="/pages/products.php?category=<?= $categoryId ?>" 
+                         <a href="/products.php?category=<?= htmlspecialchars($categorySlug) ?>" 
                            target="_blank" 
                            data-category-id="<?= $categoryId ?>" 
                            data-category-name="<?= htmlspecialchars($categoryName) ?>" 
+                           data-category-slug="<?= htmlspecialchars($categorySlug) ?>" 
                            class="category-card group block rounded-lg overflow-hidden shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 ease-in-out transform hover:-translate-y-1 bg-white">
                             <!-- Existing Card Content -->
                              <div class="category-parent-content relative h-64 w-full">

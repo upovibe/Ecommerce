@@ -72,8 +72,8 @@
     <script src="assets/js/main.js" defer></script>
     <!-- Add AOS JS -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Custom Scripts -->
 
-    
 <script>
     // Initialize AOS
     AOS.init({
@@ -89,6 +89,8 @@
     }
 </script> 
 
-    </body>
+<?php include_once __DIR__ . '/../modals/search_modal.php'; ?>
+
+</body>
 
     </html>

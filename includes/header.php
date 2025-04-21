@@ -14,6 +14,7 @@ $productsPath = '/products.php';
 $isHomeActive = ($currentPath === '/' || $currentPath === $homePath);
 $isProductsActive = ($currentPath === $productsPath);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -23,7 +24,10 @@ $isProductsActive = ($currentPath === $productsPath);
     <title><?= htmlspecialchars($storeName) ?></title>
     <meta name="description" content="<?= htmlspecialchars(STORE_SETTINGS['store_description'] ?? 'Your one-stop shop for all your needs') ?>">
     <!-- Favicon -->
-    <link rel="icon" href="<?= htmlspecialchars($logoPath) ?>" type="image/png"> <!-- Adjust type if logo isn't PNG -->
+    <link rel="icon" href="<?= htmlspecialchars($logoPath) ?>" type="image/png">
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/assets/css/style.css">
@@ -33,15 +37,17 @@ $isProductsActive = ($currentPath === $productsPath);
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <!-- Add AOS CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-    <!-- Link to Custom CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <!-- x-cloak styles -->
+    <style>
+      [x-cloak] { display: none !important; }
+    </style>
 
     <script src="/assets/js/utils.js" defer></script>
     <script src="/assets/js/main.js" defer></script>
 </head>
 
-<body class="bg-gray-50 flex flex-col min-h-screen">
+<body class="bg-gray-50 flex flex-col min-h-screen" x-data="{ isSearchModalOpen: false }">
     <nav class="shadow-lg sticky top-0 z-30 animate-header-load" style="background-color: <?= htmlspecialchars($themeColor) ?>;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 md:h-20">
@@ -77,7 +83,9 @@ $isProductsActive = ($currentPath === $productsPath);
                 </div>
 
                 <div class="flex items-center">
-                    <button id="searchModalButton" type="button" class="relative p-2 rounded-full hover:bg-black/10 transition-all duration-200 mr-2" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
+                    <button id="searchModalButton" type="button" 
+                            @click="isSearchModalOpen = true" 
+                            class="relative p-2 rounded-full hover:bg-black/10 transition-all duration-200 mr-2" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
                         <span class="sr-only">Search</span>
                         <i data-lucide="search" class="h-6 w-6"></i>
                     </button>

@@ -23,7 +23,7 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
     class="relative bg-cover bg-center py-24 md:py-32"
     style="background-image: url('<?= htmlspecialchars($bannerImage) ?>');">
     <div class="absolute inset-0 bg-black/50"></div> <!-- Dark overlay -->
-    <div class="relative container mx-auto px-4 text-center space-y-4 text-white">
+    <div class="relative max-w-7xl mx-auto px-4 text-center space-y-4 text-white">
         <h1 class="text-4xl md:text-5xl font-bold"><?= htmlspecialchars($bannerTitle) ?></h1>
         <p class="text-lg md:text-xl max-w-2xl mx-auto"><?= htmlspecialchars($bannerSubtitle) ?></p>
         <a href="<?= htmlspecialchars($whatsappLink) ?>" 
@@ -37,8 +37,18 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
     </div>
 </section>
 
-
-<section class="flex-grow container mx-auto px-4 py-8">
+<!-- Product List -->
+<section class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+    <h2 class="text-2xl font-semibold mb-6 text-gray-800">Our Products</h2>
+    <div id="product-grid" 
+         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+         data-currency-symbol="<?= htmlspecialchars(STORE_SETTINGS['currency_symbol'] ?? '$') ?>">
+        <!-- Products will be loaded here by JavaScript -->
+        <div id="loading-products" class="col-span-full text-center py-10">
+            <p class="text-gray-500 text-lg">Loading products...</p>
+            <!-- Optional: Add a spinner SVG or element here -->
+        </div>
+    </div>
 </section>
 
 </div>
@@ -47,3 +57,6 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
 <?php
 require_once __DIR__ . '/includes/footer.php';
 ?>
+
+<!-- Load the product list script -->
+<script src="/assets/js/product-management.js" defer></script>

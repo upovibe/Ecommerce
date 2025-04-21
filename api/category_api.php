@@ -17,6 +17,7 @@ function getFeaturedCategories() {
         $sql = "SELECT 
                     c.id, 
                     c.name, 
+                    c.slug, 
                     c.image, 
                     (SELECT COUNT(*) FROM categories sub WHERE sub.parent_id = c.id) as subcategory_count 
                 FROM categories c
@@ -30,6 +31,7 @@ function getFeaturedCategories() {
                 $categories[] = [
                     'id' => (int)$row['id'],
                     'name' => $row['name'],
+                    'slug' => $row['slug'],
                     'subcategory_count' => (int)$row['subcategory_count'],
                     'image' => $row['image']
                 ];
@@ -53,6 +55,7 @@ function getFeaturedCategories() {
                      }
                      $category['id'] = $category['id'] ?? null; 
                      $category['name'] = $category['name'] ?? 'Unnamed Category';
+                     $category['slug'] = $category['slug'] ?? ('category-' . ($category['id'] ?? 'unknown'));
                      $category['image'] = $category['image'] ?? null; 
                 }
                 unset($category); 
