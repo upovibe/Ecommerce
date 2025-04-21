@@ -38,11 +38,24 @@ function getFeaturedCategories() {
         if (file_exists($jsonFilePath)) {
             $jsonContent = file_get_contents($jsonFilePath);
             $decodedData = json_decode($jsonContent, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $categories = $decodedData;
+            if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['categories']) && is_array($decodedData['categories'])) {
+                $categories = $decodedData['categories']; // Extract only the categories array
+                // Calculate subcategory_count for demo data
+                foreach ($categories as &$category) {
+                     if (isset($category['subcategories']) && is_array($category['subcategories'])) {
+                         $category['subcategory_count'] = count($category['subcategories']);
+                     } else {
+                         $category['subcategory_count'] = 0; // Default if no subcategories key or not an array
+                     }
+                     // Ensure other expected keys exist, provide defaults if necessary (optional, good practice)
+                     $category['id'] = $category['id'] ?? null; 
+                     $category['name'] = $category['name'] ?? 'Unnamed Category';
+                     $category['image'] = $category['image'] ?? null; // Default will be handled below
+                }
+                unset($category); // Unset reference
             } else {
-                // Handle JSON decode error, perhaps log it or use a default empty array
-                error_log('Error decoding demo categories JSON: ' . json_last_error_msg());
+                // Handle JSON decode error or missing 'categories' key
+                error_log('Error decoding demo categories JSON or missing "categories" key: ' . json_last_error_msg());
                 $categories = []; // Fallback to empty array
             }
         } else {
@@ -55,9 +68,17 @@ function getFeaturedCategories() {
     
     // Ensure image key exists even if fetched from DB or JSON (set to placeholder)
     foreach ($categories as &$category) {
+        // Ensure category is an array before proceeding
+        if (!is_array($category)) {
+            // Log or handle the case where an element in $categories is not an array
+            error_log('Invalid category data encountered: ' . print_r($category, true));
+            continue; // Skip this iteration
+        }
         if (empty($category['image'])) {
             $category['image'] = '/assets/images/demo/bags-category.png';
         }
+        // Ensure subcategory_count is set if it wasn't (e.g., from DB query where count might be null)
+         $category['subcategory_count'] = $category['subcategory_count'] ?? 0;
     }
     unset($category);
     
@@ -136,8 +157,8 @@ include __DIR__ . '/includes/db_notice.php';
                    class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md transition duration-150 ease-in-out md:py-4 md:text-lg md:px-10 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" 
                    style="background-color: <?= htmlspecialchars(STORE_SETTINGS['theme_color']) ?>; color: <?= htmlspecialchars(STORE_SETTINGS['brand_text_color']) ?>;"
                    data-aos="fade-up" data-aos-delay="300">
-                    <!-- Shopping Cart SVG -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 mr-2" fill="currentColor" viewBox="0 0 24 24"" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                    <!-- Replace SVG with Lucide icon -->
+                    <i data-lucide="shopping-cart" class="size-5 mr-2"></i>
                     Shop Now
                 </a>
             </div>
@@ -164,21 +185,34 @@ include __DIR__ . '/includes/db_notice.php';
             <div class="swiper-wrapper">
                 <!-- Slides -->
                 <?php foreach ($featuredCategories as $category): ?>
+                    <?php 
+                        // Ensure $category is an array before trying to access keys
+                        if (!is_array($category)) {
+                            // Skip this iteration or log an error if $category is not an array
+                            // error_log('Invalid category data in loop: ' . print_r($category, true)); 
+                            continue; 
+                        }
+                        // Use null coalescing operator for safety
+                        $categoryId = $category['id'] ?? null; 
+                        $categoryName = $category['name'] ?? 'Unknown Category';
+                        $categoryImage = $category['image'] ?? '/assets/images/placeholder.png';
+                        $subcategoryCount = $category['subcategory_count'] ?? 0;
+                    ?>
                     <div class="swiper-slide">
-                         <a href="/pages/products.php?category=<?= $category['id'] ?>" 
+                         <a href="/pages/products.php?category=<?= $categoryId ?>" 
                            target="_blank" 
-                           data-category-id="<?= $category['id'] ?>" 
-                           data-category-name="<?= htmlspecialchars($category['name']) ?>" 
+                           data-category-id="<?= $categoryId ?>" 
+                           data-category-name="<?= htmlspecialchars($categoryName) ?>" 
                            class="category-card group block rounded-lg overflow-hidden shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 ease-in-out transform hover:-translate-y-1 bg-white">
                             <!-- Existing Card Content -->
                              <div class="category-parent-content relative h-64 w-full">
-                                <img src="<?= htmlspecialchars($category['image'] ?? '/assets/images/placeholder.png') ?>" 
-                                     alt="<?= htmlspecialchars($category['name']) ?>" 
+                                <img src="<?= htmlspecialchars($categoryImage) ?>" 
+                                     alt="<?= htmlspecialchars($categoryName) ?>" 
                                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-70 group-hover:opacity-80 transition-opacity duration-300"></div>
                                 <div class="absolute bottom-0 left-0 right-0 p-4">
-                                    <h3 class="text-lg font-semibold text-white mb-1"><?= htmlspecialchars($category['name']) ?></h3>
-                                    <p class="text-sm text-gray-200"><?= $category['subcategory_count'] ?> Subcategories</p>
+                                    <h3 class="text-lg font-semibold text-white mb-1"><?= htmlspecialchars($categoryName) ?></h3>
+                                    <p class="text-sm text-gray-200"><?= $subcategoryCount ?> Subcategories</p>
                                 </div>
                             </div>
                         </a>
@@ -188,8 +222,7 @@ include __DIR__ . '/includes/db_notice.php';
         <div class="text-center mt-12" data-aos="fade-up">
             <a href="/pages/products.php" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm"
                style="background-color: <?= htmlspecialchars(STORE_SETTINGS['theme_color']) ?>; color: <?= htmlspecialchars(STORE_SETTINGS['brand_text_color']) ?>;">
-                 <!-- Layout Grid SVG -->
-                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5 mr-2" fill="currentColor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                 <i data-lucide="layout-grid" class="size-5 mr-2"></i>
                 View All Products
             </a>
         </div>
@@ -225,7 +258,7 @@ include __DIR__ . '/includes/db_notice.php';
 
 <!-- Include modals -->
 <?php include_once 'modals/cartModal.php'; ?>
-<?php include_once 'modals/orderModal.php'; ?>
+<?php include_once 'modals/completeOrderModal.php'; ?>
 <?php include_once 'modals/searchModal.php'; ?>
 
 <?php
@@ -245,4 +278,8 @@ include_once 'includes/footer.php';
 
     // Subcategory fetching and display logic removed from here
 
+    // Render Lucide icons added via PHP/HTML
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 </script> 

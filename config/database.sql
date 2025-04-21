@@ -131,15 +131,15 @@ INSERT INTO categories (id, name, slug, description, parent_id, featured, displa
 
 -- Insert demo products
 INSERT INTO products (id, name, slug, description, price, original_price, discount_percentage, image, category_id, stock, featured, is_active, backorder) VALUES
-(1, 'School Backpack', 'school-backpack', 'Sturdy school backpack.', 4050.00, 4500.00, 10.00, '/assets/images/demo/backpack.png', 101, 25, 1, TRUE, FALSE),
-(2, 'Travel Duffel Bag', 'travel-duffel-bag', 'Spacious travel duffel bag.', 8500.00, NULL, NULL, '/assets/images/demo/duffel.png', 102, 15, 1, TRUE, FALSE),
-(3, 'Pink Sequin Purse', 'pink-sequin-purse', 'Stylish pink sequin purse.', 3200.00, NULL, NULL, '/assets/images/demo/purse.png', 103, 30, 0, TRUE, FALSE),
-(4, 'Long Body Wave Lace Front Wig', 'long-body-wave-lace-front', 'Beautiful long body wave wig with realistic lace front.', 25000.00, 28000.00, 10.71, '/assets/images/demo/wig-lace-bodywave.png', 201, 15, 1, TRUE, FALSE),
-(5, 'Short Bob Synthetic Wig - Black', 'short-bob-synthetic-black', 'Chic and easy-to-manage short black bob wig.', 7500.00, NULL, NULL, '/assets/images/demo/wig-synth-bob.png', 202, 30, 0, TRUE, FALSE),
-(6, 'Straight Human Hair Wig 18inch', 'straight-human-hair-18inch', 'Silky straight 18-inch human hair wig.', 45000.00, NULL, NULL, '/assets/images/demo/wig-human-straight.png', 203, 10, 1, TRUE, FALSE),
-(7, 'Running Sneakers', 'running-sneakers', 'Comfortable running sneakers.', 10200.00, 12000.00, 15.00, '/assets/images/demo/sneakers.png', 301, 20, 1, TRUE, FALSE),
-(8, 'Oxford Dress Shoes', 'oxford-dress-shoes', 'Classic Oxford dress shoes.', 15000.00, NULL, NULL, '/assets/images/demo/oxford.png', 302, 15, 0, FALSE, FALSE),
-(9, 'Stiletto Heels', 'stiletto-heels', 'Elegant stiletto heels.', 9500.00, 10000.00, 5.00, '/assets/images/demo/heels.png', 303, 10, 0, TRUE, FALSE);
+(1, 'School Backpack', 'school-backpack', 'Sturdy school backpack.', 150.00, 180.00, 16.67, '/assets/images/demo/backpack.png', 101, 25, 1, TRUE, FALSE),
+(2, 'Travel Duffel Bag', 'travel-duffel-bag', 'Spacious travel duffel bag.', 300.00, NULL, NULL, '/assets/images/demo/duffel.png', 102, 15, 1, TRUE, FALSE),
+(3, 'Pink Sequin Purse', 'pink-sequin-purse', 'Stylish pink sequin purse.', 80.00, NULL, NULL, '/assets/images/demo/purse.png', 103, 30, 0, TRUE, FALSE),
+(4, 'Long Body Wave Lace Front Wig', 'long-body-wave-lace-front', 'Beautiful long body wave wig with realistic lace front.', 800.00, 900.00, 11.11, '/assets/images/demo/wig-lace-bodywave.png', 201, 15, 1, TRUE, FALSE),
+(5, 'Short Bob Synthetic Wig - Black', 'short-bob-synthetic-black', 'Chic and easy-to-manage short black bob wig.', 150.00, NULL, NULL, '/assets/images/demo/wig-synth-bob.png', 202, 30, 0, TRUE, FALSE),
+(6, 'Straight Human Hair Wig 18inch', 'straight-human-hair-18inch', 'Silky straight 18-inch human hair wig.', 1200.00, NULL, NULL, '/assets/images/demo/wig-human-straight.png', 203, 10, 1, TRUE, FALSE),
+(7, 'Running Sneakers', 'running-sneakers', 'Comfortable running sneakers.', 250.00, 300.00, 16.67, '/assets/images/demo/sneakers.png', 301, 20, 1, TRUE, FALSE),
+(8, 'Oxford Dress Shoes', 'oxford-dress-shoes', 'Classic Oxford dress shoes.', 350.00, NULL, NULL, '/assets/images/demo/oxford.png', 302, 15, 0, FALSE, FALSE),
+(9, 'Stiletto Heels', 'stiletto-heels', 'Elegant stiletto heels.', 180.00, 200.00, 10.00, '/assets/images/demo/heels.png', 303, 10, 0, TRUE, FALSE);
 
 -- Insert demo product options
 INSERT INTO product_options (product_id, option_name, option_values) VALUES

@@ -20,7 +20,7 @@
             <!-- Close Button -->
             <button id="closeSearchModalButton" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition-colors">
                 <span class="sr-only">Close search</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                <i data-lucide="x" class="h-6 w-6"></i>
             </button>
 
             <div class="text-center mb-5">
@@ -34,7 +34,7 @@
                 <div class="relative">
                      <!-- Search Icon inside input -->
                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-gray-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
                     </div>
                     <input type="text" 
                            name="search" 
@@ -46,7 +46,7 @@
                     <button type="submit" 
                             class="absolute inset-y-0 right-0 flex items-center justify-center px-4 text-blue-500 hover:text-blue-700 transition-colors rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0">
                         <span class="sr-only">Search</span>
-                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                         <i data-lucide="arrow-right" class="h-5 w-5"></i>
                     </button>
                 </div>
             </form>

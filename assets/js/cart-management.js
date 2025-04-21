@@ -32,9 +32,9 @@ function saveCartItems(cart) {
 // --- Cart Modification Functions --- 
 // =========================================================================
 
-// SVG Icons used for button state changes within cart functions
-const checkIconSVG_cart = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-const cartIconSVG_cart = `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg>`;
+// Lucide Icons used for button state changes
+const checkIconHTML_cart = `<i data-lucide="check" class="w-5 h-5"></i>`;
+const cartIconHTML_cart = `<i data-lucide="shopping-cart" class="w-5 h-5"></i>`;
 
 /**
  * Adds an item to the shopping cart or potentially updates its quantity if it already exists.
@@ -53,6 +53,7 @@ function addToCart(productId, quantity = 1, productName, productPrice, productIm
     const existingItemIndex = cart.findIndex(item => item.id == productId);
 
     let itemAddedOrUpdated = false;
+    let wasNewItem = false; // Flag to check if it was a new addition
 
     if (existingItemIndex > -1) {
         console.log("Item already in cart:", productId);
@@ -70,6 +71,7 @@ function addToCart(productId, quantity = 1, productName, productPrice, productIm
         };
         cart.push(newItem);
         itemAddedOrUpdated = true;
+        wasNewItem = true; // Mark as a new item addition
         console.log("Added new item to cart:", newItem);
     }
 
@@ -80,7 +82,7 @@ function addToCart(productId, quantity = 1, productName, productPrice, productIm
         try {
             const productCardButton = document.querySelector(`.add-to-cart-icon-btn[data-product-id="${productId}"]`);
             if (productCardButton) {
-                productCardButton.innerHTML = checkIconSVG_cart; // Change icon to checkmark
+                productCardButton.innerHTML = checkIconHTML_cart; // Use Lucide HTML
                 productCardButton.disabled = true;
                 productCardButton.title = 'Added to Cart';
                 // Remove old classes, add new ones
@@ -88,11 +90,24 @@ function addToCart(productId, quantity = 1, productName, productPrice, productIm
                 productCardButton.classList.add('text-green-500', 'bg-green-100', 'cursor-not-allowed', 'in-cart');
                  // Remove any lingering animation classes (like animate-bounce if added elsewhere)
                 productCardButton.classList.remove('animate-bounce'); 
+                // Render the new icon
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
             }
         } catch (e) {
             console.error("Error updating product card button UI:", e);
         }
         // --- End button UI update ---
+        
+        // --- Show Toast Notification --- 
+        if (wasNewItem && typeof toast !== 'undefined' && typeof toast.success === 'function') {
+            toast.success(`"${productName}" added to cart!`);
+        } else if (!wasNewItem) {
+             // Optional: Show a different toast if item was already there (or just don't show one)
+             // console.log("Item already in cart, no toast shown.");
+        }
+        // -----------------------------
     }
 }
 
@@ -116,12 +131,16 @@ function removeFromCart(productId) {
         try {
             const productCardButton = document.querySelector(`.add-to-cart-icon-btn[data-product-id="${productId}"]`);
             if (productCardButton) {
-                productCardButton.innerHTML = cartIconSVG_cart; // Change icon back to cart
+                productCardButton.innerHTML = cartIconHTML_cart; // Use Lucide HTML
                 productCardButton.disabled = false;
                 productCardButton.title = 'Add to Cart';
                 // Remove added styles, add back default/hover styles
                 productCardButton.classList.remove('text-green-500', 'bg-green-100', 'cursor-not-allowed', 'in-cart');
                 productCardButton.classList.add('text-gray-500', 'hover:text-primary', 'hover:bg-gray-100');
+                // Render the new icon
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
             }
         } catch (e) {
             console.error("Error reverting product card button UI:", e);
@@ -171,6 +190,43 @@ function decreaseCartItemQuantity(productId) {
     } else {
          console.warn("Attempted to decrease quantity for item not in cart:", productId);
     }
+}
+
+/**
+ * Clears all items from the shopping cart.
+ * Updates the UI to reflect the empty cart.
+ */
+function clearCart() {
+    console.log("Clearing all items from the cart.");
+    localStorage.removeItem('shoppingCart'); // Remove the entire cart item from localStorage
+    saveCartItems([]); // Call save with empty array to trigger UI update and ensure consistency
+    // Optionally, revert all 'Added to Cart' buttons on the page
+    revertAllAddToCartButtons(); 
+}
+
+/**
+ * Reverts the state of all 'Add to Cart' buttons on the page to their default appearance.
+ * Useful after clearing the cart.
+ */
+function revertAllAddToCartButtons() {
+    const allCartButtons = document.querySelectorAll('.add-to-cart-icon-btn.in-cart');
+    allCartButtons.forEach(button => {
+        try {
+            button.innerHTML = cartIconHTML_cart; // Use Lucide HTML
+            button.disabled = false;
+            button.title = 'Add to Cart';
+            button.classList.remove('text-green-500', 'bg-green-100', 'cursor-not-allowed', 'in-cart');
+            button.classList.add('text-gray-500', 'hover:text-primary', 'hover:bg-gray-100');
+             // Remove any lingering animation classes
+             button.classList.remove('animate-bounce'); 
+            // Re-render icon
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons({ nodes: [button] }); // Render only within this button
+            }
+        } catch (e) {
+            console.error("Error reverting add to cart button UI:", e, button);
+        }
+    });
 }
 
 // =========================================================================

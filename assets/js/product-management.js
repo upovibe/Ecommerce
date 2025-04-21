@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Access PHP Data --- 
     const allCategories = window.PHP_DATA.allCategories || [];
-    const currencySymbol = window.PHP_DATA.currencySymbol || '₦';
+    const currencySymbol = window.PHP_DATA.currencySymbol || '₵';
     const initialCategoryId = window.PHP_DATA.initialCategoryId;
     const initialSubcategoryId = window.PHP_DATA.initialSubcategoryId;
 
@@ -44,10 +44,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Reset Button
     const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+    // Apply Button (Added)
+    const applyFiltersBtn = document.getElementById('applyProductFiltersBtn');
 
-    // SVGs (Make sure these are consistent with cart.js if needed there too)
-    const cartIconSVG = `<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg>`;
-    const checkIconSVG = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+    // Lucide Icons (using <i> tags directly)
+    const cartIconHTML = `<i data-lucide="shopping-cart" class="w-5 h-5"></i>`;
+    const checkIconHTML = `<i data-lucide="check" class="w-5 h-5"></i>`;
 
     // --- State Variables ---
     let isFetching = false; // Prevents multiple simultaneous fetches
@@ -164,22 +166,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Skeleton Loader ---
     const gridSkeletonHTML = `
-        <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse h-80">
-            <div class="product-image-container h-48 bg-gray-300"></div>
-            <div class="product-details p-4 flex flex-col justify-between flex-grow">
-                 <div>
-                     <div class="product-header">
-                         <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                         <div class="h-4 bg-gray-300 rounded w-1/4"></div>
-                     </div>
-                     <div class="h-3 bg-gray-300 rounded w-full mt-2"></div>
-                     <div class="h-3 bg-gray-300 rounded w-5/6 mt-1"></div>
-                 </div>
-                 <div class="product-actions mt-3">
-                     <div class="h-9 bg-gray-300 rounded w-full"></div>
-                 </div>
-             </div>
-        </div>
+        <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer  w-full min-w-56">
+  <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
+    <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
+    <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
+    <div class="absolute bg-gray-200 bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
+      <div class="h-5 bg-gray-300 rounded w-2/3"></div>
+    </div>
+  </div>
+  <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
+    <div class="product-header flex justify-between items-center mt-1">
+      <div class="h-6 bg-gray-300 rounded w-1/2"></div>
+      <div class="bg-gray-300 rounded h-6 w-6 ml-auto"></div>
+    </div>
+  </div>
+</div>
     `;
 
     /**
@@ -230,12 +231,14 @@ document.addEventListener('DOMContentLoaded', function() {
             statusBadgeHTML = `<span class="absolute top-2 right-2 inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses} z-10">${statusText}</span>`;
         }
         
-        const formattedPrice = isNaN(price) ? 'N/A' : currencySymbol + price.toFixed(2);
+        // Use global formatCurrency function
+        const formattedPrice = isNaN(price) ? 'N/A' : formatCurrency(price, currencySymbol);
         let priceHTML = `<p class="product-price text-lg font-medium text-primary flex-shrink-0">${formattedPrice}</p>`;
         let discountBadgeHTML = '';
 
         if (originalPrice && !isNaN(originalPrice) && originalPrice > price) {
-            const formattedOriginalPrice = currencySymbol + originalPrice.toFixed(2);
+            // Use global formatCurrency function for original price too
+            const formattedOriginalPrice = formatCurrency(originalPrice, currencySymbol);
             priceHTML = `
                 <div class="flex items-baseline gap-2">
                     <p class="product-price text-lg font-medium text-red-600 flex-shrink-0">${formattedPrice}</p>
@@ -284,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                  data-product-image="${safeImage}" 
                                  data-product-options='${safeOptions}'
                                  ${isInCart ? 'disabled' : ''}>
-                             ${isInCart ? checkIconSVG : cartIconSVG}
+                             ${isInCart ? checkIconHTML : cartIconHTML}
                          </button>
                      </div>
                  </div>
@@ -303,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!products || products.length === 0) {
             productContainer.innerHTML = `
                 <div class="col-span-full text-center py-12">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <i data-lucide="frown" class="h-12 w-12 mx-auto text-gray-400"></i>
                     <h3 class="mt-2 text-lg font-medium text-gray-900">No products found.</h3>
                     <p class="mt-1 text-sm text-gray-500">Try adjusting your filters.</p>
                     <div class="mt-6"><a href="/pages/products.php" class="text-primary hover:text-indigo-700">View all products</a></div>
@@ -314,6 +317,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         productContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-300 ease-in-out';
+        // Render icons after updating the container
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 
     /**
@@ -446,10 +453,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (image) {
                         buttonHTML += `<img src="${escapeHTML(image)}" alt="" class="h-5 w-5 mr-2 flex-shrink-0 rounded-sm object-cover">`;
                     } else {
-                        buttonHTML += '<svg class="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM8.707 14.707a1 1 0 001.414 0L14 10.414V12a1 1 0 102 0V8a1 1 0 00-1-1h-4a1 1 0 100 2h1.586l-4.293 4.293a1 1 0 000 1.414z" clip-rule="evenodd" /></svg>';
+                        buttonHTML += '<i data-lucide="layout-list" class="h-5 w-5 mr-2 text-gray-400"></i>'; // Lucide icon
                     }
                     buttonHTML += `<span>${escapeHTML(name)}</span>`;
                     categoryDropdownSelected.innerHTML = buttonHTML;
+                    // Render the new icon in the button
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
                 }
 
                 categoryDropdownPanel.classList.add('hidden');
@@ -484,6 +495,87 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                  fetchAndUpdateProducts();
             }
+        });
+    }
+
+    // Reset Filters Button Listener
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', function() {
+            console.log('Reset Filters button clicked');
+            // 1. Reset Category
+            if (categoryValueInput) {
+                categoryValueInput.value = ''; // Clear hidden input
+            }
+            if (categoryDropdownSelected) { // Update button display
+                categoryDropdownSelected.innerHTML = 
+                    `<i data-lucide="layout-list" class="h-5 w-5 mr-2 text-gray-400"></i>` +
+                    `<span>All Categories</span>`;
+            }
+            // Close dropdown if open
+             if (categoryDropdownPanel && !categoryDropdownPanel.classList.contains('hidden')) {
+                 categoryDropdownPanel.classList.add('hidden');
+                 if(categoryDropdownButton) categoryDropdownButton.setAttribute('aria-expanded', 'false');
+             }
+
+            // 2. Reset Subcategory
+            if (subcategorySelect) {
+                subcategorySelect.value = ''; // Clear selection
+            }
+            updateSubcategoryOptions(); // Disable/reset options
+
+            // 3. Reset Search Query from URL
+            const currentUrl = new URL(window.location.href);
+            const params = currentUrl.searchParams;
+            const hadSearch = params.has('search');
+            params.delete('search');
+            params.delete('category'); // Also ensure category/sub are cleared from URL params
+            params.delete('subcategory');
+            // Construct the new URL path (base path without query string)
+            const newUrl = currentUrl.pathname; 
+
+            // Update history state without triggering popstate
+            // Use replaceState to avoid adding "reset" steps to history
+            history.replaceState({ category: null, subcategory: null, search: null }, '', newUrl);
+
+            // Clear search modal input if it exists and search was active
+            if (hadSearch && modalSearchInput) {
+                modalSearchInput.value = '';
+            }
+
+            // 4. Fetch all products
+            if (productContainer) {
+                productContainer.innerHTML = ''; // Clear immediately for visual feedback
+                productContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-300 ease-in-out';
+                for (let i = 0; i < 12; i++) {
+                    productContainer.insertAdjacentHTML('beforeend', gridSkeletonHTML);
+                }
+            }    
+            fetchAndUpdateProducts();
+
+            // 5. Hide reset button (fetchAndUpdateProducts also calls this, but good to do it immediately)
+            checkAndToggleResetButton();
+        });
+    }
+
+    // Apply Filters Button Listener (Added)
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', function() {
+            console.log('Apply Filters button clicked');
+            
+            // Close mobile filter panel if open
+            if (filterControlsPanel && !filterControlsPanel.classList.contains('hidden') && window.innerWidth < 768) {
+                filterControlsPanel.classList.add('hidden');
+            }
+
+            // Fetch products with current filters
+            if (productContainer) {
+                productContainer.innerHTML = ''; // Clear immediately for visual feedback
+                productContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-300 ease-in-out';
+                for (let i = 0; i < 12; i++) {
+                    productContainer.insertAdjacentHTML('beforeend', gridSkeletonHTML);
+                }
+            }    
+            fetchAndUpdateProducts();
         });
     }
 
@@ -524,10 +616,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     addToCartButton.classList.add('animate-bounce', 'cursor-not-allowed');
 
                     setTimeout(() => {
-                        addToCartButton.innerHTML = checkIconSVG;
+                        addToCartButton.innerHTML = checkIconHTML;
                         addToCartButton.classList.remove('animate-bounce', 'text-gray-500', 'hover:text-primary', 'hover:bg-gray-100');
                         addToCartButton.classList.add('text-green-500', 'bg-green-100', 'in-cart');
                         addToCartButton.title = 'Added to Cart';
+                        // Render the new check icon
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
                     }, 500);
 
                 } else {
@@ -607,10 +703,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (image) {
                 buttonHTML += `<img src="${escapeHTML(image)}" alt="" class="h-5 w-5 mr-2 flex-shrink-0 rounded-sm object-cover">`;
             } else {
-                buttonHTML += '<svg class="h-5 w-5 mr-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM8.707 14.707a1 1 0 001.414 0L14 10.414V12a1 1 0 102 0V8a1 1 0 00-1-1h-4a1 1 0 100 2h1.586l-4.293 4.293a1 1 0 000 1.414z" clip-rule="evenodd" /></svg>';
+                buttonHTML += '<i data-lucide="layout-list" class="h-5 w-5 mr-2 text-gray-400"></i>'; // Lucide icon
             }
             buttonHTML += `<span>${escapeHTML(name)}</span>`;
             categoryDropdownSelected.innerHTML = buttonHTML;
+            // Render the new icon in the button
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         }
 
         updateSubcategoryOptions(); // Update subcategory options based on the new category

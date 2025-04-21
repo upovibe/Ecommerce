@@ -141,7 +141,7 @@ $initialProducts = $initialData['products'];
                 <h1 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2"><i data-lucide="package" class="h-6 w-6"></i> <?= htmlspecialchars($pageTitle) ?></h1>
                 <div class="h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full mb-4"></div>
             </div>
-            <button @click="openAddModal()" type="button" class="flex items-center inline-flex items-center justify-center gap-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 size-8 md:w-fit md:px-2">
+            <button @click="openAddModal()" type="button" class="flex items-center justify-center gap-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 size-8 md:w-fit md:px-2">
                 <i data-lucide="plus" class="size-4"></i> <span class="hidden md:inline">Add New Product</span>
             </button>
         </div>

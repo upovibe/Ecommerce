@@ -47,16 +47,6 @@ function initProductViewButtons() {
 }
 
 /**
- * Format currency
- * @param {number} amount - Amount to format
- * @param {string} currencySymbol - Currency symbol
- * @returns {string} Formatted currency
- */
-function formatCurrency(amount, currencySymbol = '₦') {
-    return currencySymbol + parseFloat(amount).toFixed(2);
-}
-
-/**
  * Handle AJAX errors
  * @param {Error} error - Error object
  */

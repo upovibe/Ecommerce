@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalAvailability = document.getElementById('productModalAvailability');
     const modalDiscountBadge = document.getElementById('productModalDiscountBadge'); // Assumes an ID for the badge span
 
+    // Define Lucide Icons used in this script
+    const modalAddIconHTML = `<i data-lucide="plus" class="w-4 h-4 mr-1"></i>`;
+    const modalCheckIconHTML = `<i data-lucide="check" class="w-5 h-5 mr-1"></i>`;
+
     // --- Cart Modal Elements ---
     const cartModal = document.getElementById('cartModal');
     const cartModalOverlay = document.getElementById('cartModalOverlay');
@@ -34,6 +38,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartModalProceedButton = document.getElementById('cartModalProceedButton');
     const cartModalEmptyMsg = document.getElementById('cartModalEmptyMsg');
     const cartModalLoadingMsg = document.getElementById('cartModalLoadingMsg');
+    const cartModalClearButton = document.getElementById('cartModalClearButton'); // Added Clear Cart Button
+
+    // --- Complete Order Modal Elements ---
+    const completeOrderModal = document.getElementById('completeOrderModal');
+    const completeOrderModalOverlay = document.getElementById('completeOrderModalOverlay');
+    const completeOrderModalPanel = document.getElementById('completeOrderModalPanel');
+    const closeCompleteOrderModalButton = document.getElementById('closeCompleteOrderModalButton');
+    const cancelCompleteOrderButton = document.getElementById('cancelCompleteOrderButton'); // Added cancel button
+
+    // --- Complete Order Modal Form Elements ---
+    const deliveryMethodRadios = document.querySelectorAll('input[name="deliveryMethod"]');
+    const recipientTypeRadios = document.querySelectorAll('input[name="recipientType"]');
+    const myselfFields = document.getElementById('myselfFields');
+    const senderFieldsContainer = document.getElementById('senderFieldsContainer'); // New container for sender info
+    const recipientAccordionContainer = document.getElementById('recipientAccordionContainer'); // New accordion container
+    // Input fields that need requirement toggling
+    const customerAddressInput = document.getElementById('customerAddress'); // Now handled by Alpine :required
+    const receiverAddressInput = document.getElementById('receiverAddress'); // Now handled by Alpine :required
+    const primaryDetailsTitle = document.getElementById('primaryDetailsTitle'); // Title span for first accordion
+    const senderFields = senderFieldsContainer ? senderFieldsContainer.querySelectorAll('input[id^="sender"]') : [];
+    const receiverFields = recipientAccordionContainer ? recipientAccordionContainer.querySelectorAll('input[id^="receiver"], textarea[id^="receiver"]') : [];
+    const customerFields = myselfFields ? myselfFields.querySelectorAll('input[id^="customer"], textarea[id^="customer"]') : [];
 
     // --- Header Button Elements ---
     const headerCartButton = document.getElementById('cartButton'); // Desktop
@@ -76,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const origPrice = currentProductData.original_price;
             const discount = currentProductData.discount_percentage;
             let priceHTML = '';
-            const format = (num) => typeof formatCurrency === 'function' ? formatCurrency(num) : `₦${num.toFixed(2)}`;
+            const format = (num) => typeof formatCurrency === 'function' ? formatCurrency(num) : `₵${num.toFixed(2)}`;
 
             if (origPrice && !isNaN(origPrice) && origPrice > price) {
                  priceHTML = `
@@ -173,9 +199,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Update Add to Cart button's product ID
+        // Update Add to Cart button's product ID and initial state
         if(productModalAddToCartButton) {
             productModalAddToCartButton.dataset.productId = productId;
+
+            let isInCart = false;
+            if (typeof getCartItems === 'function') {
+                const cartItems = getCartItems(); 
+                // Simple check by ID. Refine if options need to be checked.
+                isInCart = cartItems.some(item => item.id == productId); 
+            } else {
+                console.warn('getCartItems function not found for initial modal button check.');
+            }
+
+            if (isInCart) {
+                 // Set to "Added" state
+                 productModalAddToCartButton.disabled = true;
+                 productModalAddToCartButton.innerHTML = `${modalCheckIconHTML} Added to Cart`;
+                 productModalAddToCartButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                 productModalAddToCartButton.classList.add('bg-green-600', 'hover:bg-green-700', 'cursor-not-allowed');
+            } else {
+                 // Reset to default "Add" state
+                 productModalAddToCartButton.disabled = false;
+                 productModalAddToCartButton.innerHTML = `${modalAddIconHTML} Add to Cart`;
+                 productModalAddToCartButton.classList.remove('bg-green-600', 'hover:bg-green-700', 'cursor-not-allowed');
+                 productModalAddToCartButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            }
+            // Render the icon in the button
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         }
 
         // Show Modal with transitions
@@ -286,21 +339,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectedOptions // Pass the collected options
                 );
                 
-                // Optionally provide feedback (e.g., change button text briefly)
-                const originalText = productModalAddToCartButton.innerHTML;
-                productModalAddToCartButton.innerHTML = 
-                    `<svg class="w-5 h-5 mr-1 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Adding...`;
+                // --- Update button to permanent "Added" state --- 
                 productModalAddToCartButton.disabled = true;
-
-                setTimeout(() => {
-                    productModalAddToCartButton.innerHTML = 
-                         `<svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>Added!`;
-                    setTimeout(() => {
-                         productModalAddToCartButton.innerHTML = originalText;
-                         productModalAddToCartButton.disabled = false;
-                         closeProductModal(); // Close modal after adding
-                    }, 1200); // Reset button text and close
-                }, 800); // Show 'Added!' message
+                productModalAddToCartButton.innerHTML = `${modalCheckIconHTML} Added to Cart`;
+                productModalAddToCartButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                productModalAddToCartButton.classList.add('bg-green-600', 'hover:bg-green-700', 'cursor-not-allowed');
+                // Render the icon in the button
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                
+                 // --- REMOVED previous temporary feedback logic ---
 
             } else {
                 console.error("addToCart function is not defined.");
@@ -356,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Function to Update Cart Modal Content ---
     window.updateCartModal = function() {
         // Ensure elements exist
-        if (!cartModalItemsContainer || !cartModalSubtotal || !cartModalProceedButton || !cartModalEmptyMsg || !cartModalLoadingMsg) {
+        if (!cartModalItemsContainer || !cartModalSubtotal || !cartModalProceedButton || !cartModalEmptyMsg || !cartModalLoadingMsg || !cartModalClearButton) {
             console.warn("Cart modal elements not found, cannot update.");
             return; 
         }
@@ -368,6 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cartModalLoadingMsg.style.display = 'none';
             cartModalEmptyMsg.style.display = 'none';
             if (cartModalProceedButton) cartModalProceedButton.disabled = true;
+            if (cartModalClearButton) cartModalClearButton.disabled = true;
             return;
         }
 
@@ -385,13 +435,14 @@ document.addEventListener('DOMContentLoaded', () => {
             cartModalItemsContainer.innerHTML = ''; 
             cartModalEmptyMsg.style.display = 'block'; 
             if (cartModalProceedButton) cartModalProceedButton.disabled = true;
+            if (cartModalClearButton) cartModalClearButton.disabled = true; // Disable clear button when empty
         } else {
             console.log("Cart has items, showing items."); 
             cartModalEmptyMsg.style.display = 'none'; 
             cartItems.forEach(item => {
                 const itemTotal = item.price * item.quantity;
                 subtotal += itemTotal;
-                const trashIconSVG = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+                const trashIconHTML = `<i data-lucide="trash-2" class="w-4 h-4"></i>`;
                 const itemHTML = `
                     <div class="flex items-center py-4" data-cart-item-id="${item.id}">
                         <img src="${escapeHTML(item.image || '../assets/images/placeholder.png')}" alt="${escapeHTML(item.name)}" class="h-16 w-16 rounded object-cover mr-4 flex-shrink-0">
@@ -402,28 +453,112 @@ document.addEventListener('DOMContentLoaded', () => {
                              <!-- Quantity Controls -->
                              <div class="flex items-center mt-2 text-sm">
                                 <button type="button" aria-label="Decrease quantity" class="cart-quantity-btn cart-decrease-btn p-1 border rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" data-product-id="${item.id}" ${item.quantity <= 1 ? 'disabled' : ''}>
-                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                                     <i data-lucide="minus" class="w-3 h-3"></i>
                                 </button>
                                 <span class="px-3 font-medium">${item.quantity}</span>
                                 <button type="button" aria-label="Increase quantity" class="cart-quantity-btn cart-increase-btn p-1 border rounded-md text-gray-600 hover:bg-gray-100" data-product-id="${item.id}">
-                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                     <i data-lucide="plus" class="w-3 h-3"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="text-right ml-4 flex flex-col items-end justify-between">
                             <p class="font-medium text-gray-900 text-sm mb-1">${formatCurrency(itemTotal)}</p>
                              <button type="button" aria-label="Remove item" class="p-1 rounded-md text-red-600 hover:bg-red-100 mt-auto cart-remove-item-btn" data-product-id="${item.id}">
-                                ${trashIconSVG}
+                                ${trashIconHTML}
                              </button>
                         </div>
                     </div>
                 `;
                 cartModalItemsContainer.insertAdjacentHTML('beforeend', itemHTML);
             });
+            // Render icons in the cart items
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
              if (cartModalProceedButton) cartModalProceedButton.disabled = false;
+             if (cartModalClearButton) cartModalClearButton.disabled = false; // Enable clear button when not empty
         }
 
         cartModalSubtotal.textContent = formatCurrency(subtotal);
+    }
+
+    // ======================================
+    //          COMPLETE ORDER MODAL LOGIC
+    // ======================================
+
+    // --- Function to Open Complete Order Modal ---
+    window.openCompleteOrderModal = function() {
+        if (!completeOrderModal) return;
+        console.log("Opening Complete Order Modal");
+        
+        // Reset to default selections if desired (optional)
+        // document.getElementById('deliveryMethodDelivery').checked = true;
+        // document.getElementById('recipientTypeMyself').checked = true;
+
+        updateCompleteOrderForm(); // Update visibility based on current/default selections
+        
+        // Show Modal with transitions
+        completeOrderModal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            if(completeOrderModalOverlay) completeOrderModalOverlay.classList.replace('opacity-0', 'opacity-100');
+            if(completeOrderModalPanel) completeOrderModalPanel.classList.replace('opacity-0', 'opacity-100');
+            if(completeOrderModalPanel) completeOrderModalPanel.classList.replace('translate-y-4', 'translate-y-0');
+            if(completeOrderModalPanel) completeOrderModalPanel.classList.replace('sm:scale-95', 'sm:scale-100');
+        });
+    }
+
+    // --- Function to Close Complete Order Modal ---
+    window.closeCompleteOrderModal = function() {
+        if (!completeOrderModal || completeOrderModal.classList.contains('hidden')) return;
+
+        // Start fade-out transitions
+        if(completeOrderModalOverlay) completeOrderModalOverlay.classList.replace('opacity-100', 'opacity-0');
+        if(completeOrderModalPanel) completeOrderModalPanel.classList.replace('opacity-100', 'opacity-0');
+        if(completeOrderModalPanel) completeOrderModalPanel.classList.replace('translate-y-0', 'translate-y-4');
+        if(completeOrderModalPanel) completeOrderModalPanel.classList.replace('sm:scale-100', 'sm:scale-95');
+
+        // Hide modal after transition duration (e.g., 300ms)
+        setTimeout(() => {
+            completeOrderModal.classList.add('hidden');
+        }, 300);
+    }
+
+    // --- Function to Update Complete Order Form Visibility ---
+    function updateCompleteOrderForm() {
+        // const isDelivery = document.querySelector('input[name="deliveryMethod"]:checked')?.value === 'delivery'; // Address handled by Alpine now
+        const isMyself = document.querySelector('input[name="recipientType"]:checked')?.value === 'myself';
+
+        if (myselfFields && senderFieldsContainer && recipientAccordionContainer && primaryDetailsTitle) {
+            // Toggle fields *within* the first accordion
+            myselfFields.classList.toggle('hidden', !isMyself);
+            senderFieldsContainer.classList.toggle('hidden', isMyself);
+            
+            // Update the title of the first accordion
+            primaryDetailsTitle.textContent = isMyself ? 'Your Details' : 'Sender Details';
+
+            // Toggle the *entire* Recipient accordion item
+            recipientAccordionContainer.classList.toggle('hidden', isMyself);
+
+            // Delivery Address Containers and their required attributes are now handled by Alpine.js x-data/x-show/:required
+            
+            // Toggle required attributes on sender/receiver/customer fields based on visibility
+            customerFields.forEach(input => {
+                // Exclude address input as Alpine handles its requirement via :required="show"
+                if (input.id !== 'customerAddress') {
+                   input.required = isMyself;
+                }
+            });
+            senderFields.forEach(input => input.required = !isMyself);
+            receiverFields.forEach(input => {
+                 // Exclude address input as Alpine handles its requirement via :required="show"
+                if (input.id !== 'receiverAddress') {
+                   input.required = !isMyself;
+                }
+            });
+            
+        } else {
+            console.warn('One or more elements for complete order form conditional logic not found (myselfFields, senderFieldsContainer, recipientAccordionContainer, primaryDetailsTitle).');
+        }
     }
 
     // ======================================
@@ -442,8 +577,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Close on Escape key (shared handler)
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && cartModal && !cartModal.classList.contains('hidden')) {
-            closeCartModal();
+        if (event.key === 'Escape') {
+            if (productModal && !productModal.classList.contains('hidden')) {
+                closeProductModal();
+            }
+            if (cartModal && !cartModal.classList.contains('hidden')) {
+                closeCartModal();
+            }
+            if (completeOrderModal && !completeOrderModal.classList.contains('hidden')) {
+                closeCompleteOrderModal();
+            }
+            // Add other modals here if needed
         }
     });
 
@@ -496,12 +640,77 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-     // Proceed button listener (Replaces Checkout)
+     // Proceed button listener (Now opens Complete Order Modal)
      if (cartModalProceedButton) {
          cartModalProceedButton.addEventListener('click', () => {
-             alert('Proceeding! (Next step TBD)');
-             // TODO: Implement redirect to checkout page or order placement page
-             closeCartModal();
+             console.log('Cart Proceed button clicked. Opening Complete Order modal.');
+             // Close Cart Modal first (optional, but cleaner)
+             closeCartModal(); 
+             // Open the new modal after a short delay to allow cart modal to start closing
+             setTimeout(openCompleteOrderModal, 150); 
+             // Previous action (e.g., redirect) is removed/replaced by this listener.
+             // If it was redirecting via href, ensure that href is removed or '#'.
          });
      }
+
+     // --- Complete Order Modal Listeners ---
+     if (closeCompleteOrderModalButton) {
+         closeCompleteOrderModalButton.addEventListener('click', closeCompleteOrderModal);
+     }
+     if (cancelCompleteOrderButton) { // Also close on cancel button click
+         cancelCompleteOrderButton.addEventListener('click', closeCompleteOrderModal);
+     }
+     if (completeOrderModalOverlay) {
+         completeOrderModalOverlay.addEventListener('click', closeCompleteOrderModal);
+     }
+     // Escape key handled by the shared listener above
+
+    // Add listeners for the radio buttons in Complete Order Modal
+    recipientTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateCompleteOrderForm);
+    });
+
+    // Initial form state update when modal opens (might be better in openCompleteOrderModal)
+    // For now, we assume defaults are correct on load, or call it once
+    // updateCompleteOrderForm(); // Call once on load if needed, but might run before elements are ready
+    // Better to call it when the modal opens. Let's modify openCompleteOrderModal
+    
+    // --- Modified Function to Open Complete Order Modal (Calls form update) ---
+     window.openCompleteOrderModal = function() {
+        if (!completeOrderModal) return;
+        console.log("Opening Complete Order Modal");
+        
+        // Reset to default selections if desired (optional)
+        // document.getElementById('deliveryMethodDelivery').checked = true;
+        // document.getElementById('recipientTypeMyself').checked = true;
+
+        updateCompleteOrderForm(); // Update visibility based on current/default selections
+        
+        // Show Modal with transitions
+        completeOrderModal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            if(completeOrderModalOverlay) completeOrderModalOverlay.classList.replace('opacity-0', 'opacity-100');
+            if(completeOrderModalPanel) completeOrderModalPanel.classList.replace('opacity-0', 'opacity-100');
+            if(completeOrderModalPanel) completeOrderModalPanel.classList.replace('translate-y-4', 'translate-y-0');
+            if(completeOrderModalPanel) completeOrderModalPanel.classList.replace('sm:scale-95', 'sm:scale-100');
+        });
+    }
+
+    // Clear Cart Button Listener (Added)
+    if (cartModalClearButton) {
+        cartModalClearButton.addEventListener('click', () => {
+            if (typeof clearCart === 'function') {
+                if (confirm('Are you sure you want to remove all items from your cart?')) {
+                    console.log('Clear Cart button clicked and confirmed.');
+                    clearCart(); 
+                } else {
+                    console.log('Clear Cart action cancelled.');
+                }
+            } else {
+                console.error('clearCart function is not defined.');
+                alert('Error: Could not clear the cart.');
+            }
+        });
+    }
+
 }); 

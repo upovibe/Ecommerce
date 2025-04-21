@@ -219,7 +219,10 @@ function getProductDetails($productId) {
     
     // Try to get from database if connection is available
     if ($db_connected && $conn) {
-        $sql = "SELECT id, name, price, description, image, category_id FROM products WHERE id = ?";
+        $sql = "SELECT p.id, p.name, p.price, p.original_price, p.discount_percentage, p.description, p.image, p.category_id, c.name as category_name, p.stock, p.is_active, p.backorder, p.slug
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                WHERE p.id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('i', $productId);
         $stmt->execute();
@@ -247,47 +250,39 @@ function getProductDetails($productId) {
         }
     }
     
-    // If no database or product not found, check demo products
-    $demoProducts = [
-        1 => [
-            'id' => 1,
-            'name' => 'School Backpack',
-            'price' => 4500,
-            'description' => 'A durable backpack with multiple compartments, perfect for students. Made from high-quality materials that will last for years.',
-            'image' => 'assets/images/demo/backpack.jpg',
-            'category_id' => 101,
-            'options' => [
-                'Color' => ['Black', 'Blue', 'Red'],
-                'Size' => ['Small', 'Medium', 'Large']
-            ]
-        ],
-        2 => [
-            'id' => 2,
-            'name' => 'Travel Suitcase',
-            'price' => 15000,
-            'description' => 'Lightweight yet durable suitcase with spinner wheels and expandable capacity. Perfect for your next journey.',
-            'image' => 'assets/images/demo/suitcase.jpg',
-            'category_id' => 102,
-            'options' => [
-                'Color' => ['Silver', 'Black', 'Blue'],
-                'Size' => ['Carry-on', 'Medium', 'Large']
-            ]
-        ],
-        3 => [
-            'id' => 3,
-            'name' => 'Fresh Apples (1kg)',
-            'price' => 800,
-            'description' => 'Fresh, crisp apples sourced directly from local farmers. Rich in fiber and vitamins.',
-            'image' => 'assets/images/demo/apples.jpg',
-            'category_id' => 201,
-            'options' => [
-                'Type' => ['Red Delicious', 'Granny Smith', 'Gala']
-            ]
-        ],
-        // Add more demo products as needed
-    ];
+    // If no database or product not found, load from demo JSON
+    $jsonPath = __DIR__ . '/../config/demo_data.json';
+    if (file_exists($jsonPath)) {
+        $jsonContent = file_get_contents($jsonPath);
+        $demoData = json_decode($jsonContent, true);
+        
+        if (json_last_error() === JSON_ERROR_NONE && isset($demoData['products']) && is_array($demoData['products'])) {
+            foreach ($demoData['products'] as $demoProduct) {
+                if (isset($demoProduct['id']) && $demoProduct['id'] == $productId) {
+                    // Return the found demo product (ensure keys match what might be expected)
+                    return [
+                        'id' => $demoProduct['id'],
+                        'name' => $demoProduct['name'] ?? 'N/A',
+                        'slug' => $demoProduct['slug'] ?? '',
+                        'price' => $demoProduct['price'] ?? 0,
+                        'original_price' => $demoProduct['original_price'] ?? null,
+                        'discount_percentage' => $demoProduct['discount_percentage'] ?? null,
+                        'description' => $demoProduct['description'] ?? '',
+                        'image' => $demoProduct['image'] ?? '',
+                        'category_id' => $demoProduct['category_id'] ?? null,
+                        'category_name' => $demoProduct['category_name'] ?? 'Uncategorized',
+                        'options' => $demoProduct['options'] ?? [],
+                        'stock' => $demoProduct['stock'] ?? 0,
+                        'is_active' => $demoProduct['is_active'] ?? false,
+                        'backorder' => $demoProduct['backorder'] ?? false
+                    ];
+                }
+            }
+        }
+    }
     
-    return $demoProducts[$productId] ?? null;
+    // Return null if not found in DB or demo JSON
+    return null;
 }
 
 /**

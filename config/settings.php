@@ -31,17 +31,17 @@ function getStoreSettings() {
     return $settings;
 }
 
-// Default settings (in case database is not yet set up)
-$defaultSettings = [
+// Default settings if database query fails
+$defaults = [
     'store_name' => 'E-Commerce Store',
     'store_description' => 'Your one-stop shop for all your needs',
-    'store_logo' => '/uploads/logos/logo_6804180dab2db.png',
-    'whatsapp_number' => '2348012345678', // Without the "+" prefix
-    'whatsapp_message_template' => "Hello, I want to inquire about:\n{ITEMS}\nTotal: {CURRENCY}{TOTAL}",
-    'currency_symbol' => '$',
-    'footer_text' => '© 2023 E-Commerce Store. All rights reserved.',
-    'theme_color' => '#1a6aea', // Tailwind blue-500
-    'brand_text_color' => '#FFFFFF'
+    'whatsapp_number' => '', // Leave empty or add a placeholder
+    'whatsapp_message_template' => 'Hello, I want to inquire about:\n{ITEMS}\nTotal: {CURRENCY}{TOTAL}',
+    'currency_symbol' => '₵', // Changed default to Cedis
+    'footer_text' => '© ' . date('Y') . ' E-Commerce Store. All rights reserved.',
+    'theme_color' => '#3B82F6', // Default Tailwind Blue 500
+    'brand_text_color' => '#FFFFFF', // Default White
+    'logo_path' => '/assets/images/logo.png' // Default logo path
 ];
 
 // Ensure database is connected before continuing in admin areas
@@ -55,7 +55,7 @@ if ($isAdminArea && !$db_connected && basename($_SERVER['PHP_SELF']) !== 'index.
 }
 
 // Get settings from database or use defaults
-$storeSettings = array_merge($defaultSettings, getStoreSettings());
+$storeSettings = array_merge($defaults, getStoreSettings());
 
 // Make settings available globally
 define('STORE_SETTINGS', $storeSettings);

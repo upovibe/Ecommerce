@@ -23,9 +23,7 @@
                 </h3>
                 <button type="button" id="closeCartModalButton" class="text-gray-400 hover:text-gray-500 focus:outline-none">
                     <span class="sr-only">Close</span>
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <i data-lucide="x" class="h-6 w-6"></i>
                 </button>
             </div>
 
@@ -37,8 +35,7 @@
                 
                 <!-- Empty Cart Message (Moved outside items container) -->
                  <div id="cartModalEmptyMsg" class="text-center py-12" style="display: none;"> <!-- Start hidden via style -->
-                    <!-- Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    <i data-lucide="shopping-cart" class="mx-auto h-12 w-12 text-gray-400"></i>
                     <!-- Message -->
                     <h3 class="mt-2 text-lg font-medium text-gray-900">Cart is Empty</h3>
                     <p class="mt-1 text-sm text-gray-500">Add some items from the store.</p>
@@ -47,6 +44,7 @@
                         <a href="/pages/products.php" 
                            id="cartModalBrowseButton"
                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i data-lucide="search" class="h-4 w-4 mr-1.5"></i>
                             Browse Products
                         </a>
                     </div>
@@ -61,17 +59,31 @@
                 <!-- Cart Total -->
                 <div class="flex justify-between items-center mb-4">
                     <span class="text-lg font-medium text-gray-900">Subtotal:</span>
-                    <span id="cartModalSubtotal" class="text-lg font-bold text-gray-900">₦0.00</span>
+                    <span id="cartModalSubtotal" class="text-lg font-bold text-gray-900">₵0.00</span>
                 </div>
                 <!-- Action Buttons -->
-                <div class="flex flex-row gap-3">
+                <div class="flex flex-row-reverse justify-between items-center sm:flex-row sm:justify-end sm:gap-3">
+                     <!-- Clear Cart Button -->
+                     <button type="button" id="cartModalClearButton" 
+                            class="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto sm:px-4 sm:py-2 sm:text-sm">
+                        <i data-lucide="trash-2" class="h-4 w-4 mr-1.5"></i>
+                        Clear Cart
+                    </button>
+                    <!-- Proceed Button -->
                     <button type="button" id="cartModalProceedButton" 
-                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-auto disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
+                            class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-auto disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
                             disabled> 
                         Proceed
+                        <i data-lucide="arrow-right" class="h-4 w-4 ml-1.5"></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 </div> 
+<script>
+    // Ensure Lucide icons added in this static file are rendered
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+</script> 

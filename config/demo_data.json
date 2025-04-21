@@ -3,31 +3,34 @@
     {
       "id": 1,
       "name": "Bags",
-      "image": "/assets/images/demo/category-bags.png",
+      "slug": "bags",
+      "image": "/assets/images/demo/bags-category.png",
       "subcategories": [
-        {"id": 101, "name": "School Bags"},
-        {"id": 102, "name": "Travel Bags"},
-        {"id": 103, "name": "Girl's Bags"}
+        {"id": 101, "name": "School Bags", "slug": "school-bags"},
+        {"id": 102, "name": "Travel Bags", "slug": "travel-bags"},
+        {"id": 103, "name": "Girl's Bags", "slug": "girls-bags"}
       ]
     },
     {
       "id": 2,
       "name": "Wigs",
-      "image": "/assets/images/demo/category-wigs.png",
+      "slug": "wigs",
+      "image": "/assets/images/demo/wig-category.png",
       "subcategories": [
-        {"id": 201, "name": "Lace Front Wigs"},
-        {"id": 202, "name": "Synthetic Wigs"},
-        {"id": 203, "name": "Human Hair Wigs"}
+        {"id": 201, "name": "Lace Front Wigs", "slug": "lace-front-wigs"},
+        {"id": 202, "name": "Synthetic Wigs", "slug": "synthetic-wigs"},
+        {"id": 203, "name": "Human Hair Wigs", "slug": "human-hair-wigs"}
       ]
     },
     {
       "id": 3,
       "name": "Shoes",
-      "image": "/assets/images/demo/category-shoes.png",
+      "slug": "shoes",
+      "image": "/assets/images/demo/shoes-category.png",
       "subcategories": [
-        {"id": 301, "name": "Sneakers"},
-        {"id": 302, "name": "Formal Shoes"},
-        {"id": 303, "name": "Ladies' Heels"}
+        {"id": 301, "name": "Sneakers", "slug": "sneakers"},
+        {"id": 302, "name": "Formal Shoes", "slug": "formal-shoes"},
+        {"id": 303, "name": "Ladies' Heels", "slug": "ladies-heels"}
       ]
     }
   ],
@@ -35,9 +38,10 @@
     {
       "id": 1,
       "name": "School Backpack",
-      "price": 4050,
-      "original_price": 4500,
-      "discount_percentage": 10.00,
+      "slug": "school-backpack",
+      "price": 150.00,
+      "original_price": 180.00,
+      "discount_percentage": 16.67,
       "description": "Sturdy school backpack with multiple compartments and padded shoulder straps.",
       "image": "/assets/images/demo/backpack.png",
       "category_id": 101,
@@ -52,7 +56,8 @@
     {
       "id": 2,
       "name": "Travel Duffel Bag",
-      "price": 8500,
+      "slug": "travel-duffel-bag",
+      "price": 300.00,
       "original_price": null,
       "discount_percentage": null,
       "description": "Spacious travel duffel bag with wheels and telescopic handle.",
@@ -70,7 +75,8 @@
     {
       "id": 3,
       "name": "Pink Sequin Purse",
-      "price": 3200,
+      "slug": "pink-sequin-purse",
+      "price": 80.00,
       "original_price": null,
       "discount_percentage": null,
       "description": "Stylish pink sequin purse for girls, perfect for special occasions.",
@@ -87,9 +93,10 @@
     {
       "id": 4,
       "name": "Long Body Wave Lace Front Wig",
-      "price": 25000.00,
-      "original_price": 28000.00,
-      "discount_percentage": 10.71,
+      "slug": "long-body-wave-lace-front",
+      "price": 800.00,
+      "original_price": 900.00,
+      "discount_percentage": 11.11,
       "description": "Beautiful long body wave wig with realistic lace front.",
       "image": "/assets/images/demo/wig-lace-bodywave.png",
       "category_id": 201,
@@ -99,13 +106,14 @@
          "length": ["18 inch", "22 inch", "26 inch"]
       },
       "stock": 0, 
-      "is_active": false, 
+      "is_active": true, 
       "backorder": false
     },
     {
       "id": 5,
       "name": "Short Bob Synthetic Wig - Black",
-      "price": 7500.00,
+      "slug": "short-bob-synthetic-black",
+      "price": 150.00,
       "original_price": null,
       "discount_percentage": null,
       "description": "Chic and easy-to-manage short black bob wig.",
@@ -116,13 +124,14 @@
          "color": ["Black", "Red", "Blue"]
       },
       "stock": 0, 
-      "is_active": false, 
+      "is_active": true, 
       "backorder": false
     },
     {
       "id": 6,
       "name": "Straight Human Hair Wig 18inch",
-      "price": 45000.00,
+      "slug": "straight-human-hair-18inch",
+      "price": 1200.00,
       "original_price": null,
       "discount_percentage": null,
       "description": "Silky straight 18-inch human hair wig.",
@@ -134,15 +143,16 @@
         "length": ["18 inch", "20 inch", "22 inch"]
       },
       "stock": 0, 
-      "is_active": false, 
+      "is_active": true, 
       "backorder": false
     },
     {
       "id": 7,
       "name": "Running Sneakers",
-      "price": 10200,
-      "original_price": 12000,
-      "discount_percentage": 15.00,
+      "slug": "running-sneakers",
+      "price": 250.00,
+      "original_price": 300.00,
+      "discount_percentage": 16.67,
       "description": "Comfortable running sneakers with cushioned soles for maximum comfort.",
       "image": "/assets/images/demo/sneakers.png",
       "category_id": 301,
@@ -152,13 +162,14 @@
         "size": ["40", "41", "42", "43", "44", "45"]
       },
       "stock": 0, 
-      "is_active": false, 
+      "is_active": true, 
       "backorder": false
     },
     {
       "id": 8,
       "name": "Oxford Dress Shoes",
-      "price": 15000,
+      "slug": "oxford-dress-shoes",
+      "price": 350.00,
       "original_price": null,
       "discount_percentage": null,
       "description": "Classic Oxford dress shoes made from genuine leather.",
@@ -170,15 +181,16 @@
         "size": ["40", "41", "42", "43", "44", "45"]
       },
       "stock": 15, 
-      "is_active": false, 
+      "is_active": true, 
       "backorder": false
     },
     {
       "id": 9,
       "name": "Stiletto Heels",
-      "price": 9500,
-      "original_price": 10000,
-      "discount_percentage": 5.00,
+      "slug": "stiletto-heels",
+      "price": 180.00,
+      "original_price": 200.00,
+      "discount_percentage": 10.00,
       "description": "Elegant stiletto heels for special occasions and formal events.",
       "image": "/assets/images/demo/heels.png",
       "category_id": 303,
@@ -188,7 +200,7 @@
         "size": ["36", "37", "38", "39", "40"]
       },
       "stock": 0, 
-      "is_active": false, 
+      "is_active": true, 
       "backorder": false
     }
   ]
