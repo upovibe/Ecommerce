@@ -1,6 +1,15 @@
     </div> <!-- Closing flex-grow div from header -->
     
     <?php
+    // Ensure settings are included if not already (might be needed if footer is included independently)
+    // If settings.php is always included via header.php, this line might be redundant, but safe to keep.
+    if (!defined('STORE_SETTINGS')) {
+        require_once __DIR__ . '/../config/settings.php';
+    }
+    
+    $productsPath = '/products.php'; // Define path for consistency
+    // Note: We don't define $isProductsActive here as footer links usually don't need active state highlighting.
+    
     $footerBgColor = STORE_SETTINGS['theme_color'] ?? '#1F2937'; // Default bg
     $brandTextColor = STORE_SETTINGS['brand_text_color'] ?? '#FFFFFF'; // Default text
     $borderColorClass = 'border-white/20'; // Default semi-transparent white border
@@ -27,7 +36,7 @@
                     <h3 class="text-lg font-semibold mb-4" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Quick Links</h3>
                     <ul class="space-y-2 text-sm">
                         <li><a href="/" class="hover:opacity-80" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Home</a></li>
-                        <li><a href="/pages/products.php" class="hover:opacity-80" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Products</a></li>
+                        <li><a href="<?= htmlspecialchars($productsPath) ?>" class="hover:opacity-80" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Products</a></li>
                     </ul>
                 </div>
                 <div>

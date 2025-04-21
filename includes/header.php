@@ -9,7 +9,7 @@ $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
 
 $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $homePath = '/index.php';
-$productsPath = '/pages/products.php';
+$productsPath = '/products.php';
 
 $isHomeActive = ($currentPath === '/' || $currentPath === $homePath);
 $isProductsActive = ($currentPath === $productsPath);
@@ -22,6 +22,9 @@ $isProductsActive = ($currentPath === $productsPath);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($storeName) ?></title>
     <meta name="description" content="<?= htmlspecialchars(STORE_SETTINGS['store_description'] ?? 'Your one-stop shop for all your needs') ?>">
+    <!-- Favicon -->
+    <link rel="icon" href="<?= htmlspecialchars($logoPath) ?>" type="image/png"> <!-- Adjust type if logo isn't PNG -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/animations.css">
@@ -54,7 +57,7 @@ $isProductsActive = ($currentPath === $productsPath);
                                 <span class="absolute inset-x-1 -bottom-1 h-0.5 bg-transparent group-hover:bg-white/30 rounded-full transition-all duration-200"></span>
                             <?php endif; ?>
                         </a>
-                        <a href="/pages/products.php"
+                        <a href="<?= htmlspecialchars($productsPath) ?>"
                             class="<?= $isProductsActive ? 'text-white bg-black/10' : 'text-white/90' ?> relative px-3 py-2 rounded-lg font-medium hover:bg-black/10 hover:text-white transition-all duration-200 group">
                             Products
                             <?php if ($isProductsActive): ?>
@@ -102,7 +105,7 @@ $isProductsActive = ($currentPath === $productsPath);
                     class="<?= $isHomeActive ? 'bg-black/10 text-white' : 'text-white/90 hover:bg-black/10' ?> block px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
                     Home
                 </a>
-                <a href="/pages/products.php"
+                <a href="<?= htmlspecialchars($productsPath) ?>"
                     class="<?= $isProductsActive ? 'bg-black/10 text-white' : 'text-white/90 hover:bg-black/10' ?> block px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
                     Products
                 </a>

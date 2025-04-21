@@ -1,4 +1,5 @@
 {
+  "_description_categories": "Demo categories for display when database is empty or fails.",
   "categories": [
     {
       "id": 1,
@@ -34,6 +35,7 @@
       ]
     }
   ],
+  "_description_products": "Demo products for display when database is empty or fails.",
   "products": [
     {
       "id": 1,
@@ -203,5 +205,31 @@
       "is_active": true, 
       "backorder": false
     }
-  ]
+  ],
+  "_description_store_content": "Demo textual and image content for various site sections.",
+  "store_content": {
+    "hero_image": "/assets/images/demo/hero-image.png",
+    "hero_title": "Welcome to our Online Store",
+    "hero_subtitle": "Find everything you need, from essentials to luxuries.",
+    "about_image": "/assets/images/demo/about-image.png",
+    "about_title": "About Our Store",
+    "about_content": "<p>We are dedicated to providing high-quality products at affordable prices. Our store features a wide range of items including bags, groceries, and shoes.</p><p>With a focus on customer satisfaction, we ensure that every purchase meets our high standards for quality and durability.</p>",
+    "featured_title": "Shop by Category",
+    "featured_subtitle": "Explore our popular categories and find exactly what you're looking for.",
+    "product_page_banner_image": "/assets/images/demo/product-banner.png",
+    "product_banner_title": "Product Banner Title",
+    "product_banner_subtitle": "Product subtile text goes here, edit it from settings in your admin panel"
+  },
+  "_description_store_settings": "Demo store configuration settings.",
+  "store_settings": {
+    "store_name": "E-Commerce Store",
+    "store_description": "Your one-stop shop for all your needs",
+    "whatsapp_number": "", 
+    "whatsapp_message_template": "Hello, I want to inquire about:\n{ITEMS}\nTotal: {CURRENCY}{TOTAL}",
+    "currency_symbol": "₵", 
+    "footer_text": "© 2024 E-Commerce Store. All rights reserved.", 
+    "theme_color": "#3B82F6", 
+    "brand_text_color": "#FFFFFF", 
+    "logo_path": "/assets/images/logo.png"
+  }
 } 

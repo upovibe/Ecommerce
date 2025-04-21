@@ -106,7 +106,7 @@ INSERT INTO store_content (content_key, content_value) VALUES
 ('about_image', '/assets/images/demo/about-image.png'),
 ('featured_title', 'Shop by Category'),
 ('featured_subtitle', 'Explore our popular categories and find exactly what you\'re looking for.'),
-('hero_image', '/assets/images/demo/hero-bg.png'),
+('hero_image', '/assets/images/demo/hero-image.png'),
 ('product_page_banner_image', '/assets/images/demo/product-banner.png'),
 ('product_banner_title', 'Product Banner Title'),
 ('product_banner_subtitle', 'Product subtile text goes here, edit it from settings in your admin panel');

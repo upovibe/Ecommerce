@@ -1,130 +1,8 @@
 <?php
 require_once 'config/settings.php';
-
-// Get featured categories
-function getFeaturedCategories() {
-    global $conn, $db_connected;
-    
-    $categories = [];
-    
-    // Try to get categories from database
-    if ($db_connected && $conn) {
-        $sql = "SELECT 
-                    c.id, 
-                    c.name, 
-                    c.image, 
-                    (SELECT COUNT(*) FROM categories sub WHERE sub.parent_id = c.id) as subcategory_count 
-                FROM categories c
-                WHERE c.featured = 1 AND c.parent_id IS NULL
-                ORDER BY c.display_order";
-        
-        $result = $conn->query($sql);
-        
-        if ($result && $result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $categories[] = [
-                    'id' => (int)$row['id'],
-                    'name' => $row['name'],
-                    'subcategory_count' => (int)$row['subcategory_count'],
-                    'image' => $row['image']
-                ];
-            }
-        }
-    }
-    
-    // If no categories found in database, try loading from demo JSON file
-    if (empty($categories)) {
-        $jsonFilePath = __DIR__ . '/config/demo_data.json';
-        if (file_exists($jsonFilePath)) {
-            $jsonContent = file_get_contents($jsonFilePath);
-            $decodedData = json_decode($jsonContent, true);
-            if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['categories']) && is_array($decodedData['categories'])) {
-                $categories = $decodedData['categories']; // Extract only the categories array
-                // Calculate subcategory_count for demo data
-                foreach ($categories as &$category) {
-                     if (isset($category['subcategories']) && is_array($category['subcategories'])) {
-                         $category['subcategory_count'] = count($category['subcategories']);
-                     } else {
-                         $category['subcategory_count'] = 0; // Default if no subcategories key or not an array
-                     }
-                     // Ensure other expected keys exist, provide defaults if necessary (optional, good practice)
-                     $category['id'] = $category['id'] ?? null; 
-                     $category['name'] = $category['name'] ?? 'Unnamed Category';
-                     $category['image'] = $category['image'] ?? null; // Default will be handled below
-                }
-                unset($category); // Unset reference
-            } else {
-                // Handle JSON decode error or missing 'categories' key
-                error_log('Error decoding demo categories JSON or missing "categories" key: ' . json_last_error_msg());
-                $categories = []; // Fallback to empty array
-            }
-        } else {
-             // Fallback: Keep the original hardcoded array if JSON file doesn't exist (optional)
-             // Or set to empty array if JSON is the only source for demo data
-             error_log('Demo data JSON file not found: ' . $jsonFilePath);
-             $categories = []; // Fallback to empty array
-        }
-    }
-    
-    // Ensure image key exists even if fetched from DB or JSON (set to placeholder)
-    foreach ($categories as &$category) {
-        // Ensure category is an array before proceeding
-        if (!is_array($category)) {
-            // Log or handle the case where an element in $categories is not an array
-            error_log('Invalid category data encountered: ' . print_r($category, true));
-            continue; // Skip this iteration
-        }
-        if (empty($category['image'])) {
-            $category['image'] = '/assets/images/demo/bags-category.png';
-        }
-        // Ensure subcategory_count is set if it wasn't (e.g., from DB query where count might be null)
-         $category['subcategory_count'] = $category['subcategory_count'] ?? 0;
-    }
-    unset($category);
-    
-    return $categories;
-}
-
-// Get store content
-function getStoreContent($key) {
-    global $conn, $db_connected;
-    
-    $content = '';
-    
-    // Try to get content from database
-    if ($db_connected && $conn) {
-        $sql = "SELECT content_value FROM store_content WHERE content_key = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param('s', $key);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result && $result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $content = $row['content_value'];
-        }
-    }
-    
-    // Return demo content if not found in database
-    if (empty($content)) {
-        $demoContent = [
-            'hero_title' => 'Welcome to our Online Store',
-            'hero_subtitle' => 'Find everything you need, from essentials to luxuries.',
-            'about_title' => 'About Our Store',
-            'about_content' => '<p>We are dedicated to providing high-quality products at affordable prices. Our store features a wide range of items including bags, groceries, and shoes.</p><p>With a focus on customer satisfaction, we ensure that every purchase meets our high standards for quality and durability.</p>',
-            'featured_title' => 'Shop by Category',
-            'featured_subtitle' => 'Explore our popular categories and find exactly what you\'re looking for.',
-            'hero_image' => '/assets/images/demo/hero-bg.png',
-            'about_image' => '/assets/images/demo/about-image.png'
-        ];
-        
-        return $demoContent[$key] ?? '';
-    }
-    
-    return $content;
-}
-
-$featuredCategories = getFeaturedCategories();
+require_once __DIR__ . '/api/store_api.php';      // Load store content function
+require_once __DIR__ . '/api/category_api.php';    // Load category data function and fetch data
+require_once __DIR__ . '/api/whatsapp.php';      // Load WhatsApp utilities
 
 // Include header
 include_once 'includes/header.php';
@@ -241,8 +119,16 @@ include __DIR__ . '/includes/db_notice.php';
                     <?= getStoreContent('about_content') ?>
                 </div>
                 <div class="mt-8">
-                    <a href="https://wa.me/<?= STORE_SETTINGS['whatsapp_number'] ?? '2348012345678' ?>" target="_blank" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5">
-                    <svg class="size-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <?php
+                        // Generate the WhatsApp link using the new function
+                        $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
+                        // Optionally, add a default message:
+                        // $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null, "Hello! I have a question.");
+                    ?>
+                    <a href="<?= htmlspecialchars($whatsappLink) ?>" 
+                       target="_blank" 
+                       class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 <?= $whatsappLink === '#' ? 'opacity-50 cursor-not-allowed' : '' ?>">
+                        <svg class="size-5 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                         </svg>
                         Contact Us on WhatsApp
