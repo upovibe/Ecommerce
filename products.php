@@ -44,9 +44,24 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
          data-currency-symbol="<?= htmlspecialchars(STORE_SETTINGS['currency_symbol'] ?? '$') ?>">
         <!-- Products will be loaded here by JavaScript -->
-        <div id="loading-products" class="col-span-full text-center py-10">
-            <p class="text-gray-500 text-lg">Loading products...</p>
-            <!-- Optional: Add a spinner SVG or element here -->
+        <div id="loading-products" class="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <?php for ($i = 0; $i < 8; $i++): ?>
+            <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer  w-full min-w-56">
+              <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
+                <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
+                <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
+                <div class="absolute bg-gray-200 bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
+                  <div class="h-5 bg-gray-300 rounded w-2/3"></div>
+                </div>
+              </div>
+              <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
+                <div class="product-header flex justify-between items-center mt-1">
+                  <div class="h-6 bg-gray-300 rounded w-1/2"></div>
+                  <div class="bg-gray-300 rounded h-6 w-6 ml-auto"></div>
+                </div>
+              </div>
+            </div>
+            <?php endfor; ?>
         </div>
     </div>
 </section>

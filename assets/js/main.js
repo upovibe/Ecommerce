@@ -93,12 +93,46 @@ document.addEventListener('DOMContentLoaded', function() {
     function performSearch() {
         const searchTerm = searchInput.value.trim();
         if (searchTerm) {
-            // Redirect to products page with search query
-            window.location.href = `/products.php?search=${encodeURIComponent(searchTerm)}`;
+            const productsPagePath = '/products.php';
+            const currentPath = window.location.pathname;
+
+            if (currentPath === productsPagePath && typeof window.fetchAndDisplayProducts === 'function') {
+                // --- Dynamic Update on Products Page ---
+                
+                // 1. Construct URLs
+                const apiSearchUrl = `/api/product_api.php?search=${encodeURIComponent(searchTerm)}`;
+                const displayUrl = `${productsPagePath}?search=${encodeURIComponent(searchTerm)}`;
+                
+                // 2. Update Browser History/URL (without reload)
+                history.pushState({ searchTerm: searchTerm }, `Search Results for "${searchTerm}"`, displayUrl);
+                
+                // 3. Update Page Title (re-select element as it's not global)
+                const pageTitleElement = document.querySelector('.max-w-7xl h2'); 
+                if (pageTitleElement) {
+                    pageTitleElement.textContent = `Search Results for "${searchTerm}"`;
+                }
+                
+                // 4. Fetch and display new products using the global function
+                window.fetchAndDisplayProducts(apiSearchUrl);
+                
+                // 5. Close the modal (optional, assumes modal has close logic)
+                // Example: If using AlpineJS for modal: Alpine.store('modal').close()
+                // Example: If using simple ID toggle:
+                const searchModal = document.getElementById('search-modal'); // Assuming this is the modal ID
+                if (searchModal && typeof searchModal.close === 'function') { // Check if it's a <dialog>
+                     searchModal.close();
+                } else if (searchModal) {
+                    // Fallback for simple hide/show modals
+                    searchModal.classList.add('hidden'); // Or appropriate class
+                }
+                
+            } else {
+                // --- Redirect if not on Products Page ---
+                window.location.href = `/products.php?search=${encodeURIComponent(searchTerm)}`;
+            }
         } else {
             // Optional: Provide feedback if search term is empty
-            // console.log('Search term is empty.');
-             searchInput.focus(); // Focus input if empty search attempted
+            searchInput.focus(); // Focus input if empty search attempted
         }
     }
 
