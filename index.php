@@ -1,22 +1,27 @@
 <?php
 require_once 'config/settings.php';
+
+require_once __DIR__ . '/includes/db_notice.php'; // Display notices if any
 require_once __DIR__ . '/api/store_api.php';      // Load store content function
 require_once __DIR__ . '/api/category_api.php';    // Load category data function and fetch data
 require_once __DIR__ . '/api/whatsapp.php';      // Load WhatsApp utilities
 
 // Include header
-include_once 'includes/header.php';
-?>
-<!-- Add SwiperJS CSS and JS -->
-<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-<!-- Add AOS CSS -->
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-<!-- Link to Custom CSS -->
-<link rel="stylesheet" href="assets/css/style.css">
-<?php
-// Include the database connection notice component
-include __DIR__ . '/includes/db_notice.php'; 
+require_once __DIR__ . '/includes/header.php';
+
+// Fetch other page content
+$heroTitle = getStoreContent('hero_title');
+$heroSubtitle = getStoreContent('hero_subtitle');
+$heroImage = getStoreContent('hero_image');
+$featuredTitle = getStoreContent('featured_title');
+$featuredSubtitle = getStoreContent('featured_subtitle');
+$aboutTitle = getStoreContent('about_title');
+$aboutContent = getStoreContent('about_content'); // Note: This might contain HTML
+$aboutImage = getStoreContent('about_image');
+
+// Generate WhatsApp link (used in Hero)
+$whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
+
 ?>
 
 <!-- Hero Section -->
@@ -26,10 +31,10 @@ include __DIR__ . '/includes/db_notice.php';
             <!-- Text Content (Left) -->
             <div class="lg:w-1/2 text-center lg:text-left mb-10 lg:mb-0" data-aos="fade-right">
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 leading-tight" data-aos="fade-right" data-aos-delay="100">
-                    <?= htmlspecialchars(getStoreContent('hero_title')) ?>
+                    <?= htmlspecialchars($heroTitle) ?>
                 </h1>
                 <p class="text-lg md:text-xl text-gray-600 mb-8" data-aos="fade-right" data-aos-delay="200">
-                    <?= htmlspecialchars(getStoreContent('hero_subtitle')) ?>
+                    <?= htmlspecialchars($heroSubtitle) ?>
                 </p>
                 <a href="/pages/products.php" 
                    class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md transition duration-150 ease-in-out md:py-4 md:text-lg md:px-10 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5" 
@@ -43,7 +48,7 @@ include __DIR__ . '/includes/db_notice.php';
             
             <!-- Image (Right) -->
             <div class="lg:w-1/2" data-aos="fade-left">
-                <img src="<?= htmlspecialchars(getStoreContent('hero_image')) ?>" alt="Hero Image" class="w-full h-auto rounded-xl object-cover max-h-[500px]">
+                <img src="<?= htmlspecialchars($heroImage) ?>" alt="Hero Image" class="w-full h-auto rounded-xl object-cover max-h-[500px]">
             </div>
         </div>
     </div>
@@ -53,8 +58,8 @@ include __DIR__ . '/includes/db_notice.php';
 <section class="py-20 md:py-24 bg-gray-50 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12" data-aos="fade-up">
-            <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl"><?= htmlspecialchars(getStoreContent('featured_title')) ?></h2>
-            <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4"><?= htmlspecialchars(getStoreContent('featured_subtitle')) ?></p>
+            <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl"><?= htmlspecialchars($featuredTitle) ?></h2>
+            <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4"><?= htmlspecialchars($featuredSubtitle) ?></p>
         </div>
         
         <!-- Slider main container -->
@@ -66,8 +71,6 @@ include __DIR__ . '/includes/db_notice.php';
                     <?php 
                         // Ensure $category is an array before trying to access keys
                         if (!is_array($category)) {
-                            // Skip this iteration or log an error if $category is not an array
-                            // error_log('Invalid category data in loop: ' . print_r($category, true)); 
                             continue; 
                         }
                         // Use null coalescing operator for safety
@@ -97,13 +100,6 @@ include __DIR__ . '/includes/db_notice.php';
                     </div>
                 <?php endforeach; ?>
             </div>
-        <div class="text-center mt-12" data-aos="fade-up">
-            <a href="/pages/products.php" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm"
-               style="background-color: <?= htmlspecialchars(STORE_SETTINGS['theme_color']) ?>; color: <?= htmlspecialchars(STORE_SETTINGS['brand_text_color']) ?>;">
-                 <i data-lucide="layout-grid" class="size-5 mr-2"></i>
-                View All Products
-            </a>
-        </div>
         </div>
         
     </div>
@@ -114,17 +110,11 @@ include __DIR__ . '/includes/db_notice.php';
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="lg:flex lg:items-center lg:justify-between">
             <div class="lg:w-1/2 lg:pr-12 mb-8 lg:mb-0" data-aos="fade-right">
-                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl mb-6"><?= htmlspecialchars(getStoreContent('about_title')) ?></h2>
+                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl mb-6"><?= htmlspecialchars($aboutTitle) ?></h2>
                 <div class="prose prose-lg text-gray-500">
-                    <?= getStoreContent('about_content') ?>
+                    <?= $aboutContent ?> 
                 </div>
                 <div class="mt-8">
-                    <?php
-                        // Generate the WhatsApp link using the new function
-                        $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
-                        // Optionally, add a default message:
-                        // $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null, "Hello! I have a question.");
-                    ?>
                     <a href="<?= htmlspecialchars($whatsappLink) ?>" 
                        target="_blank" 
                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5 <?= $whatsappLink === '#' ? 'opacity-50 cursor-not-allowed' : '' ?>">
@@ -136,7 +126,7 @@ include __DIR__ . '/includes/db_notice.php';
                 </div>
             </div>
             <div class="lg:w-1/2 mt-8 lg:mt-0" data-aos="fade-left">
-                <img src="<?= htmlspecialchars(getStoreContent('about_image')) ?>" alt="About our store" class="rounded-xl shadow w-full h-auto object-cover max-h-[450px]">
+                <img src="<?= htmlspecialchars($aboutImage) ?>" alt="About our store" class="rounded-xl shadow w-full h-auto object-cover max-h-[450px]">
             </div>
         </div>
     </div>
@@ -146,21 +136,3 @@ include __DIR__ . '/includes/db_notice.php';
 // Include footer
 include_once 'includes/footer.php';
 ?>
-<script src="assets/js/swiper.js" defer></script>
-<script src="assets/js/main.js" defer></script>
-<!-- Add AOS JS -->
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>
-    // Initialize AOS
-    AOS.init({
-        duration: 800, // Animation duration
-        once: true // Only animate elements once
-    });
-
-    // Subcategory fetching and display logic removed from here
-
-    // Render Lucide icons added via PHP/HTML
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-</script> 

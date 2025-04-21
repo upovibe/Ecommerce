@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/settings.php';
+require_once 'config/settings.php';
 
 $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 $themeColor = STORE_SETTINGS['theme_color'] ?? '#3B82F6';
@@ -29,6 +29,13 @@ $isProductsActive = ($currentPath === $productsPath);
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/animations.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <!-- Add AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <!-- Link to Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
 
     <script src="/assets/js/utils.js" defer></script>
     <script src="/assets/js/main.js" defer></script>
@@ -85,7 +92,7 @@ $isProductsActive = ($currentPath === $productsPath);
 
                     <button id="mobileCartIcon" type="button" class="relative md:hidden p-2 rounded-full hover:bg-black/10 transition-all duration-200 mr-2" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
                         <span class="sr-only">View cart</span>
-                         <i data-lucide="shopping-cart" class="h-6 w-6"></i>
+                        <i data-lucide="shopping-cart" class="h-6 w-6"></i>
                         <span id="mobile-cart-item-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center transform hover:scale-110 transition-transform ">0</span>
                     </button>
 
