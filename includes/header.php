@@ -42,7 +42,7 @@ $isProductsActive = ($currentPath === $productsPath);
 </head>
 
 <body class="bg-gray-50 flex flex-col min-h-screen">
-    <nav class="shadow-lg sticky top-0 z-30" style="background-color: <?= htmlspecialchars($themeColor) ?>;">
+    <nav class="shadow-lg sticky top-0 z-30 animate-header-load" style="background-color: <?= htmlspecialchars($themeColor) ?>;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 md:h-20">
                 <div class="flex items-center">
