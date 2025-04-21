@@ -25,9 +25,7 @@
                 <button type="button" id="closeCompleteOrderModalButton" class="bg-white/50 rounded-lg text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 p-2 backdrop-blur-xl">
                     <span class="sr-only">Close</span>
                     <!-- Replace Lucide icon with SVG -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <i data-lucide="x" class="h-5 w-5"></i>
                 </button>
             </div>
 
@@ -52,10 +50,7 @@
                                                   peer-checked:ring-2 
                                                   peer-checked:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>]">
                                          <!-- SVG for Delivery -->
-                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                             <path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2l4 5h4a1 1 0 011 1v4a1 1 0 01-1 1h-2m-4-1h4m-4 1h4m-4-1H9" />
-                                         </svg>
+                                         <i data-lucide="truck" class="h-5 w-5 mr-2 flex-shrink-0"></i>
                                         <span>Delivery</span>
                                     </label>
                                 </div>
@@ -70,9 +65,7 @@
                                                    peer-checked:ring-2 
                                                    peer-checked:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>]">
                                         <!-- SVG for Pickup -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                        </svg>
+                                        <i data-lucide="shopping-bag" class="h-5 w-5 mr-2 flex-shrink-0"></i>
                                         <span>Pickup</span>
                                     </label>
                                 </div>
@@ -97,9 +90,7 @@
                                                   peer-checked:ring-2 
                                                   peer-checked:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>]">
                                          <!-- SVG for Myself -->
-                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                         </svg>
+                                         <i data-lucide="user" class="h-5 w-5 mr-2 flex-shrink-0"></i>
                                         <span>Myself</span>
                                     </label>
                                 </div>
@@ -114,9 +105,7 @@
                                                   peer-checked:ring-2 
                                                   peer-checked:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>]">
                                          <!-- SVG for Someone Else -->
-                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                                         </svg>
+                                         <i data-lucide="gift" class="h-5 w-5 mr-2 flex-shrink-0"></i>
                                         <span>Someone Else</span>
                                     </label>
                                 </div>
@@ -132,9 +121,7 @@
                             <button type="button" @click="open = !open" class="flex justify-between items-center w-full text-left py-3 px-1 hover:bg-gray-50/50 rounded-md transition-colors duration-150">
                                 <!-- Title changes based on selection -->
                                 <span id="primaryDetailsTitle" class="text-base font-semibold text-gray-800">Your Details</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
+                                <i data-lucide="chevron-down" class="h-5 w-5 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </button>
                             <div x-show="open" x-collapse.duration.300ms class="mt-2 space-y-4 pt-2 pb-3 px-1 transition-all duration-300 ease-in-out overflow-hidden">
                                 <!-- Fields for Myself (Show when Recipient = Myself) -->
@@ -144,7 +131,7 @@
                                         <label for="customerFullName" class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
                                         <div class="mt-1 relative rounded-lg shadow-sm">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
                                             </div>
                                             <input type="text" name="customerFullName" id="customerFullName" autocomplete="name" required 
                                                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>] focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
@@ -174,7 +161,7 @@
                                         <label for="customerEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Address <span class="text-red-500">*</span></label>
                                         <div class="mt-1 relative rounded-lg shadow-sm">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                                 <i data-lucide="mail" class="h-5 w-5 text-gray-400"></i>
                                             </div>
                                             <input type="email" name="customerEmail" id="customerEmail" autocomplete="email" required 
                                                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>] focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
@@ -185,7 +172,7 @@
                                         <label for="customerAddress" class="block text-sm font-medium text-gray-700 mb-1">Delivery Address <span class="text-red-500">*</span></label>
                                          <div class="mt-1 relative rounded-lg shadow-sm">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                                <i data-lucide="map-pin" class="h-5 w-5 text-gray-400"></i>
                                             </div>
                                             <textarea id="customerAddress" name="customerAddress" rows="3" :required="show" 
                                                       class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>] focus:border-transparent transition duration-150 ease-in-out sm:text-sm"></textarea>
@@ -200,7 +187,7 @@
                                         <label for="senderFullName" class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
                                          <div class="mt-1 relative rounded-lg shadow-sm">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
                                             </div>
                                             <input type="text" name="senderFullName" id="senderFullName" autocomplete="name" required 
                                                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>] focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
@@ -228,7 +215,7 @@
                                         <label for="senderEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Address <span class="text-red-500">*</span></label>
                                         <div class="mt-1 relative rounded-lg shadow-sm">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                                <i data-lucide="mail" class="h-5 w-5 text-gray-400"></i>
                                             </div>
                                             <input type="email" name="senderEmail" id="senderEmail" autocomplete="email" required 
                                                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>] focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
@@ -242,16 +229,14 @@
                         <div id="recipientAccordionContainer" class="hidden py-2" x-data="{ open: true }">
                             <button type="button" @click="open = !open" class="flex justify-between items-center w-full text-left py-3 px-1 hover:bg-gray-50/50 rounded-md transition-colors duration-150">
                                 <span class="text-base font-semibold text-gray-800">Recipient's Details</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
+                                <i data-lucide="chevron-down" class="h-5 w-5 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </button>
                             <div x-show="open" x-collapse.duration.300ms class="mt-2 space-y-4 pt-2 pb-3 px-1 transition-all duration-300 ease-in-out overflow-hidden">
                                 <div>
                                     <label for="receiverFullName" class="block text-sm font-medium text-gray-700 mb-1">Recipient's Full Name <span class="text-red-500">*</span></label>
                                     <div class="mt-1 relative rounded-lg shadow-sm">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                            <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
                                         </div>
                                         <input type="text" name="receiverFullName" id="receiverFullName" required 
                                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>] focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
@@ -280,7 +265,7 @@
                                     <label for="receiverAddress" class="block text-sm font-medium text-gray-700 mb-1">Recipient's Delivery Address <span class="text-red-500">*</span></label>
                                      <div class="mt-1 relative rounded-lg shadow-sm">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                            <i data-lucide="map-pin" class="h-5 w-5 text-gray-400"></i>
                                         </div>
                                         <textarea id="receiverAddress" name="receiverAddress" rows="3" :required="show" 
                                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>] focus:border-transparent transition duration-150 ease-in-out sm:text-sm"></textarea>
@@ -293,9 +278,7 @@
                         <div class="py-2" x-data="{ open: false }">
                              <button type="button" @click="open = !open" class="flex justify-between items-center w-full text-left py-3 px-1 hover:bg-gray-50/50 rounded-md transition-colors duration-150">
                                 <span class="text-base font-semibold text-gray-800">Notes & Coupon (Optional)</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
+                                <i data-lucide="chevron-down" class="h-5 w-5 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </button>
                             <div x-show="open" x-collapse.duration.300ms class="mt-2 space-y-4 pt-2 pb-3 px-1 transition-all duration-300 ease-in-out overflow-hidden">
                                 <div>
@@ -306,7 +289,7 @@
                                     <label for="couponCode" class="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
                                      <div class="mt-1 relative rounded-lg shadow-sm">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                                            <i data-lucide="tag" class="h-5 w-5 text-gray-400"></i>
                                         </div>
                                         <input type="text" name="couponCode" id="couponCode" 
                                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[<?= htmlspecialchars($themeColor ?? '#3B82F6') ?>] focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
