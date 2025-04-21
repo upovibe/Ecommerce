@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../config/settings.php';
-require_once __DIR__ . '/../utils/cart.php';
 
 $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 $themeColor = STORE_SETTINGS['theme_color'] ?? '#3B82F6';
@@ -30,9 +29,6 @@ $isProductsActive = ($currentPath === $productsPath);
 
     <script src="/assets/js/utils.js" defer></script>
     <script src="/assets/js/main.js" defer></script>
-    <script src="/assets/js/product-management.js" defer></script>
-    <script src="/assets/js/modal.js" defer></script>
-    <script src="/assets/js/cart-management.js" defer></script>
 </head>
 
 <body class="bg-gray-50 flex flex-col min-h-screen">

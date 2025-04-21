@@ -256,11 +256,6 @@ include __DIR__ . '/includes/db_notice.php';
     </div>
 </section>
 
-<!-- Include modals -->
-<?php include_once 'modals/cartModal.php'; ?>
-<?php include_once 'modals/completeOrderModal.php'; ?>
-<?php include_once 'modals/searchModal.php'; ?>
-
 <?php
 // Include footer
 include_once 'includes/footer.php';
