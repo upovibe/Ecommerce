@@ -2,6 +2,9 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config/settings.php'; // Essential for standalone API
 
+// --- Log Raw GET Parameters ---
+error_log("[API Product Start] GET Params: " . print_r($_GET, true));
+
 /**
  * Fetches products from the database, optionally filtered by direct category slug
  * or by parent category slug (fetching products from all subcategories).
@@ -10,16 +13,17 @@ require_once __DIR__ . '/../config/settings.php'; // Essential for standalone AP
  * @param string|null $categorySlug Optional direct category slug to filter by.
  * @param string|null $parentCategorySlug Optional parent category slug to filter by subcategories.
  * @param string|null $searchTerm Optional search term to filter by name/description.
+ * @param string|null $subcategorySlug Optional subcategory slug to filter by.
  * @return array List of products.
  */
-function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTerm = null) { 
+function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTerm = null, $subcategorySlug = null) { 
     global $conn, $db_connected;
     $products = [];
     $usingDemoData = false;
 
     // --- Try fetching from Database first ---
     if ($db_connected && $conn) {
-        // Base SQL
+        // Base SQL (adjust based on filter priority)
         $sql = "SELECT p.id, p.name, p.description, p.price, p.image, p.category_id, c.name as category_name, c.slug as category_slug 
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id";
@@ -28,79 +32,99 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
         $params = [];
         $whereClauses = [];
 
-        // Filter by direct category slug
-        if ($categorySlug !== null && $parentCategorySlug === null) {
-            $whereClauses[] = "c.slug = ?";
-            $types .= 's';
-            $params[] = $categorySlug;
-        }
-        // Filter by parent category slug (products in subcategories)
-        else if ($parentCategorySlug !== null && $categorySlug === null) {
-            // This condition changes the base SQL query structure, so it's handled separately
-            // The WHERE clause `parent_cat.slug = ?` is added directly in the SQL assignment below
-        }
+        // Determine the primary filter: Subcategory > Parent Category > Direct Category (if needed) > Search
+        // Note: $categorySlug isn't currently used by the JS, but kept for potential future use.
 
-        // Add search term filter (applies to both direct and parent category filtering if needed)
-        if ($searchTerm !== null) {
-            $searchLike = "%" . $searchTerm . "%";
-            // Add parenthesis for correct precedence if other clauses exist
-            $searchClause = "(p.name LIKE ? OR p.description LIKE ?)"; 
-            $whereClauses[] = $searchClause;
-            $types .= 'ss';
-            $params[] = $searchLike;
-            $params[] = $searchLike;
-        }
+        if ($subcategorySlug !== null) {
+            // Priority 1: Filter by subcategory slug
+             $whereClauses[] = "c.slug = ?";
+             $types .= 's';
+             $params[] = $subcategorySlug;
+             $whereClauses[] = "p.is_active = 1"; // Add active filter
+             error_log("[API Product Fetch] Filtering by SUBCATEGORY slug: '{$subcategorySlug}'");
 
-        // Note: Add handling if both slugs are provided? Currently prioritizes parent.
-
-        // --- Construct Final SQL --- 
-
-        // If filtering by parent slug, the base query and initial params are different
-        if ($parentCategorySlug !== null && $categorySlug === null) {
-            $sql = "SELECT p.id, p.name, p.description, p.price, p.image, p.category_id, sub_cat.name as category_name, sub_cat.slug as category_slug 
+        } else if ($parentCategorySlug !== null) {
+            // Priority 2: Filter by parent category slug (products in its subcategories)
+            $sql = "SELECT p.id, p.name, p.description, p.price, p.image, p.category_id, sub_cat.name as category_name, sub_cat.slug as category_slug,
+                           p.stock, p.is_active, p.backorder, p.original_price, p.discount_percentage, p.options /* Add other needed fields */
                     FROM products p
                     JOIN categories sub_cat ON p.category_id = sub_cat.id
                     JOIN categories parent_cat ON sub_cat.parent_id = parent_cat.id
-                    WHERE parent_cat.slug = ?";
-            $types = 's'; // Start with string type for parent slug
-            $parentSlugParam = [$parentCategorySlug]; // Initial param is parent slug
-
-            // Now, append any additional WHERE clauses (like search)
-            if (!empty($whereClauses)) {
-                $sql .= " AND (" . implode(' AND ', $whereClauses) . ")"; // Add remaining clauses
-                // Prepend the parent slug param type to the types string
-                $types .= 's'; // This seems wrong, types should be appended based on the clause added
-                // Combine params: parent slug first, then others
-                $params = array_merge($parentSlugParam, $params);
-            } else {
-                 $params = $parentSlugParam; // Only parent slug param
-            }
-           
-            // ** Correction for types string when merging parent and search **
-            $finalTypes = 's'; // Start with parent slug type
-            if ($searchTerm !== null) { $finalTypes .= 'ss'; } // Add types for search
-            $types = $finalTypes; 
-
+                    WHERE parent_cat.slug = ? AND p.is_active = 1"; // Filter by parent slug AND active status
+            $types = 's'; 
+            $params = [$parentCategorySlug];
+            error_log("[API Product Fetch] Filtering by PARENT slug: '{$parentCategorySlug}'");
+            // Note: Search clause will be appended later if present
+        
+        } else if ($categorySlug !== null) {
+             // Priority 3: Filter by direct category slug (if not filtering by parent/sub)
+             $whereClauses[] = "c.slug = ?";
+             $types .= 's';
+             $params[] = $categorySlug;
+             $whereClauses[] = "p.is_active = 1"; // Add active filter
+             error_log("[API Product Fetch] Filtering by DIRECT category slug: '{$categorySlug}'");
         } else {
-             // Base SQL is used (fetching all or filtering by direct slug)
-             // Append WHERE clause if needed
-            if (!empty($whereClauses)) {
-                $sql .= " WHERE " . implode(' AND ', $whereClauses);
+            // No specific category filter, but still filter by active status
+            $whereClauses[] = "p.is_active = 1";
+            error_log("[API Product Fetch] No category filter, applying global active filter.");
+        }
+
+        // Add search term filter (applies regardless of category filter)
+        if ($searchTerm !== null) {
+            $searchLike = "%" . $searchTerm . "%";
+            $searchClause = "(p.name LIKE ? OR p.description LIKE ?)"; 
+            
+            if ($parentCategorySlug !== null && $subcategorySlug === null) {
+                 // If filtering by parent, append search to the specific parent SQL
+                 $sql .= " AND " . $searchClause; // Append directly
+                 $types .= 'ss';
+                 $params[] = $searchLike;
+                 $params[] = $searchLike;
+            } else {
+                // For subcategory, direct category, or no category filter, add to $whereClauses
+                 $whereClauses[] = $searchClause;
+                 $types .= 'ss';
+                 $params[] = $searchLike;
+                 $params[] = $searchLike;
             }
+             error_log("[API Product Fetch] Adding SEARCH filter: '{$searchTerm}'");
+        }
+
+        // --- Construct Final SQL (if not already set by parent filter) --- 
+        if (!($parentCategorySlug !== null && $subcategorySlug === null)) { // Check if base SQL needs WHERE clauses appended
+             if (!empty($whereClauses)) {
+                $sql .= " WHERE " . implode(' AND ', $whereClauses);
+             }
         }
 
         $sql .= " ORDER BY p.name ASC";
+         error_log("[API Product Fetch] Final SQL: " . $sql);
+         error_log("[API Product Fetch] Final Params: " . print_r($params, true));
+         error_log("[API Product Fetch] Final Types: " . $types);
 
         try {
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
-                error_log("[API Product Fetch] Prepare failed: (" . $conn->errno . ") " . $conn->error . " SQL: " . $sql);
+                 $db_error = "Prepare failed: (" . $conn->errno . ") " . $conn->error . " SQL: " . $sql;
+                 error_log("[API Product Fetch] DB ERROR: " . $db_error);
+                 // Consider returning an error JSON here? 
+                 // For now, logging and proceeding to demo data fallback.
             } else {
                 if (!empty($params)) {
-                    $stmt->bind_param($types, ...$params);
+                    // Check if number of params matches types
+                    if (strlen($types) !== count($params)) {
+                         error_log("[API Product Fetch] BIND ERROR: Type count (".strlen($types).") doesn't match param count (".count($params).").");
+                         // Handle error - maybe throw exception or set products to empty
+                    } else {
+                         error_log("[API Product Fetch] Attempting to bind params...");
+                         $stmt->bind_param($types, ...$params);
+                         error_log("[API Product Fetch] Bind successful.");
+                    }
                 }
+                 error_log("[API Product Fetch] Executing statement...");
                 $stmt->execute();
                 $result = $stmt->get_result();
+                 error_log("[API Product Fetch] Statement executed.");
 
                 if ($result) {
                     while ($row = $result->fetch_assoc()) {
@@ -112,9 +136,10 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
                         $row['category_id'] = isset($row['category_id']) ? (int)$row['category_id'] : null;
                         $products[] = $row;
                     }
-                    error_log("[API Product Fetch] Found " . count($products) . " products for filter (Slug: '$categorySlug', ParentSlug: '$parentCategorySlug').");
+                    error_log("[API Product Fetch] DB Found " . count($products) . " products for filter (SubSlug: '{$subcategorySlug}', ParentSlug: '{$parentCategorySlug}', Search: '{$searchTerm}').");
                 } else {
-                    error_log("[API Product Fetch] Query failed: (" . $stmt->errno . ") " . $stmt->error);
+                    $db_error = "Query execution failed or returned no result object: (" . $stmt->errno . ") " . $stmt->error;
+                    error_log("[API Product Fetch] DB ERROR: " . $db_error);
                 }
                 $stmt->close();
             }
@@ -136,76 +161,54 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
                 $allDemoCategories = $decodedData['categories'];
                 $usingDemoData = true;
 
-                $targetCategoryIds = [];
-                $tempFilteredProducts = []; // Start with all demo products if no category filter
+                $tempFilteredProducts = $allDemoProducts; // Start with all for potential filtering
 
-                // Filter by direct category slug
-                if ($categorySlug !== null && $parentCategorySlug === null) {
-                    foreach ($allDemoCategories as $cat) {
-                        if (isset($cat['slug']) && $cat['slug'] === $categorySlug) {
-                            $targetCategoryIds[] = $cat['id'] ?? null;
-                            // Assuming direct slug means only one category
-                            break; 
-                        }
-                    }
-                     error_log("[API Demo Product Fetch] Filtering by direct slug '$categorySlug'. Target IDs: " . implode(', ', $targetCategoryIds));
-                }
-                // Filter by parent category slug
-                else if ($parentCategorySlug !== null && $categorySlug === null) {
-                    $parentCategoryId = null;
-                    foreach ($allDemoCategories as $cat) {
-                         if (isset($cat['slug']) && $cat['slug'] === $parentCategorySlug) {
-                            $parentCategoryId = $cat['id'] ?? null;
-                            // Assuming parent slug maps to a parent category, get its subcategory IDs
-                            if (isset($cat['subcategories']) && is_array($cat['subcategories'])) {
-                                foreach ($cat['subcategories'] as $subCat) {
-                                     if (isset($subCat['id'])) {
-                                         $targetCategoryIds[] = $subCat['id'];
-                                     }
+                // Apply filters in order: Active > Subcategory > Parent > Search
+                
+                // Filter by active status first
+                $activeProducts = array_filter($allDemoProducts, fn($p) => isset($p['is_active']) && $p['is_active'] === true);
+                error_log("[API Demo Product Fetch] Filtered by active status. Count: " . count($activeProducts));
+                $tempFilteredProducts = $activeProducts; // Start filtering from active products
+
+                if ($subcategorySlug !== null) {
+                    $targetCategoryId = null;
+                    // Find the ID for the subcategory slug (need to look through all cats/subcats)
+                    foreach ($allDemoCategories as $parentCat) {
+                        if (isset($parentCat['subcategories']) && is_array($parentCat['subcategories'])) {
+                            foreach ($parentCat['subcategories'] as $subCat) {
+                                if (isset($subCat['slug']) && $subCat['slug'] === $subcategorySlug) {
+                                    $targetCategoryId = $subCat['id'] ?? null;
+                                    break 2; // Found it, exit both loops
                                 }
                             }
-                            break;
                         }
                     }
-                     error_log("[API Demo Product Fetch] Filtering by parent slug '$parentCategorySlug'. Found parent ID: $parentCategoryId. Target SubCategory IDs: " . implode(', ', $targetCategoryIds));
-                }
-
-                // Filter products based on target category IDs
-                if (!empty($targetCategoryIds)) {
-                    $filteredProducts = [];
-                    $validTargetIds = array_filter($targetCategoryIds, fn($id) => $id !== null); // Remove nulls
-                    if (!empty($validTargetIds)) {
-                        foreach ($allDemoProducts as $product) {
-                            if (isset($product['category_id']) && in_array((int)$product['category_id'], $validTargetIds, true)) {
-                                $filteredProducts[] = $product;
-                            }
-                        }
-                         $products = $filteredProducts;
-                          error_log("[API Demo Product Fetch] Filtered demo products. Found " . count($products) . ".");
+                    if ($targetCategoryId !== null) {
+                         $tempFilteredProducts = array_filter($tempFilteredProducts, fn($p) => isset($p['category_id']) && (int)$p['category_id'] === (int)$targetCategoryId);
+                         error_log("[API Demo Product Fetch] Filtered by subcategory slug '$subcategorySlug'. Found ID: $targetCategoryId. Count: " . count($tempFilteredProducts));
                     } else {
-                         error_log("[API Demo Product Fetch] No valid target category IDs found for filtering.");
-                         $products = [];
+                         error_log("[API Demo Product Fetch] Subcategory slug '$subcategorySlug' not found in demo data.");
+                         $tempFilteredProducts = [];
                     }
-                } else if ($categorySlug !== null || $parentCategorySlug !== null) {
-                    // Category filter was applied
-                    if (!empty($validTargetIds)) {
-                         foreach ($allDemoProducts as $product) {
-                             if (isset($product['category_id']) && in_array((int)$product['category_id'], $validTargetIds, true)) {
-                                 $tempFilteredProducts[] = $product;
-                             }
-                         }
-                          error_log("[API Demo Product Fetch] After category filter: " . count($tempFilteredProducts) . " products.");
-                     } else {
-                          // Category filter applied but no valid IDs found
-                         error_log("[API Demo Product Fetch] No valid target category IDs found for filtering.");
-                          $tempFilteredProducts = []; // Start with empty set for search
-                     }
-                } else {
-                     // No category filter, start with all products for potential search filter
-                     $tempFilteredProducts = $allDemoProducts;
+                } else if ($parentCategorySlug !== null) {
+                    $targetSubCategoryIds = [];
+                    foreach ($allDemoCategories as $cat) {
+                        if (isset($cat['slug']) && $cat['slug'] === $parentCategorySlug && isset($cat['subcategories']) && is_array($cat['subcategories'])) {
+                             $targetSubCategoryIds = array_map(fn($sub) => $sub['id'] ?? null, $cat['subcategories']);
+                             $targetSubCategoryIds = array_filter($targetSubCategoryIds); // Remove nulls
+                             break;
+                        }
+                    }
+                    if (!empty($targetSubCategoryIds)) {
+                         $tempFilteredProducts = array_filter($tempFilteredProducts, fn($p) => isset($p['category_id']) && in_array((int)$p['category_id'], $targetSubCategoryIds, true));
+                         error_log("[API Demo Product Fetch] Filtered by parent slug '$parentCategorySlug'. Target SubIDs: " . implode(', ', $targetSubCategoryIds) . ". Count: " . count($tempFilteredProducts));
+                    } else {
+                         error_log("[API Demo Product Fetch] Parent slug '$parentCategorySlug' not found or has no subcategories in demo data.");
+                         $tempFilteredProducts = [];
+                    }
                 }
 
-                // Determine which products to start filtering for search
+                // Apply search filter on top of category results
                 if ($searchTerm !== null) {
                      $searchFilteredProducts = [];
                      $searchTermLower = strtolower($searchTerm);
@@ -216,7 +219,7 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
                              $searchFilteredProducts[] = $product;
                          }
                      }
-                     $products = $searchFilteredProducts; // Final list after search
+                     $products = $searchFilteredProducts; 
                      error_log("[API Demo Product Fetch] After search filter ('$searchTerm'): " . count($products) . " products.");
                 } else {
                      // No search term, use the result from category filtering
@@ -232,7 +235,8 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
         }
     }
 
-    return $products;
+    // Ensure the final result is a zero-indexed array for correct JSON encoding
+    return array_values($products);
 }
 
 // --- API Logic (Executing the Request) ---
@@ -241,9 +245,13 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
 $categorySlugFilter = isset($_GET['category_slug']) ? trim($_GET['category_slug']) : null;
 $parentCategorySlugFilter = isset($_GET['parent_category_slug']) ? trim($_GET['parent_category_slug']) : null;
 $searchTermFilter = isset($_GET['search']) ? trim($_GET['search']) : null; // Read search param
+$subcategorySlugFilter = isset($_GET['subcategory_slug']) ? trim($_GET['subcategory_slug']) : null; // Read subcategory slug
 
 // Fetch products using the function
-$productList = getProducts($categorySlugFilter, $parentCategorySlugFilter, $searchTermFilter);
+$productList = getProducts($categorySlugFilter, $parentCategorySlugFilter, $searchTermFilter, $subcategorySlugFilter);
+
+// Log the final product list before encoding
+error_log("[API Product End] Product list before JSON encode: " . print_r($productList, true));
 
 // Output the results as JSON
 echo json_encode($productList);

@@ -4,6 +4,7 @@ require_once 'config/settings.php';
 require_once __DIR__ . '/includes/db_notice.php'; // Display notices if any
 require_once __DIR__ . '/api/store_api.php';      // Load store content function
 require_once __DIR__ . '/api/whatsapp.php';     // Load WhatsApp utilities
+require_once __DIR__ . '/api/category_api.php';  // Load category data function
 
 // Include header
 require_once __DIR__ . '/includes/header.php';
@@ -13,6 +14,9 @@ $bannerImage = getStoreContent('product_page_banner_image');
 $bannerTitle = getStoreContent('product_banner_title');
 $bannerSubtitle = getStoreContent('product_banner_subtitle');
 $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
+
+// Fetch featured category data
+$featuredCategories = getFeaturedCategories();
 ?>
 
 
@@ -39,14 +43,39 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
 
 <!-- Product List -->
 <section class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
-    <h2 class="text-2xl font-semibold mb-6 text-gray-800">Our Products</h2>
+    <h2 id="product-list-title" class="text-2xl font-semibold mb-4 text-gray-800">Products</h2>
+
+    <!-- Parent Category Tabs -->
+    <div id="parent-category-tabs" class="mb-4 flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+        <button 
+            data-category-slug="all"
+            class="category-tab px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 active"
+            >
+            All Products
+        </button>
+        <?php foreach ($featuredCategories as $category): ?>
+            <?php if (!is_array($category) || empty($category['slug'])) continue; ?>
+            <button 
+                data-category-slug="<?= htmlspecialchars($category['slug']) ?>"
+                class="category-tab px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                <?= htmlspecialchars($category['name'] ?? 'Unnamed Category') ?>
+            </button>
+        <?php endforeach; ?>
+    </div>
+
+    <!-- Subcategory Display Area -->
+    <div id="subcategory-display" class="mb-6 flex flex-wrap gap-2 min-h-[2rem]">
+        <!-- Subcategories will be loaded here by JavaScript -->
+    </div>
+
     <div id="product-grid" 
-         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+         class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
          data-currency-symbol="<?= htmlspecialchars(STORE_SETTINGS['currency_symbol'] ?? '$') ?>">
         <!-- Products will be loaded here by JavaScript -->
-        <div id="loading-products" class="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div id="loading-products" class="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <?php for ($i = 0; $i < 8; $i++): ?>
-            <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer  w-full min-w-56">
+            <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer  w-full">
               <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
                 <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
                 <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>

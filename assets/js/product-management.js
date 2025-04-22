@@ -1,181 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
     const productGrid = document.getElementById('product-grid');
-    const loadingIndicator = document.getElementById('loading-products');
-    // We need to get the currency symbol from the HTML, as PHP won't be available here.
-    // Let's assume it's stored in a data attribute on the grid or passed via a global JS variable.
-    // Alternative: Pass it via a data attribute on the script tag itself.
-    const currencySymbolElement = document.getElementById('product-grid'); // Example: Reading from grid
+    // Keep reference to original loading indicator if it exists
+    const loadingIndicator = document.getElementById('loading-products'); 
+    const currencySymbolElement = document.getElementById('product-grid'); 
     const currencySymbol = currencySymbolElement ? (currencySymbolElement.dataset.currencySymbol || '$') : '$';
+    const pageTitleElement = document.getElementById('product-list-title');
+    const originalPageTitle = pageTitleElement ? pageTitleElement.textContent : 'Products';
+    const parentTabsContainer = document.getElementById('parent-category-tabs');
+    const subcategoryDisplay = document.getElementById('subcategory-display');
+    let subcategorySwiperInstance = null; // Variable to hold the Swiper instance
 
-    // Check if elements exist
-    if (!productGrid || !loadingIndicator) {
-        console.error('Required elements (product-grid or loading-products) not found.');
-        if(loadingIndicator) loadingIndicator.textContent = 'Error: Page structure incorrect.';
-        return; // Stop execution if essential elements are missing
-    }
+    // --- Helper Functions ---
 
-    // Store the original title
-    const pageTitleElement = document.querySelector('.max-w-7xl h2'); // Find the H2 title
-    const originalPageTitle = pageTitleElement ? pageTitleElement.textContent : 'Our Products';
-
-    // Get category filter from URL query parameter 'category' (which is the PARENT slug)
-    const urlParams = new URLSearchParams(window.location.search);
-    const parentCategorySlug = urlParams.get('category'); 
-    const searchTerm = urlParams.get('search'); // Get search term
-
-    // Construct API URL
-    let apiUrl = '/api/product_api.php';
-    const queryParams = [];
-    if (parentCategorySlug) {
-        queryParams.push(`parent_category_slug=${encodeURIComponent(parentCategorySlug)}`); 
-    }
-    if (searchTerm) {
-        queryParams.push(`search=${encodeURIComponent(searchTerm)}`);
-    }
-    if (queryParams.length > 0) {
-        apiUrl += `?${queryParams.join('&')}`;
-    }
-
-    // Update page title if searching
-    if (searchTerm && pageTitleElement) {
-        pageTitleElement.textContent = `Search Results for "${searchTerm}"`;
-    }
-
-    // Function to fetch and display products - Make it global
-    window.fetchAndDisplayProducts = function(url) { // Attach to window
-        // Show loading indicator using skeleton cards
-        if (productGrid) { // Ensure productGrid exists
-            const skeletonCardHTML = `
-                <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse flex flex-col w-full min-w-56">
-                  <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
-                    <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
-                    <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
-                    <div class="absolute bg-gray-200 bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
-                      <div class="h-5 bg-gray-300 rounded w-2/3"></div>
-                    </div>
-                  </div>
-                  <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
-                    <div class="product-header flex justify-between items-center mt-1">
-                      <div class="h-6 bg-gray-300 rounded w-1/2"></div>
-                      <div class="bg-gray-300 rounded h-6 w-6 ml-auto"></div>
-                    </div>
-                  </div>
-                </div>
-            `;
-            // Generate 8 skeleton cards
-            let skeletonHTML = '';
-            for (let i = 0; i < 8; i++) {
-                skeletonHTML += skeletonCardHTML;
-            }
-            // Apply the skeleton loaders to the grid
-            productGrid.innerHTML = skeletonHTML;
-        }
-        
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error(`HTTP error! status: ${response.status}, message: ${text || 'No message'}`);
-                    });
-                }
-                return response.json();
-            })
-            .then(products => {
-                // Note: The existing logic already removes the loading indicator/skeletons 
-                // by setting productGrid.innerHTML before adding actual products or the 'No products found' message.
-                // const currentLoadingIndicator = document.getElementById('loading-products'); // This ID is no longer used for loading
-                // if (currentLoadingIndicator) currentLoadingIndicator.remove(); 
-
-                if (!Array.isArray(products)) {
-                     console.error('Invalid data received from API:', products);
-                     productGrid.innerHTML = '<p class="col-span-full text-red-600 text-center py-10">Error: Invalid data format received from server.</p>';
-                     return;
-                }
-
-                if (products.length === 0) {
-                     productGrid.innerHTML = `
-                        <div class="col-span-full text-center py-16 px-6 bg-gray-50 rounded-lg border border-gray-200">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h3 class="mt-2 text-xl font-semibold text-gray-800">No Products Found</h3>
-                            <p class="mt-1 text-sm text-gray-500">We couldn't find any products matching your criteria. Try adjusting your search or filters.</p>
-                            <div class="mt-6">
-                                <button id="reset-products-btn" 
-                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                    <i data-lucide="refresh-cw" class="mr-1.5 h-4 w-4"></i>
-                                    Clear search
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    // Render Lucide icon for the button
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    }
-                } else {
-                    productGrid.innerHTML = ''; // Clear the grid before adding products
-                    products.forEach(product => {
-                        const productCard = `
-                            <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:shadow-xl hover:-translate-y-1">
-                                <a href="/product_detail.php?id=${product.id}" class="block">
-                                    <img src="${escapeHTML(product.image || '/assets/images/product-placeholder.png')}" alt="${escapeHTML(product.name)}" class="w-full h-48 object-cover">
-                                </a>
-                                <div class="p-4">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-2 truncate" title="${escapeHTML(product.name)}">
-                                        <a href="/product_detail.php?id=${product.id}" class="hover:text-blue-600">${escapeHTML(product.name)}</a>
-                                    </h3>
-                                    <p class="text-gray-600 text-sm mb-3">${escapeHTML(product.category_name || 'Uncategorized')}</p>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-xl font-bold text-gray-900">${currencySymbol}${formatNumberWithCommas(product.price)}</span>
-                                        <button 
-                                            class="add-to-cart-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition duration-200"
-                                            data-product-id="${product.id}"
-                                            data-product-name="${escapeHTML(product.name)}"
-                                            data-product-price="${product.price}"
-                                            data-product-image="${escapeHTML(product.image)}"
-                                            aria-label="Add ${escapeHTML(product.name)} to cart">
-                                            <i data-lucide="shopping-cart" class="h-5 w-5"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        productGrid.insertAdjacentHTML('beforeend', productCard);
-                    });
-                     if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                     }
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching products:', error);
-                // Note: The existing logic already clears the grid/skeletons on error.
-                // const currentLoadingIndicator = document.getElementById('loading-products'); // This ID is no longer used
-                // if (currentLoadingIndicator) currentLoadingIndicator.remove();
-                productGrid.innerHTML = `<p class="col-span-full text-red-600 text-center py-10">Error loading products. Please try again later. (${escapeHTML(error.message)})</p>`;
-            });
-    }
-
-    // Initial fetch
-    fetchAndDisplayProducts(apiUrl);
-
-    // Event listener for the reset button (using delegation)
-    productGrid.addEventListener('click', function(event) {
-        const resetButton = event.target.closest('#reset-products-btn');
-        if (resetButton) {
-            // Restore original title
-            if (pageTitleElement) {
-                pageTitleElement.textContent = originalPageTitle;
-            }
-            // Clear URL query parameters
-            history.pushState({}, '', window.location.pathname);
-            // Fetch all products
-            window.fetchAndDisplayProducts('/api/product_api.php'); // Use global function
-        }
-    });
-
-    // Basic HTML escaping function
     function escapeHTML(str) {
         if (str === null || str === undefined) return '';
         return str.toString()
@@ -186,30 +22,439 @@ document.addEventListener('DOMContentLoaded', function() {
             .replace(/'/g, '&#039;');
     }
 
-    // Function to format numbers with commas and two decimal places
     function formatNumberWithCommas(number) {
-        if (number === null || number === undefined || isNaN(parseFloat(number))) {
-            // Return original value or a placeholder if not a valid number
-            // Let's return '0.00' or the original value based on requirements. 
-            // For now, returning the original seems safer if it might be non-numeric text.
-            // Or maybe return a default like 'N/A' or '0.00'? Let's go with 0.00 for price context.
-            const parsed = parseFloat(number);
-             if (isNaN(parsed)) return number; // Return original if truly not parseable
-             number = parsed; // Use the parsed number if it was a string number initially
-        }
-        const num = parseFloat(number); // Ensure it's a number type
-        // Use toLocaleString for robust formatting, ensuring two decimal places
-        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+         if (number === null || number === undefined) return '0.00';
+         const parsed = parseFloat(number);
+         if (isNaN(parsed)) return '0.00'; 
+         return parsed.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Add to Cart functionality delegation (if needed)
-    // Ensure your main.js or similar handles clicks on .add-to-cart-btn
-    // If not, uncomment and implement this:
-    // productGrid.addEventListener('click', function(event) {
-    //     const button = event.target.closest('.add-to-cart-btn');
-    //     if (button) {
-    //         console.log('Add to cart clicked:', button.dataset.productId);
-    //         // Implement actual add to cart logic here
-    //     }
-    // });
+    // Function to set active class on tabs/links within a container
+    // Ensures only one item has the active class
+    function setActiveClass(container, clickedElement, activeClass = 'active') {
+        if (!container) return;
+        // Find all potential elements to deactivate based on a common class or selector
+        const elements = container.querySelectorAll('.category-tab, .subcategory-link');
+        elements.forEach(el => {
+            // Ensure we are comparing with the correct active class for the element type
+            const currentActiveClass = el.classList.contains('category-tab') ? 'active' : 'active-sub';
+            el.classList.remove(currentActiveClass);
+        });
+
+        // Add active class to the newly clicked element if provided
+        if (clickedElement) {
+            const newActiveClass = clickedElement.classList.contains('category-tab') ? 'active' : 'active-sub';
+            clickedElement.classList.add(newActiveClass);
+        }
+    }
+    
+    // Specific function to set active subcategory link
+    function setActiveSubcategory(subSlug) {
+         if (!subcategoryDisplay) return;
+         subcategoryDisplay.querySelectorAll('.subcategory-link').forEach(el => el.classList.remove('active-sub'));
+         if (subSlug) {
+             const activeSubLink = subcategoryDisplay.querySelector(`.subcategory-link[data-subcategory-slug="${subSlug}"]`);
+             if (activeSubLink) activeSubLink.classList.add('active-sub');
+         }
+    }
+
+    // --- Product Fetching and Display ---
+    window.fetchAndDisplayProducts = function(url) { 
+        if (!productGrid) return; // Exit if grid doesn't exist
+        
+        // Use skeleton loader - SIMPLIFIED DESIGN
+        const skeletonCardHTML = `
+            <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer  w-full">
+              <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
+                <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
+                <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
+                <div class="absolute bg-gray-200 bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
+                  <div class="h-5 bg-gray-300 rounded w-2/3"></div>
+                </div>
+              </div>
+              <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
+                <div class="product-header flex justify-between items-center mt-1">
+                  <div class="h-6 bg-gray-300 rounded w-1/2"></div>
+                  <div class="bg-gray-300 rounded h-6 w-6 ml-auto"></div>
+                </div>
+              </div>
+            </div>
+        `;
+        let skeletonHTML = '';
+        loadingIndicator?.remove(); // Remove static loader if present
+        for (let i = 0; i < 8; i++) skeletonHTML += skeletonCardHTML;
+        productGrid.innerHTML = skeletonHTML;
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(`HTTP error! status: ${response.status}, message: ${text || 'No message'}`); });
+                }
+                return response.json();
+            })
+            .then(products => {
+                if (!productGrid) return;
+                productGrid.innerHTML = ''; // Clear skeletons
+
+                if (!Array.isArray(products)) {
+                     console.error('Invalid data received from API:', products);
+                     productGrid.innerHTML = '<p class="col-span-full text-red-600 text-center py-10">Error: Invalid data format received from server.</p>';
+                     return;
+                }
+
+                if (products.length === 0) {
+                     productGrid.innerHTML = `
+                        <div class="col-span-full text-center py-16 px-6 bg-gray-50 rounded-lg border border-gray-200">
+                            <i data-lucide="frown" class="mx-auto h-12 w-12 text-gray-400"></i>
+                            <h3 class="mt-2 text-xl font-semibold text-gray-800">No Products Found</h3>
+                            <p class="mt-1 text-sm text-gray-500">We couldn't find any products matching your current filters or search term.</p>
+                            <div class="mt-6">
+                                <button id="reset-products-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                    <i data-lucide="refresh-cw" class="mr-1.5 h-4 w-4"></i> Clear Filters / Search
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                     if (typeof lucide !== 'undefined') lucide.createIcons();
+                } else {
+                    products.forEach(product => {
+                        // Prepare variables for the template
+                        const safeName = escapeHTML(product.name);
+                        const safeImage = escapeHTML(product.image || '/assets/images/product-placeholder.png');
+                        const safeDesc = escapeHTML(product.description || '');
+                        const safeSlug = escapeHTML(product.slug || ''); // Assuming slug is available
+                        const safeCategoryName = escapeHTML(product.category_name || 'Uncategorized');
+                        const priceData = product.price;
+                        const stock = product.stock !== undefined ? product.stock : null; // Assuming stock is available
+                        const isActive = product.is_active !== undefined ? product.is_active : true; // Assuming is_active is available
+                        const backorder = product.backorder !== undefined ? product.backorder : false; // Assuming backorder is available
+                        const originalPrice = product.original_price; // Assuming original_price is available
+                        const discountPercentage = product.discount_percentage; // Assuming discount_percentage is available
+                        const safeOptions = escapeHTML(JSON.stringify(product.options || {})); // Assuming options are available
+                        
+                        // Generate Discount Badge HTML
+                        let discountBadgeHTML = '';
+                        if (discountPercentage && parseFloat(discountPercentage) > 0) {
+                             discountBadgeHTML = `<span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">${parseFloat(discountPercentage).toFixed(0)}%<span class="hidden md:inline"> OFF</span></span>`;
+                        }
+                        
+                        // Generate Status Badge HTML (Handles Inactive > Out of Stock > Backorder > In Stock)
+                        let statusBadgeHTML = '';
+                        if (!isActive) {
+                            // Should not happen anymore due to backend filtering, but kept as fallback
+                            statusBadgeHTML = `<span class="absolute top-2 left-2 bg-gray-700 text-white text-xs font-semibold px-2 py-0.5 rounded">Unavailable</span>`; 
+                        } else if (stock !== null && stock <= 0) {
+                            if (backorder) {
+                                statusBadgeHTML = `<span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-0.5 rounded">Backorder</span>`;
+                            } else {
+                                statusBadgeHTML = `<span class="absolute top-2 left-2 bg-gray-500 text-white text-xs font-semibold px-2 py-0.5 rounded">Out of Stock</span>`;
+                            }
+                        } else if (stock !== null && stock > 0) {
+                             // Display stock count if active and in stock
+                             statusBadgeHTML = `<span class="absolute top-2 left-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded">${stock} in Stock</span>`;
+                        } // No badge if stock is null or undefined
+                        
+                        // Generate Price HTML (Handles discounts)
+                        let priceHTML = `<span class="product-price font-semibold text-gray-900">${currencySymbol}${formatNumberWithCommas(product.price)}</span>`;
+                        if (originalPrice && parseFloat(originalPrice) > parseFloat(product.price)) {
+                            priceHTML = `
+                                <div class="price-container flex flex-col md:flex-row items-baseline gap-0 md:gap-1">
+                                    <span class="product-price text-base md:text-lg font-bold text-red-600">${currencySymbol}${formatNumberWithCommas(product.price)}</span>
+                                    <span class="product-original-price text-sm font-semibold text-gray-500 line-through">${currencySymbol}${formatNumberWithCommas(originalPrice)}</span>
+                                </div>
+                            `;
+                        }
+                        
+                        // Cart Status Placeholder & Icons (using Lucide)
+                        const isInCart = false; // Placeholder - requires cart integration
+                        const cartIconHTML = `<i data-lucide="shopping-cart" class="lucide-icon size-4"></i>`; // Lucide cart icon tag
+                        const checkIconHTML = `<i data-lucide="check" class="lucide-icon size-4"></i>`;    // Lucide check icon tag 
+                        
+                        // The product card template literal
+                        const productCard = `
+                             <div class="product-card bg-white rounded-lg shadow overflow-hidden transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer"
+                                 data-product-id="${product.id}"
+                                 data-product-name="${safeName}"
+                                 data-product-price="${priceData}"
+                                 data-product-image="${safeImage}"
+                                 data-product-description="${safeDesc}" 
+                                 data-product-slug="${safeSlug}" 
+                                 data-category-name="${safeCategoryName}" 
+                                 data-stock="${stock}" 
+                                 data-is-active="${isActive}" 
+                                 data-backorder="${backorder}" 
+                                 data-original-price="${originalPrice || ''}" 
+                                 data-discount-percentage="${discountPercentage || ''}" 
+                                 data-product-options='${safeOptions}'> 
+                                <div class="product-image-container relative h-56 bg-gray-200"> 
+                                    ${discountBadgeHTML} 
+                                    ${statusBadgeHTML}   
+                                    <img src="${safeImage}" alt="${safeName}" class="product-image w-full h-full object-cover"> 
+                                    <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/50 to-transparent">
+                                         <h3 class="product-name font-semibold text-sm md:text-base text-white truncate pointer-events-none">${safeName}</h3> 
+                                    </div>
+                                </div>
+                                <div class="product-details p-2 flex flex-col flex-grow"> 
+                                     <div class="product-header flex justify-between items-center mt-1"> 
+                                         <span class="product-price text-gray-900">${priceHTML}</span>
+                                         <button type="button" 
+                                                 class="add-to-cart-icon-btn p-1.5 rounded-full ${isInCart ? 'text-green-500 bg-green-100 cursor-not-allowed in-cart' : 'text-gray-500 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary'} ml-auto transition-colors duration-200" 
+                                                 title="${isInCart ? 'Added to Cart' : 'Add to Cart'}"
+                                                 data-product-id="${product.id}" 
+                                                 data-product-name="${safeName}" 
+                                                 data-product-price="${priceData}" 
+                                                 data-product-image="${safeImage}" 
+                                                 data-product-options='${safeOptions}'
+                                                 ${isInCart ? 'disabled' : ''}>
+                                             ${isInCart ? checkIconHTML : cartIconHTML}
+                                         </button>
+                                     </div>
+                                 </div>
+                            </div>`;
+
+                        productGrid.insertAdjacentHTML('beforeend', productCard);
+                    });
+                     if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching products:', error);
+                if (productGrid) productGrid.innerHTML = `<p class="col-span-full text-red-600 text-center py-10">Error loading products. Please try again later. (${escapeHTML(error.message)})</p>`;
+            });
+    }
+
+    // --- Subcategory Fetching and Display ---
+    async function fetchAndDisplaySubcategories(parentSlug) {
+        if (!subcategoryDisplay) return;
+
+        // 1. Destroy previous Swiper instance if it exists
+        if (subcategorySwiperInstance) {
+            subcategorySwiperInstance.destroy(true, true);
+            subcategorySwiperInstance = null;
+        }
+
+        // Skeleton Loader HTML
+        const skeletonSubcategoryHTML = `<div class="flex space-x-2 overflow-hidden"><div class="px-3 py-1 h-7 w-24 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div> <div class="px-3 py-1 h-7 w-28 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div> <div class="px-3 py-1 h-7 w-20 bg-gray-200 rounded-full animate-pulse flex-shrink-0"></div></div>`;
+        subcategoryDisplay.innerHTML = skeletonSubcategoryHTML;
+
+        const fetchAll = (!parentSlug || parentSlug === 'all');
+        let apiUrl = '/api/subcategory_api.php';
+        if (!fetchAll) apiUrl += `?parent_slug=${encodeURIComponent(parentSlug)}`;
+        
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            
+            // Clear skeleton/previous content
+            subcategoryDisplay.innerHTML = ''; 
+
+            if (data.success && data.subcategories.length > 0) {
+                // 2. Inject Swiper HTML structure
+                subcategoryDisplay.innerHTML = `
+                    <div class="swiper subcategory-swiper relative group"> 
+                        <div class="swiper-wrapper"> 
+                            <!-- Slides will be added here -->
+                        </div>
+                    </div>
+                `;
+
+                const swiperWrapper = subcategoryDisplay.querySelector('.swiper-wrapper');
+                if (!swiperWrapper) return; // Should not happen
+
+                // 3. Add slides with buttons
+                data.subcategories.forEach(sub => {
+                    const slide = document.createElement('div');
+                    slide.className = 'swiper-slide !w-auto'; // Important: !w-auto for auto width
+                    
+                    const subLink = document.createElement('button');
+                    subLink.className = 'subcategory-link block px-3 py-1 text-sm rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors';
+                    subLink.textContent = sub.name;
+                    subLink.dataset.subcategorySlug = sub.slug;
+                    
+                    slide.appendChild(subLink);
+                    swiperWrapper.appendChild(slide);
+                });
+
+                // 4. Initialize Swiper
+                subcategorySwiperInstance = new Swiper('.subcategory-swiper', {
+                    slidesPerView: 'auto',
+                    spaceBetween: 8,
+                    loop: true,
+                    centeredSlides: false,
+                    slidesOffsetBefore: 0,
+                    // navigation: { // Removed navigation configuration
+                    //     nextEl: '.subcategory-swiper-button-next',
+                    //     prevEl: '.subcategory-swiper-button-prev',
+                    // },
+                    // freeMode: true, // Optional: Add freeMode for smoother scrolling
+                });
+
+            } else if (data.success && data.subcategories.length === 0 && !fetchAll) {
+                subcategoryDisplay.innerHTML = '<p class="text-gray-500 text-sm italic">No subcategories found.</p>';
+            } else if (!data.success) {
+                 subcategoryDisplay.innerHTML = '<p class="text-red-500 text-sm">Error loading subcategories.</p>';
+                 console.error('API error fetching subcategories:', data.message);
+            }
+             // If fetchAll and no subcategories, display remains empty
+        } catch (error) {
+            console.error('Fetch error for subcategories:', error);
+            subcategoryDisplay.innerHTML = '<p class="text-red-500 text-sm">Could not fetch subcategories.</p>';
+        }
+    }
+
+    // --- Update View (URL, Title, Products) ---
+    function updateProductView(params = {}) {
+        const { category = 'all', subcategory_slug = null, search = null } = params;
+        const queryParams = []; // For browser URL
+        const apiParams = [];   // For API call
+        let pageTitle = originalPageTitle;
+        let parentSlugForApi = null;
+
+        // Build parameters for Browser URL (using 'category')
+        if (category !== 'all') {
+            queryParams.push(`category=${encodeURIComponent(category)}`);
+            parentSlugForApi = category; 
+            const parentTab = parentTabsContainer?.querySelector(`.category-tab[data-category-slug="${category}"]`);
+            if (parentTab) pageTitle = parentTab.textContent.trim();
+        }
+        if (subcategory_slug) {
+             queryParams.push(`subcategory_slug=${encodeURIComponent(subcategory_slug)}`);
+             const subLink = subcategoryDisplay?.querySelector(`.subcategory-link[data-subcategory-slug="${subcategory_slug}"]`);
+             if(subLink) pageTitle += ` > ${subLink.textContent.trim()}`;
+        }
+        if (search) {
+             queryParams.push(`search=${encodeURIComponent(search)}`);
+             pageTitle = `Search Results for "${search}"`;
+        }
+
+        // Build parameters for API call (using 'parent_category_slug')
+        if (parentSlugForApi) apiParams.push(`parent_category_slug=${encodeURIComponent(parentSlugForApi)}`);
+        if (subcategory_slug) apiParams.push(`subcategory_slug=${encodeURIComponent(subcategory_slug)}`);
+        if (search) apiParams.push(`search=${encodeURIComponent(search)}`);
+        
+        // Construct URLs
+        let newUrl = window.location.pathname + (queryParams.length > 0 ? `?${queryParams.join('&')}` : '');
+        let apiUrl = '/api/product_api.php' + (apiParams.length > 0 ? `?${apiParams.join('&')}` : '');
+        
+        // Update Browser History and Title
+        // Use replaceState for back/forward nav to work better with filters
+        history.replaceState(params, pageTitle, newUrl);
+        if (pageTitleElement) pageTitleElement.textContent = pageTitle;
+        document.title = pageTitle; // Update actual document title
+
+        // Fetch Products
+        console.log('[updateProductView] Fetching products with API URL:', apiUrl);
+        window.fetchAndDisplayProducts(apiUrl);
+        
+        // Update active states after fetching products
+        if (parentTabsContainer) {
+             const activeParentTab = parentTabsContainer.querySelector(`.category-tab[data-category-slug="${category}"]`);
+             setActiveClass(parentTabsContainer, activeParentTab, 'active');
+        }
+         // Ensure subcategory active state is correct AFTER products load
+         setActiveSubcategory(subcategory_slug);
+    }
+
+    // --- Event Listeners ---
+
+    // Parent Category Tab Clicks
+    if (parentTabsContainer) {
+        parentTabsContainer.addEventListener('click', async function(event) { // Keep async if fetchAndDisplaySubcategories is async
+            const button = event.target.closest('.category-tab');
+            if (!button || button.classList.contains('active')) return;
+
+            const categorySlug = button.dataset.categorySlug;
+            const currentParams = new URLSearchParams(window.location.search);
+            const search = currentParams.get('search') || null;
+            
+            // Update active tab & clear subcategory active state immediately
+            setActiveClass(parentTabsContainer, button, 'active');
+            if (subcategoryDisplay) {
+                subcategoryDisplay.querySelectorAll('.subcategory-link').forEach(el => el.classList.remove('active-sub'));
+            }
+
+            // Start fetching subcategories (don't await)
+            fetchAndDisplaySubcategories(categorySlug === 'all' ? null : categorySlug);
+            
+            // Immediately update the product view (products, URL, title)
+            updateProductView({ category: categorySlug, subcategory_slug: null, search: search });
+        });
+    }
+
+    // Subcategory Link Clicks
+    if (subcategoryDisplay) {
+        subcategoryDisplay.addEventListener('click', function(event) {
+            const button = event.target.closest('.subcategory-link');
+             if (!button || button.classList.contains('active-sub')) return;
+
+            const subSlug = button.dataset.subcategorySlug;
+            const currentParams = new URLSearchParams(window.location.search);
+            const parentSlug = currentParams.get('category') || 'all'; // Need the current parent
+            const search = currentParams.get('search') || null;
+
+            if (parentSlug === 'all') {
+                 console.warn('Subcategory clicked while "All Products" selected. Parent might be ambiguous.');
+                 // Decide behavior? Maybe find parent via API? For now, filter using sub + search.
+                  updateProductView({ subcategory_slug: subSlug, search: search });
+                 return;
+            }
+            
+            // Update view (this will handle active classes)
+            updateProductView({ category: parentSlug, subcategory_slug: subSlug, search: search });
+        });
+    }
+
+    // Reset Button Clicks
+    productGrid.addEventListener('click', function(event) {
+        const resetButton = event.target.closest('#reset-products-btn');
+        if (resetButton) {
+             fetchAndDisplaySubcategories(null); // Fetch all subcategories
+             updateProductView({}); // Reset view to all products, no filters
+        }
+    });
+    
+    // Handle Browser Back/Forward Navigation
+    window.addEventListener('popstate', function(event) {
+        if (event.state) {
+             // State object might contain our category/subcat/search params
+             console.log('Popstate triggered:', event.state);
+             fetchAndDisplaySubcategories(event.state.category === 'all' ? null : event.state.category).then(() => {
+                 updateProductView(event.state); 
+             });
+        } else {
+            // No state, likely initial page load or manual URL change - re-init
+             initializeProductView(); 
+        }
+    });
+
+    // --- Initial Page Load Logic ---
+    function initializeProductView() {
+        if (!parentTabsContainer || !subcategoryDisplay || !productGrid) {
+             console.error("Essential elements for product view initialization missing.");
+             return;
+        }
+        console.log("Initializing Product View...");
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category') || 'all';
+        const subSlug = urlParams.get('subcategory_slug');
+        const search = urlParams.get('search');
+        
+        let initialParams = { category, subcategory_slug: subSlug, search };
+        Object.keys(initialParams).forEach(key => initialParams[key] == null && delete initialParams[key]);
+        if (!initialParams.category) initialParams.category = 'all';
+
+        console.log("Initial Params:", initialParams);
+
+        // Fetch initial subcategories based on URL
+        fetchAndDisplaySubcategories(category === 'all' ? null : category).then(() => {
+            console.log("Subcategories fetched/displayed for initial load.");
+            // Once subcategories are rendered, update the main view
+            // This call will also set the active classes correctly
+            updateProductView(initialParams);
+        });
+    }
+
+    initializeProductView(); // Run initial setup
+
 }); 
