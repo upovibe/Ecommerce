@@ -6,6 +6,7 @@ $themeColor = STORE_SETTINGS['theme_color'] ?? '#3B82F6';
 $brandTextColor = STORE_SETTINGS['brand_text_color'] ?? '#FFFFFF';
 $logoPath = !empty(STORE_SETTINGS['logo_path']) ? STORE_SETTINGS['logo_path'] : '/assets/images/logo.png';
 $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
+$currencySymbolPhp = STORE_SETTINGS['currency_symbol'] ?? '$';
 
 $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $homePath = '/index.php';
@@ -47,7 +48,7 @@ $isProductsActive = ($currentPath === $productsPath);
     <script src="/assets/js/main.js" defer></script>
 </head>
 
-<body class="bg-gray-50 flex flex-col min-h-screen" x-data="{ isSearchModalOpen: false }">
+<body class="bg-gray-50 flex flex-col min-h-screen" x-data="{ isSearchModalOpen: false, isProductModalOpen: false, selectedProduct: null, currencySymbol: '<?= htmlspecialchars($currencySymbolPhp) ?>', isImageLightboxOpen: false }">
     <nav class="shadow-lg sticky top-0 z-30 animate-header-load" style="background-color: <?= htmlspecialchars($themeColor) ?>;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 md:h-20">

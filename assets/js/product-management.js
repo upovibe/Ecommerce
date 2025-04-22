@@ -413,14 +413,60 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Reset Button Clicks
-    productGrid.addEventListener('click', function(event) {
-        const resetButton = event.target.closest('#reset-products-btn');
-        if (resetButton) {
-             fetchAndDisplaySubcategories(null); // Fetch all subcategories
-             updateProductView({}); // Reset view to all products, no filters
-        }
-    });
+    // Product Card Clicks
+    if (productGrid) {
+        productGrid.addEventListener('click', function(event) {
+            // Event delegation for add to cart buttons
+            const addToCartBtn = event.target.closest('.add-to-cart-icon-btn');
+            if (addToCartBtn) {
+                event.stopPropagation(); // Prevent product card click when clicking add-to-cart button
+                // Add to cart logic would go here
+                return;
+            }
+            
+            // Reset Button Click
+            const resetButton = event.target.closest('#reset-products-btn');
+            if (resetButton) {
+                fetchAndDisplaySubcategories(null); // Fetch all subcategories
+                updateProductView({}); // Reset view to all products, no filters
+                return;
+            }
+
+            // Product Card Click
+            const productCard = event.target.closest('.product-card');
+            if (productCard) {
+                // Collect product data from data attributes
+                const product = {
+                    id: productCard.dataset.productId,
+                    name: productCard.dataset.productName,
+                    price: productCard.dataset.productPrice,
+                    image: productCard.dataset.productImage,
+                    description: productCard.dataset.productDescription,
+                    slug: productCard.dataset.productSlug,
+                    category_name: productCard.dataset.categoryName,
+                    stock: productCard.dataset.stock,
+                    is_active: productCard.dataset.isActive === 'true',
+                    backorder: productCard.dataset.backorder === 'true',
+                    original_price: productCard.dataset.originalPrice,
+                    discount_percentage: productCard.dataset.discountPercentage,
+                    options: JSON.parse(productCard.dataset.productOptions || '{}')
+                };
+                
+                // Set the selected product in Alpine.js data
+                window.selectedProduct = product;
+                
+                // Open the product modal using Alpine.js
+                const body = document.querySelector('body');
+                if (body && body._x_dataStack) {
+                    const alpineData = body._x_dataStack[0];
+                    if (alpineData) {
+                        alpineData.selectedProduct = product;
+                        alpineData.isProductModalOpen = true;
+                    }
+                }
+            }
+        });
+    }
     
     // Title Reset Button Click
     if (titleResetButton) {

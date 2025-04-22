@@ -104,6 +104,8 @@ $featuredCategories = getFeaturedCategories();
 
 </div>
 
+<!-- Include Product Modal -->
+<?php require_once __DIR__ . '/modals/product_modal.php'; ?>
 
 <?php
 require_once __DIR__ . '/includes/footer.php';
