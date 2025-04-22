@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </h3>
                                     <p class="text-gray-600 text-sm mb-3">${escapeHTML(product.category_name || 'Uncategorized')}</p>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-xl font-bold text-gray-900">${currencySymbol}${parseFloat(product.price).toFixed(2)}</span>
+                                        <span class="text-xl font-bold text-gray-900">${currencySymbol}${formatNumberWithCommas(product.price)}</span>
                                         <button 
                                             class="add-to-cart-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition duration-200"
                                             data-product-id="${product.id}"
@@ -184,6 +184,22 @@ document.addEventListener('DOMContentLoaded', function() {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
+    }
+
+    // Function to format numbers with commas and two decimal places
+    function formatNumberWithCommas(number) {
+        if (number === null || number === undefined || isNaN(parseFloat(number))) {
+            // Return original value or a placeholder if not a valid number
+            // Let's return '0.00' or the original value based on requirements. 
+            // For now, returning the original seems safer if it might be non-numeric text.
+            // Or maybe return a default like 'N/A' or '0.00'? Let's go with 0.00 for price context.
+            const parsed = parseFloat(number);
+             if (isNaN(parsed)) return number; // Return original if truly not parseable
+             number = parsed; // Use the parsed number if it was a string number initially
+        }
+        const num = parseFloat(number); // Ensure it's a number type
+        // Use toLocaleString for robust formatting, ensuring two decimal places
+        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     // Add to Cart functionality delegation (if needed)

@@ -68,6 +68,7 @@
     <!-- Alpine.js Collapse Plugin -->
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <!-- Swiper js plugins-->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script src="assets/js/swiper.js" defer></script>
     <script src="assets/js/main.js" defer></script>
     <!-- Add AOS JS -->
