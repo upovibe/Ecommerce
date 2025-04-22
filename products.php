@@ -20,7 +20,7 @@ $featuredCategories = getFeaturedCategories();
 ?>
 
 
-<div class="spacey-4">
+<div class="spacey-4 pb-24">
 
 <!-- Product Page Banner -->
 <section 
@@ -43,7 +43,14 @@ $featuredCategories = getFeaturedCategories();
 
 <!-- Product List -->
 <section class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
-    <h2 id="product-list-title" class="text-2xl font-semibold mb-4 text-gray-800">Products</h2>
+    <div class="flex justify-between items-center mb-4">
+        <h2 id="product-list-title" class="text-lg md:text-2xl font-semibold text-gray-800">Products</h2>
+        <button id="reset-filters-title-btn" 
+                class="hidden items-center gap-1 p-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors">
+            <i data-lucide="refresh-cw" class="size-4"></i>
+            <span class="hidden md:inline text-nowrap">Reset Filters</span>
+        </button>
+    </div>
 
     <!-- Parent Category Tabs -->
     <div id="parent-category-tabs" class="mb-4 flex flex-wrap gap-2 border-b border-gray-200 pb-3">

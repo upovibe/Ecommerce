@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const originalPageTitle = pageTitleElement ? pageTitleElement.textContent : 'Products';
     const parentTabsContainer = document.getElementById('parent-category-tabs');
     const subcategoryDisplay = document.getElementById('subcategory-display');
+    const titleResetButton = document.getElementById('reset-filters-title-btn'); // Get reference to the new button
     let subcategorySwiperInstance = null; // Variable to hold the Swiper instance
 
     // --- Helper Functions ---
@@ -343,6 +344,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (pageTitleElement) pageTitleElement.textContent = pageTitle;
         document.title = pageTitle; // Update actual document title
 
+        // Show/Hide Title Reset Button
+        if (titleResetButton) {
+            const filtersActive = (category && category !== 'all') || subcategory_slug || search;
+            titleResetButton.classList.toggle('hidden', !filtersActive);
+            titleResetButton.classList.toggle('flex', filtersActive); // Use inline-flex to show
+        }
+
         // Fetch Products
         console.log('[updateProductView] Fetching products with API URL:', apiUrl);
         window.fetchAndDisplayProducts(apiUrl);
@@ -413,6 +421,15 @@ document.addEventListener('DOMContentLoaded', function() {
              updateProductView({}); // Reset view to all products, no filters
         }
     });
+    
+    // Title Reset Button Click
+    if (titleResetButton) {
+        titleResetButton.addEventListener('click', function() {
+            fetchAndDisplaySubcategories(null); // Fetch all subcategories
+            updateProductView({}); // Reset view to all products, no filters
+            // The updateProductView call will automatically hide this button again
+        });
+    }
     
     // Handle Browser Back/Forward Navigation
     window.addEventListener('popstate', function(event) {
