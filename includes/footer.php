@@ -91,6 +91,10 @@
 </script> 
 
 <?php include_once __DIR__ . '/../modals/search_modal.php'; ?>
+<?php include_once __DIR__ . '/../modals/cart_modal.php'; // Include Cart Modal ?>
+<?php include_once __DIR__ . '/../modals/complete_order_modal.php'; // Include Complete Order Modal ?>
+<?php include_once __DIR__ . '/../modals/finalise_order_modal.php'; // Include Finalise Order Modal ?>
+<?php include_once __DIR__ . '/toast.php'; // Include Toast Notifications ?>
 
 </body>
 

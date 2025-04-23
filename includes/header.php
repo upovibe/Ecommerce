@@ -44,11 +44,109 @@ $isProductsActive = ($currentPath === $productsPath);
       [x-cloak] { display: none !important; }
     </style>
 
+    <script src="/assets/js/cart.js" defer></script>
     <script src="/assets/js/utils.js" defer></script>
     <script src="/assets/js/main.js" defer></script>
 </head>
 
-<body class="bg-gray-50 flex flex-col min-h-screen" x-data="{ isSearchModalOpen: false, isProductModalOpen: false, selectedProduct: null, currencySymbol: '<?= htmlspecialchars($currencySymbolPhp) ?>', isImageLightboxOpen: false }">
+<body class="bg-gray-50 flex flex-col min-h-screen" 
+      x-data="{
+          isSearchModalOpen: false, 
+          isProductModalOpen: false, 
+          selectedProduct: null, 
+          currencySymbol: '<?= htmlspecialchars($currencySymbolPhp) ?>', 
+          isImageLightboxOpen: false, 
+          isCartModalOpen: false, 
+          cartItems: [],
+          viewedProductInCart: false,
+          isCompleteOrderModalOpen: false,
+          isFinaliseOrderModalOpen: false,
+          whatsappNumber: '<?= htmlspecialchars(STORE_SETTINGS['whatsapp_number'] ?? '') ?>',
+          
+          orderFulfillmentMethod: 'delivery',
+          pickupBy: 'myself',
+          customerName: '',
+          customerPhone: '',
+          customerEmail: '',
+          customerAddress: '',
+          pickupPersonName: '',
+          pickupPersonPhone: '',
+          finalOrderDetails: null,
+
+          init() {
+              this.$watch('selectedProduct', (product) => {
+                  console.log('Selected product changed:', product);
+                  if (product && product.id) {
+                      this.viewedProductInCart = cart.isInCart(product.id);
+                      console.log('Updated viewedProductInCart based on selectedProduct:', this.viewedProductInCart);
+                      this.$nextTick(() => { if(typeof lucide !== 'undefined') lucide.createIcons(); });
+                  } else {
+                      this.viewedProductInCart = false;
+                  }
+              });
+              
+              this.$watch('isCompleteOrderModalOpen', (isOpen) => {
+                  console.log('[x-data] isCompleteOrderModalOpen changed to:', isOpen);
+                  if (isOpen) {
+                      this.$nextTick(() => { if(typeof lucide !== 'undefined') lucide.createIcons(); });
+                  }
+              });
+              
+              this.$watch('isFinaliseOrderModalOpen', (isOpen) => {
+                  console.log('[x-data] isFinaliseOrderModalOpen changed to:', isOpen);
+                  if (isOpen) {
+                      this.$nextTick(() => { if(typeof lucide !== 'undefined') lucide.createIcons(); });
+                  }
+              });
+              
+              this.$watch('isCartModalOpen', (isOpen) => {
+                  console.log('[x-data] isCartModalOpen changed to:', isOpen);
+              });
+          },
+
+          handleCartUpdate(event) {
+              console.log('Global cart update listener triggered by event:', event);
+              if (this.selectedProduct && this.selectedProduct.id) {
+                  const wasInCart = this.viewedProductInCart;
+                  this.viewedProductInCart = cart.isInCart(this.selectedProduct.id);
+                  console.log('Updated viewedProductInCart based on cart:updated event:', this.viewedProductInCart);
+                  if (wasInCart !== this.viewedProductInCart) {
+                      this.$nextTick(() => { 
+                          console.log('Icon refresh needed due to cart update affecting viewed product');
+                          if(typeof lucide !== 'undefined') lucide.createIcons(); 
+                      });
+                  }
+              }
+          },
+          
+          prepareAndOpenFinaliseModal() {
+              let orderDetails = {
+                  cart: cart.getContents(),
+                  fulfillment: this.orderFulfillmentMethod,
+                  customer: {
+                      name: this.customerName,
+                      phone: this.customerPhone,
+                      email: this.customerEmail,
+                      address: this.orderFulfillmentMethod === 'delivery' ? this.customerAddress : null
+                  },
+                  pickup: null
+              };
+              
+              if (this.orderFulfillmentMethod === 'pickup' && this.pickupBy === 'someone_else') {
+                  orderDetails.pickup = {
+                      name: this.pickupPersonName,
+                      phone: this.pickupPersonPhone
+                  };
+              }
+              
+              this.finalOrderDetails = orderDetails;
+              console.log('Prepared finalOrderDetails:', this.finalOrderDetails);
+              
+              this.isCompleteOrderModalOpen = false;
+              this.isFinaliseOrderModalOpen = true;
+          }
+      }"
+      @cart:updated.window="handleCartUpdate($event)" >
     <nav class="shadow-lg sticky top-0 z-30 animate-header-load" style="background-color: <?= htmlspecialchars($themeColor) ?>;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 md:h-20">
@@ -92,14 +190,18 @@ $isProductsActive = ($currentPath === $productsPath);
                     </button>
 
                     <div class="hidden md:block">
-                        <button id="cartButton" type="button" class="relative p-2 rounded-full hover:bg-black/10 transition-all duration-200" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
+                        <button id="cartButton" type="button" 
+                                @click="isCartModalOpen = true"
+                                class="relative p-2 rounded-full hover:bg-black/10 transition-all duration-200" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
                             <span class="sr-only">View cart</span>
                             <i data-lucide="shopping-cart" class="h-6 w-6"></i>
                             <span id="cart-item-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center transform hover:scale-110 transition-transform">0</span>
                         </button>
                     </div>
 
-                    <button id="mobileCartIcon" type="button" class="relative md:hidden p-2 rounded-full hover:bg-black/10 transition-all duration-200 mr-2" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
+                    <button id="mobileCartIcon" type="button" 
+                            @click="isCartModalOpen = true"
+                            class="relative md:hidden p-2 rounded-full hover:bg-black/10 transition-all duration-200 mr-2" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
                         <span class="sr-only">View cart</span>
                         <i data-lucide="shopping-cart" class="h-6 w-6"></i>
                         <span id="mobile-cart-item-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center transform hover:scale-110 transition-transform ">0</span>

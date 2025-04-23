@@ -167,9 +167,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         
                         // Cart Status Placeholder & Icons (using Lucide)
-                        const isInCart = false; // Placeholder - requires cart integration
+                        const isInCart = cart.isInCart(product.id); // Check if product is in cart
                         const cartIconHTML = `<i data-lucide="shopping-cart" class="lucide-icon size-4"></i>`; // Lucide cart icon tag
-                        const checkIconHTML = `<i data-lucide="check" class="lucide-icon size-4"></i>`;    // Lucide check icon tag 
+                        const checkIconHTML = `<i data-lucide="check" class="lucide-icon size-4 text-green-600"></i>`; // Lucide check icon tag (added green color)
                         
                         // The product card template literal
                         const productCard = `
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                      <div class="product-header flex justify-between items-center mt-1"> 
                                          <span class="product-price text-gray-900">${priceHTML}</span>
                                          <button type="button" 
-                                                 class="add-to-cart-icon-btn p-1.5 rounded-full ${isInCart ? 'text-green-500 bg-green-100 cursor-not-allowed in-cart' : 'text-gray-500 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary'} ml-auto transition-colors duration-200" 
+                                                 class="add-to-cart-icon-btn p-1.5 rounded-full ${isInCart ? 'text-green-500 bg-green-100 cursor-not-allowed' : 'text-gray-500 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary'} ml-auto transition-colors duration-200" 
                                                  title="${isInCart ? 'Added to Cart' : 'Add to Cart'}"
                                                  data-product-id="${product.id}" 
                                                  data-product-name="${safeName}" 
@@ -413,18 +413,69 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Product Card Clicks
+    // Product Card Clicks & Add to Cart
     if (productGrid) {
         productGrid.addEventListener('click', function(event) {
-            // Event delegation for add to cart buttons
+            // Check if Add to Cart button was clicked
             const addToCartBtn = event.target.closest('.add-to-cart-icon-btn');
-            if (addToCartBtn) {
-                event.stopPropagation(); // Prevent product card click when clicking add-to-cart button
-                // Add to cart logic would go here
-                return;
+            if (addToCartBtn && !addToCartBtn.disabled) {
+                event.stopPropagation(); // Prevent product card click/modal open
+                
+                const productId = addToCartBtn.dataset.productId;
+                const productName = addToCartBtn.dataset.productName;
+                const productPrice = addToCartBtn.dataset.productPrice;
+                const productImage = addToCartBtn.dataset.productImage;
+                // Minimal details needed for the cart item
+                const productDetails = {
+                    id: productId,
+                    name: productName,
+                    price: productPrice,
+                    image: productImage
+                };
+
+                // Add item to cart using cart.js
+                const added = cart.addItem(productId, productDetails);
+
+                if (added) {
+                    // Update button UI
+                    addToCartBtn.innerHTML = `<i data-lucide="check" class="lucide-icon size-4 text-green-600"></i>`;
+                    addToCartBtn.classList.remove('text-gray-500', 'hover:text-primary', 'hover:bg-gray-100');
+                    addToCartBtn.classList.add('text-green-500', 'bg-green-100', 'cursor-not-allowed');
+                    addToCartBtn.disabled = true;
+                    addToCartBtn.title = 'Added to Cart';
+                    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [addToCartBtn] });
+
+                    // Also update any other buttons for the same product
+                    document.querySelectorAll(`.add-to-cart-icon-btn[data-product-id="${productId}"]`).forEach(btn => {
+                        if (btn !== addToCartBtn) {
+                            btn.innerHTML = `<i data-lucide="check" class="lucide-icon size-4 text-green-600"></i>`;
+                            btn.classList.remove('text-gray-500', 'hover:text-primary', 'hover:bg-gray-100');
+                            btn.classList.add('text-green-500', 'bg-green-100', 'cursor-not-allowed');
+                            btn.disabled = true;
+                            btn.title = 'Added to Cart';
+                            if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [btn] });
+                        }
+                    });
+
+                    // Show toast notification (ensure toast object is available)
+                    if (typeof toast !== 'undefined') {
+                        toast.success(`'${productName}' added to cart!`);
+                    } else {
+                        console.warn('Toast notification system not found.');
+                    }
+
+                    // Header count is updated by cart.addItem
+                } else {
+                     if (typeof toast !== 'undefined') {
+                        toast.error(`Could not add '${productName}' to cart.`);
+                    } else {
+                        console.error('Toast notification system not found.');
+                    }
+                }
+                return; // Stop further processing
             }
             
-            // Reset Button Click
+            // Reset Button Click (Ensure it's handled if not an add-to-cart click)
             const resetButton = event.target.closest('#reset-products-btn');
             if (resetButton) {
                 fetchAndDisplaySubcategories(null); // Fetch all subcategories
@@ -432,9 +483,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Product Card Click
+            // Product Card Click (If not Add to Cart or Reset)
             const productCard = event.target.closest('.product-card');
-            if (productCard) {
+            if (productCard && !addToCartBtn) { // Ensure add-to-cart wasn't clicked
                 // Collect product data from data attributes
                 const product = {
                     id: productCard.dataset.productId,
@@ -452,16 +503,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     options: JSON.parse(productCard.dataset.productOptions || '{}')
                 };
                 
-                // Set the selected product in Alpine.js data
-                window.selectedProduct = product;
-                
                 // Open the product modal using Alpine.js
                 const body = document.querySelector('body');
                 if (body && body._x_dataStack) {
-                    const alpineData = body._x_dataStack[0];
+                    const alpineData = body._x_dataStack[0]; // Assuming global Alpine data is the first element
                     if (alpineData) {
                         alpineData.selectedProduct = product;
                         alpineData.isProductModalOpen = true;
+                        // Re-initialize icons in the modal if needed after content changes
+                        setTimeout(() => { 
+                            if (typeof lucide !== 'undefined') {
+                                const modalPanel = document.querySelector('#productModalPanel'); // Adjust if your modal panel ID is different
+                                if (modalPanel) lucide.createIcons({ nodes: [modalPanel] });
+                            }
+                        }, 50); // Delay slightly for Alpine rendering
                     }
                 }
             }

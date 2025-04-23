@@ -147,3 +147,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Cart synchronization
+document.addEventListener('cart:updated', function(event) {
+    console.log('Cart updated event from main.js');
+    
+    // Update all product card buttons
+    document.querySelectorAll('.add-to-cart-icon-btn').forEach(button => {
+        const productId = button.dataset.productId;
+        if (!productId) return;
+        
+        const isInCart = cart.isInCart(productId);
+        
+        if (isInCart) {
+            button.innerHTML = `<i data-lucide="check" class="lucide-icon size-4 text-green-600"></i>`;
+            button.classList.remove('text-gray-500', 'hover:text-primary', 'hover:bg-gray-100');
+            button.classList.add('text-green-500', 'bg-green-100', 'cursor-not-allowed');
+            button.disabled = true;
+            button.title = 'Added to Cart';
+        } else {
+            button.innerHTML = `<i data-lucide="shopping-cart" class="lucide-icon size-4"></i>`;
+            button.classList.add('text-gray-500', 'hover:text-primary', 'hover:bg-gray-100');
+            button.classList.remove('text-green-500', 'bg-green-100', 'cursor-not-allowed');
+            button.disabled = false;
+            button.title = 'Add to Cart';
+        }
+        
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons({ nodes: [button] });
+        }
+    });
+});

@@ -7,7 +7,8 @@ $whatsappNumber = STORE_SETTINGS['whatsapp_number'] ?? '';
 <div x-show="isProductModalOpen" x-cloak
      class="fixed inset-0 z-50 overflow-y-auto"
      aria-labelledby="product-modal-title" role="dialog" aria-modal="true"
-     @keydown.escape.window="isProductModalOpen = false">
+     @keydown.escape.window="isProductModalOpen = false"
+     @cart\\:updated.window="$nextTick(() => console.log('Product modal reacting to cart update'))" >
 
     <div class="flex items-start justify-center min-h-screen pt-10 px-4 pb-20 text-center sm:block sm:p-0">
         <!-- Overlay -->
@@ -132,9 +133,13 @@ $whatsappNumber = STORE_SETTINGS['whatsapp_number'] ?? '';
                         <div class="space-y-3 mb-6 pt-4 border-t border-gray-200/60">
                              <h4 class="text-lg font-semibold text-gray-800">Select Options</h4>
                             <template x-for="(values, name) in selectedProduct.options" :key="name">
-                                <div>
+                                <div :id="'option-group-' + name.replace(/\s+/g, '-')">
                                     <label x-text="name" class="block text-sm font-medium text-gray-700 mb-1"></label>
-                                    <select class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                    <select 
+                                        :name="'options[' + name + ']'" 
+                                        :data-option-name="name"
+                                        x-ref="optionSelects"
+                                        class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                                         <template x-for="value in values" :key="value">
                                             <option :value="value" x-text="value"></option>
                                         </template>
@@ -148,20 +153,92 @@ $whatsappNumber = STORE_SETTINGS['whatsapp_number'] ?? '';
             </div> <!-- End Modal Content Flex -->
 
             <!-- Footer with Buttons -->
-            <div class="bg-gray-50/70 px-4 py-3 sm:px-6 flex justify-between items-center md:justify-end md:items-end gap-2 border-t border-gray-200">
+            <div class="bg-gray-50/70 px-4 py-3 sm:px-6 flex justify-between items-center md:justify-end md:items-end gap-3 border-t border-gray-200">
                 <button type="button" 
                         @click="isProductModalOpen = false"
                         class="w-full inline-flex justify-center gap-1 items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto">
                     <i data-lucide="x" class="w-4 h-4 mr-1"></i>
                     Close
                 </button>
-                 <button type="button" 
-                         :data-product-id="selectedProduct?.id"
-                         :disabled="selectedProduct?.stock <= 0 && !selectedProduct?.backorder"
-                         @click="() => { console.log('Add to cart clicked for:', selectedProduct); alert('Add to cart functionality not yet implemented.'); }"
-                         class="w-full inline-flex justify-center gap-1 items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i data-lucide="plus" class="w-4 h-4 mr-1"></i>
-                    Add to Cart
+                
+                <!-- Combined Add/Added Button -->
+                <button type="button" 
+                        x-ref="addToCartButton" 
+                        :data-product-id="selectedProduct?.id"
+                        :disabled="viewedProductInCart"
+                        @click="(event) => { 
+                            try {
+                                if (viewedProductInCart) return; // Don't add if already in cart
+
+                                // Gather selected options using DOM traversal relative to the modal panel
+                                let selectedOptions = {};
+                                const modalPanel = event.target.closest('.inline-block.align-bottom'); // Find the main modal panel
+                                if (modalPanel) {
+                                    const selects = modalPanel.querySelectorAll('select[data-option-name]');
+                                    console.log('[Product Modal] Found selects via querySelectorAll:', selects);
+                                    if (selects && selects.length > 0) {
+                                        selects.forEach(select => {
+                                            const optionName = select.dataset.optionName;
+                                            const optionValue = select.value;
+                                            if (optionName && optionValue) {
+                                                selectedOptions[optionName] = optionValue;
+                                            } else {
+                                                console.warn('[Product Modal] Select missing name or value:', select);
+                                            }
+                                        });
+                                    } else {
+                                        console.log('[Product Modal] No selects found with data-option-name in modal panel.');
+                                    }
+                                } else {
+                                    console.error('[Product Modal] Could not find modal panel element.');
+                                }
+                                console.log('[Product Modal] Selected options gathered:', selectedOptions); 
+
+                                const product = selectedProduct;
+                                const success = cart.addItem(product.id, {
+                                    id: product.id,
+                                    name: product.name,
+                                    price: product.price,
+                                    image: product.image || '/assets/images/placeholder.png',
+                                    options: selectedOptions 
+                                });
+                                
+                                if (success) {
+                                    toast?.success(`${product.name} added to cart!`);
+                                    // Explicitly set state *before* dispatching event
+                                    viewedProductInCart = true; 
+                                    document.dispatchEvent(new CustomEvent('cart:updated', { detail: { productId: product.id } }));
+                                    // Update icons AFTER state change allows DOM update
+                                    $nextTick(() => { 
+                                        console.log('Attempting icon refresh after add');
+                                        if(typeof lucide !== 'undefined') lucide.createIcons(); 
+                                    });
+                                } else {
+                                    toast?.error('Failed to add product to cart.');
+                                }
+                            } catch (error) {
+                                console.error('Error adding to cart:', error);
+                                toast?.error('An error occurred while adding to cart.');
+                            }
+                        }"
+                        :class="{
+                            'bg-green-600 hover:bg-green-700 text-white': !viewedProductInCart,
+                            'bg-gray-300 text-gray-500 cursor-not-allowed': viewedProductInCart
+                        }"
+                        class="w-full inline-flex justify-center gap-1 items-center rounded-md border border-transparent shadow-sm px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto transition-colors duration-200">
+                    
+                    <template x-if="!viewedProductInCart">
+                        <span class="inline-flex items-center">
+                            <i data-lucide="plus" class="w-4 h-4 inline-block mr-1"></i>
+                            Add to Cart
+                        </span>
+                    </template>
+                    <template x-if="viewedProductInCart">
+                        <span class="inline-flex items-center">
+                            <i data-lucide="check" class="w-4 h-4 inline-block mr-1"></i>
+                            Added to Cart
+                        </span>
+                    </template>
                 </button>
             </div>
 
