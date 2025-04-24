@@ -34,7 +34,7 @@
             </div>
 
             <!-- Cart Contents -->
-            <div class="p-4 max-h-[70vh] overflow-y-auto" 
+            <div class="p-4 max-h-[60vh] overflow-y-auto" 
                  x-init="() => {
                      cartItems = Object.values(cart.getContents());
                      console.log('[Cart Modal] Initialized cartItems:', JSON.stringify(cartItems));

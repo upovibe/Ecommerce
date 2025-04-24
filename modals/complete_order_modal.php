@@ -32,7 +32,7 @@
             </div>
 
             <!-- Form Content -->
-            <form @submit.prevent="prepareAndOpenFinaliseModal()" class="p-6 space-y-5">
+            <form @submit.prevent="prepareAndOpenFinaliseModal()" class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
                 
                 <!-- Fulfillment Method -->
                 <fieldset>
@@ -109,7 +109,7 @@
                                    :class="{ 'bg-blue-50 border-blue-300 shadow-sm': pickupBy === 'someone_else', 'border-gray-300 hover:bg-gray-50': pickupBy !== 'someone_else' }">
                                 <input type="radio" name="pickup_by" value="someone_else" x-model="pickupBy" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
                                 <i data-lucide="users" class="w-5 h-5 ml-3" :class="{ 'text-blue-700': pickupBy === 'someone_else', 'text-gray-500': pickupBy !== 'someone_else' }"></i>
-                                <span class="ml-2" :class="{ 'text-blue-800 font-medium': pickupBy === 'someone_else', 'text-gray-700': pickupBy !== 'someone_else' }">Someone Else</span>
+                                <span class="ml-2" :class="{ 'text-blue-800 font-medium': pickupBy === 'someone_else', 'text-gray-700': pickupBy !== 'someone_else' }">Another</span>
                             </label>
                         </div>
                     </fieldset>

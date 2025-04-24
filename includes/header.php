@@ -47,6 +47,7 @@ $isProductsActive = ($currentPath === $productsPath);
     <script src="/assets/js/cart.js" defer></script>
     <script src="/assets/js/utils.js" defer></script>
     <script src="/assets/js/main.js" defer></script>
+    <script src="/assets/js/checkout.js" defer></script>
 </head>
 
 <body class="bg-gray-50 flex flex-col min-h-screen" 
@@ -61,6 +62,7 @@ $isProductsActive = ($currentPath === $productsPath);
           viewedProductInCart: false,
           isCompleteOrderModalOpen: false,
           isFinaliseOrderModalOpen: false,
+          isCheckoutMethodsModalOpen: false,
           whatsappNumber: '<?= htmlspecialchars(STORE_SETTINGS['whatsapp_number'] ?? '') ?>',
           
           orderFulfillmentMethod: 'delivery',

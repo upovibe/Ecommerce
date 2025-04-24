@@ -29,8 +29,17 @@ if ($isAdminArea && !$db_connected && basename($_SERVER['PHP_SELF']) !== 'index.
 // Get settings (function now handles defaults internally)
 $storeSettings = getStoreSettings();
 
+// Set a default WhatsApp number if not configured
+if (empty($storeSettings['whatsapp_number'])) {
+    // Add your WhatsApp number here (with country code, no spaces or symbols)
+    $storeSettings['whatsapp_number'] = '233542838165'; // Replace with your actual number
+}
+
 // Make settings available globally via constant
 define('STORE_SETTINGS', $storeSettings);
+
+// Define global URL constant
+define('STORE_URL', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]" . dirname($_SERVER['PHP_SELF']));
 
 // Also define the database connection status for potential checks elsewhere
 define('DB_CONNECTED', $db_connected);
