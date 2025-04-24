@@ -197,11 +197,10 @@ $categories = getAllCategories(); // Fetch categories
     <!-- Include toast notification component -->
     <?php include_once '../includes/toast.php'; ?>
 
-    <?php
-    // Always include the modal, it will be hidden by default
-    // The condition ($passwordNeedsChange) can be checked in JS if needed to *auto-show* on load
-    define('ALLOW_ACCESS', true); // Ensure the modal include doesn't block itself
-    include_once 'modals/change_password_modal.php';
+    <!-- Force Password Change Modal (if needed) -->
+    <?php 
+    define('ALLOW_ACCESS', true); // Define flag before including
+    include_once 'modals/change_password_modal.php'; 
     ?>
 
     <!-- Main container with Alpine data scope -->
@@ -436,9 +435,6 @@ $categories = getAllCategories(); // Fetch categories
 
         <!-- Include the Add Product Modal -->
         <?php include_once 'modals/product_add_modal.php'; ?>
-
-        <!-- Include the Manage Account Modal -->
-        <?php include_once 'modals/manage_account_modal.php'; ?>
 
     </div>
 

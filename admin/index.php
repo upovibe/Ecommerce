@@ -35,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     
     if ($db_connected && $conn) {
-        $stmt = $conn->prepare("SELECT username, password_hash, password_changed FROM admin_users WHERE username = ? LIMIT 1");
+        // Fetch id along with other fields
+        $stmt = $conn->prepare("SELECT id, username, password_hash, password_changed FROM admin_users WHERE username = ? LIMIT 1");
         $stmt->bind_param('s', $username);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -44,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (password_verify($password, $row['password_hash'])) {
                 // Set admin session
                 $_SESSION['admin_logged_in'] = true;
+                $_SESSION['admin_id'] = (int)$row['id'];
                 $_SESSION['admin_username'] = $username;
                 $_SESSION['password_changed'] = (bool)$row['password_changed'];
                 $_SESSION['password_needs_change'] = !(bool)$row['password_changed'];

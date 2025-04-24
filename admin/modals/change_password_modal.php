@@ -59,6 +59,7 @@ if (!defined('ALLOW_ACCESS')) {
                                 <i data-lucide="eye" class="h-5 w-5" data-visible="false"></i>
                             </button>
                         </div>
+                        <p id="new-password-error" class="text-red-600 text-xs mt-1 hidden"></p>
                     </div>
                     <div>
                         <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
@@ -75,6 +76,7 @@ if (!defined('ALLOW_ACCESS')) {
                                 <i data-lucide="eye" class="h-5 w-5" data-visible="false"></i>
                             </button>
                         </div>
+                        <p id="confirm-password-error" class="text-red-600 text-xs mt-1 hidden"></p>
                     </div>
                     <div class="flex items-center gap-4">
                         <button type="button" onclick="window.location.href='logout.php'" 
@@ -119,6 +121,50 @@ document.getElementById('passwordChangeForm').addEventListener('submit', async f
     const form = this;
     const submitButton = form.querySelector('button[type="submit"]');
     const originalButtonContent = submitButton.innerHTML;
+    const newPasswordInput = form.querySelector('#new_password');
+    const confirmPasswordInput = form.querySelector('#confirm_password');
+    const newPasswordError = form.querySelector('#new-password-error');
+    const confirmPasswordError = form.querySelector('#confirm-password-error');
+
+    // Clear previous errors
+    newPasswordError.textContent = '';
+    newPasswordError.classList.add('hidden');
+    newPasswordInput.classList.remove('border-red-500', 'focus:ring-red-500');
+    confirmPasswordError.textContent = '';
+    confirmPasswordError.classList.add('hidden');
+    confirmPasswordInput.classList.remove('border-red-500', 'focus:ring-red-500');
+    
+    const newPassword = newPasswordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+
+    let hasError = false;
+
+    // --- Client-side Validation --- 
+    if (newPassword.length < 6) {
+        newPasswordError.textContent = 'Password must be at least 6 characters long.';
+        newPasswordError.classList.remove('hidden');
+        newPasswordInput.classList.add('border-red-500', 'focus:ring-red-500');
+        hasError = true;
+    }
+
+    if (newPassword !== confirmPassword) {
+        confirmPasswordError.textContent = 'Passwords do not match.';
+        confirmPasswordError.classList.remove('hidden');
+        confirmPasswordInput.classList.add('border-red-500', 'focus:ring-red-500');
+        // Also mark the new password field if length is okay but they don't match
+        if (!hasError) { // Avoid double-marking if length was already wrong
+             newPasswordInput.classList.add('border-red-500', 'focus:ring-red-500');
+        }
+        hasError = true;
+    }
+
+    if (hasError) {
+        toast.error('Please fix the errors in the form.');
+        submitButton.disabled = false; // Re-enable button
+        submitButton.innerHTML = originalButtonContent; // Restore button text
+        return; // Stop submission
+    }
+    // --- End Client-side Validation ---
     
     // Show loading state
     submitButton.disabled = true;
