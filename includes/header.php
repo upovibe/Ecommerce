@@ -78,6 +78,42 @@ $isProductsActive = ($currentPath === $productsPath);
           finalOrderDetailsForThankYou: null,
 
           init() {
+              // Add the event listener for successful checkout
+              window.addEventListener('checkout:success', (event) => {
+                  console.log('[Header x-data] checkout:success event received:', event.detail);
+
+                  // Set data for the Thank You modal
+                  this.finalOrderDetailsForThankYou = event.detail;
+
+                  // Close the checkout methods modal FIRST
+                  this.isCheckoutMethodsModalOpen = false;
+                  console.log('[Header x-data] Checkout methods modal closed.');
+
+                   // Clear the main customer form fields
+                  this.customerName = '';
+                  this.customerPhone = '';
+                  this.customerEmail = '';
+                  this.customerAddress = '';
+                  this.pickupPersonName = '';
+                  this.pickupPersonPhone = '';
+                  this.orderFulfillmentMethod = 'delivery'; // Reset fulfillment
+                  this.pickupBy = 'myself'; // Reset pickup option
+                  console.log('[Header x-data] Customer form fields cleared.');
+
+                  // Open the Thank You modal using $nextTick for smoother transition
+                  this.$nextTick(() => {
+                       this.isThankYouModalOpen = true;
+                       console.log('[Header x-data] isThankYouModalOpen set to:', this.isThankYouModalOpen);
+                       // Ensure icons render in the new modal
+                       if (typeof lucide !== 'undefined') {
+                            setTimeout(() => {
+                                lucide.createIcons();
+                                console.log('[Header x-data] Lucide icons refreshed for Thank You modal.');
+                            }, 50);
+                       }
+                  });
+              });
+              
               this.$watch('selectedProduct', (product) => {
                   console.log('Selected product changed:', product);
                   if (product && product.id) {
