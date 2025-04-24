@@ -131,7 +131,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         const backorder = product.backorder !== undefined ? product.backorder : false; // Assuming backorder is available
                         const originalPrice = product.original_price; // Assuming original_price is available
                         const discountPercentage = product.discount_percentage; // Assuming discount_percentage is available
-                        const safeOptions = escapeHTML(JSON.stringify(product.options || {})); // Assuming options are available
+                        // Directly stringify options without HTML escaping for the data attribute
+                        const productOptionsJSON = JSON.stringify(product.options || {}); 
                         
                         // Generate Discount Badge HTML
                         let discountBadgeHTML = '';
@@ -186,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                  data-backorder="${backorder}" 
                                  data-original-price="${originalPrice || ''}" 
                                  data-discount-percentage="${discountPercentage || ''}" 
-                                 data-product-options='${safeOptions}'> 
+                                 data-product-options='${productOptionsJSON}'> 
                                 <div class="product-image-container relative h-56 bg-gray-200"> 
                                     ${discountBadgeHTML} 
                                     ${statusBadgeHTML}   
@@ -205,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                                  data-product-name="${safeName}" 
                                                  data-product-price="${priceData}" 
                                                  data-product-image="${safeImage}" 
-                                                 data-product-options='${safeOptions}'
+                                                 data-product-options='${productOptionsJSON}'
                                                  ${isInCart ? 'disabled' : ''}>
                                              ${isInCart ? checkIconHTML : cartIconHTML}
                                          </button>
@@ -500,6 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     backorder: productCard.dataset.backorder === 'true',
                     original_price: productCard.dataset.originalPrice,
                     discount_percentage: productCard.dataset.discountPercentage,
+                    // Parse the options directly from the attribute
                     options: JSON.parse(productCard.dataset.productOptions || '{}')
                 };
                 
@@ -574,5 +576,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     initializeProductView(); // Run initial setup
+
+    // --- Auto Refresh Logic --- 
+    function autoRefreshProducts() {
+        console.log('[Auto Refresh] Checking for updates...');
+        // Construct the API URL based on current browser URL params
+        const currentParams = new URLSearchParams(window.location.search);
+        const apiParams = [];
+        const parentSlug = currentParams.get('category');
+        const subSlug = currentParams.get('subcategory_slug');
+        const search = currentParams.get('search');
+
+        // Build API params similarly to updateProductView
+        if (parentSlug && parentSlug !== 'all') apiParams.push(`parent_category_slug=${encodeURIComponent(parentSlug)}`);
+        if (subSlug) apiParams.push(`subcategory_slug=${encodeURIComponent(subSlug)}`);
+        if (search) apiParams.push(`search=${encodeURIComponent(search)}`);
+
+        let apiUrl = '/api/product_api.php' + (apiParams.length > 0 ? `?${apiParams.join('&')}` : '');
+        console.log('[Auto Refresh] Fetching with API URL:', apiUrl);
+
+        // Fetch and display, but DO NOT update history or title
+        window.fetchAndDisplayProducts(apiUrl);
+    }
+
+    // Set interval to run the refresh function every 30 seconds
+    setInterval(autoRefreshProducts, 30000); 
 
 }); 

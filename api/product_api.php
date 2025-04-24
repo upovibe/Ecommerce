@@ -23,8 +23,12 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
 
     // --- Try fetching from Database first ---
     if ($db_connected && $conn) {
-        // Base SQL (adjust based on filter priority)
-        $sql = "SELECT p.id, p.name, p.description, p.price, p.image, p.category_id, c.name as category_name, c.slug as category_slug 
+        // Base SQL (Select all necessary fields)
+        $baseSelect = "SELECT p.id, p.name, p.slug, p.description, p.price, p.image, p.category_id, 
+                          c.name as category_name, c.slug as category_slug, 
+                          p.stock, p.is_active, p.backorder, p.original_price, p.discount_percentage"; // Restored fields
+
+        $sql = "{$baseSelect} 
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id";
         
@@ -45,12 +49,14 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
 
         } else if ($parentCategorySlug !== null) {
             // Priority 2: Filter by parent category slug (products in its subcategories)
-            $sql = "SELECT p.id, p.name, p.description, p.price, p.image, p.category_id, sub_cat.name as category_name, sub_cat.slug as category_slug,
-                           p.stock, p.is_active, p.backorder, p.original_price, p.discount_percentage, p.options /* Add other needed fields */
+            // Ensure ALL fields are selected here too (EXCEPT the non-existent p.options)
+            $sql = "SELECT p.id, p.name, p.slug, p.description, p.price, p.image, p.category_id, 
+                           sub_cat.name as category_name, sub_cat.slug as category_slug, 
+                           p.stock, p.is_active, p.backorder, p.original_price, p.discount_percentage 
                     FROM products p
                     JOIN categories sub_cat ON p.category_id = sub_cat.id
                     JOIN categories parent_cat ON sub_cat.parent_id = parent_cat.id
-                    WHERE parent_cat.slug = ? AND p.is_active = 1"; // Filter by parent slug AND active status
+                    WHERE parent_cat.slug = ? AND p.is_active = 1"; // Removed p.options
             $types = 's'; 
             $params = [$parentCategorySlug];
             error_log("[API Product Fetch] Filtering by PARENT slug: '{$parentCategorySlug}'");
@@ -126,13 +132,53 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
                 $result = $stmt->get_result();
                  error_log("[API Product Fetch] Statement executed.");
 
+                // Prepare statement for fetching options (prepare ONCE outside the loop)
+                $optionsSql = "SELECT option_name, option_values FROM product_options WHERE product_id = ?";
+                $optionsStmt = $conn->prepare($optionsSql);
+
                 if ($result) {
                     while ($row = $result->fetch_assoc()) {
                         if (empty($row['image'])) {
                             $row['image'] = '/assets/images/product-placeholder.png';
                         }
+
+                        // Fetch options for this product
+                        $productId = $row['id'];
+                        $productOptions = [];
+                        if ($optionsStmt) {
+                            $optionsStmt->bind_param('i', $productId);
+                            $optionsStmt->execute();
+                            $optionsResult = $optionsStmt->get_result();
+                            if ($optionsResult) {
+                                while ($optionRow = $optionsResult->fetch_assoc()) {
+                                    $optionName = $optionRow['option_name'];
+                                    $optionValuesJson = $optionRow['option_values'];
+                                    $decodedValues = json_decode($optionValuesJson, true);
+
+                                    if (json_last_error() === JSON_ERROR_NONE && is_array($decodedValues)) {
+                                        $productOptions[$optionName] = $decodedValues;
+                                    } else {
+                                        error_log("[API Product Options] JSON Decode Error for product ID {$productId}, option '{$optionName}': " . json_last_error_msg());
+                                    }
+                                }
+                                $optionsResult->free(); // Free result set
+                            } else {
+                                 error_log("[API Product Options] Error fetching options for product ID {$productId}: (" . $optionsStmt->errno . ") " . $optionsStmt->error);
+                            }
+                            $optionsStmt->reset(); // Reset statement for next iteration if needed (though bind_param should handle it)
+                        } else {
+                             error_log("[API Product Options] Failed to prepare options statement: (" . $conn->errno . ") " . $conn->error);
+                        }
+                        $row['options'] = $productOptions; // Assign the fetched & structured options
+
                         $row['id'] = (int)$row['id'];
                         $row['price'] = (float)$row['price'];
+                        // Ensure numeric types are cast correctly
+                        $row['original_price'] = isset($row['original_price']) ? (float)$row['original_price'] : null;
+                        $row['discount_percentage'] = isset($row['discount_percentage']) ? (float)$row['discount_percentage'] : null;
+                        $row['stock'] = isset($row['stock']) ? (int)$row['stock'] : 0;
+                        $row['is_active'] = isset($row['is_active']) ? (bool)$row['is_active'] : false;
+                        $row['backorder'] = isset($row['backorder']) ? (bool)$row['backorder'] : false;
                         $row['category_id'] = isset($row['category_id']) ? (int)$row['category_id'] : null;
                         $products[] = $row;
                     }
@@ -142,15 +188,30 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
                     error_log("[API Product Fetch] DB ERROR: " . $db_error);
                 }
                 $stmt->close();
+                // Close the options statement AFTER the loop
+                if ($optionsStmt) {
+                    $optionsStmt->close();
+                }
             }
         } catch (Exception $e) {
             error_log("[API Product Fetch] Error: " . $e->getMessage());
         }
     }
 
-    // --- Fallback to Demo JSON if DB fetch yielded no results ---
+    // --- Log reason before potentially falling back to Demo JSON --- 
+    $fallbackReason = "";
+    if (!$db_connected || !$conn) {
+        $fallbackReason = "Database not connected.";
+    } elseif (isset($db_error)) { // Check if a DB error occurred during query
+        $fallbackReason = "Database query error: " . $db_error;
+    } elseif (empty($products)) {
+        $fallbackReason = "Database query returned 0 active products matching filters.";
+    }
+
+    // --- Fallback to Demo JSON if DB fetch yielded no results --- 
+    
     if (empty($products)) {
-        error_log("[API Demo Product Fetch] No products found in DB or DB error, attempting to load demo data.");
+        error_log("[API Demo Trigger] {$fallbackReason} Attempting to load demo data."); // Use the determined reason
         $jsonFilePath = __DIR__ . '/../config/demo_data.json';
         if (file_exists($jsonFilePath)) {
             $jsonContent = file_get_contents($jsonFilePath);
@@ -234,6 +295,7 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
             $products = [];
         }
     }
+    
 
     // Ensure the final result is a zero-indexed array for correct JSON encoding
     return array_values($products);
