@@ -125,13 +125,13 @@
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
                 <button type="button" @click="isFinaliseOrderModalOpen = false; isCompleteOrderModalOpen = true;" 
                         class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors">
-                    Go Back
+                        Return
                 </button>
                 <button type="button" 
                         @click="isFinaliseOrderModalOpen = false; isCheckoutMethodsModalOpen = true;"
                         class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center">
                     <i data-lucide="arrow-right" class="w-5 h-5 mr-2"></i>
-                    Choose Checkout Method
+                    Checkout
                 </button>
             </div>
         </div>

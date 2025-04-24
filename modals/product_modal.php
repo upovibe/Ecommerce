@@ -49,20 +49,20 @@ $whatsappNumber = STORE_SETTINGS['whatsapp_number'] ?? '';
              </div>
 
             <!-- Modal Content -->
-            <div class="flex flex-col md:flex-row" style="max-height: 80vh;">
+            <div class="flex flex-col md:flex-row" style="max-height: 75vh;">
                 <!-- Left Side: Image -->
                 <div class="md:w-2/5 p-6 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border-r border-gray-200/60">
                     <div class="w-full max-w-xs mx-auto md:max-w-none">
                         <img x-bind:src="selectedProduct?.image || '/assets/images/placeholder.png'" 
                              x-bind:alt="selectedProduct?.name" 
                              @click="isImageLightboxOpen = true" 
-                             class="w-full h-56 md:h-full object-cover rounded-lg shadow-lg bg-white/50 backdrop-blur-sm cursor-pointer transition-transform hover:scale-105">
+                             class="w-full h-44 md:h-full object-cover rounded-lg shadow-lg bg-white/50 backdrop-blur-sm cursor-pointer transition-transform hover:scale-105">
                     </div>
                 </div>
 
                 <!-- Right Side: Details -->
                 <div class="md:w-3/5 p-6 overflow-y-auto">
-                    <h3 class="text-3xl leading-9 font-bold text-gray-900 mb-4" x-text="selectedProduct?.name || 'Product Name'"></h3>
+                    <h3 class="text-2xl lg:text-3xl leading-9 font-bold text-gray-900 mb-4" x-text="selectedProduct?.name || 'Product Name'"></h3>
 
                     <!-- Key Details Section - Card Style -->
                     <div class="bg-white border border-gray-200/80 rounded-lg shadow-sm p-4 mb-6 space-y-3">
