@@ -156,16 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
                              statusBadgeHTML = `<span class="absolute top-2 left-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded">${stock} in Stock</span>`;
                         } // No badge if stock is null or undefined
                         
-                        // Generate Price HTML (Handles discounts)
+                        // Generate Price HTML (Always show the final price)
                         let priceHTML = `<span class="product-price font-semibold text-gray-900">${currencySymbol}${formatNumberWithCommas(product.price)}</span>`;
-                        if (originalPrice && parseFloat(originalPrice) > parseFloat(product.price)) {
-                            priceHTML = `
-                                <div class="price-container flex flex-col md:flex-row items-baseline gap-0 md:gap-1">
-                                    <span class="product-price text-base md:text-lg font-bold text-red-600">${currencySymbol}${formatNumberWithCommas(product.price)}</span>
-                                    <span class="product-original-price text-sm font-semibold text-gray-500 line-through">${currencySymbol}${formatNumberWithCommas(originalPrice)}</span>
-                                </div>
-                            `;
-                        }
                         
                         // Cart Status Placeholder & Icons (using Lucide)
                         const isInCart = cart.isInCart(product.id); // Check if product is in cart
@@ -599,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.fetchAndDisplayProducts(apiUrl);
     }
 
-    // Set interval to run the refresh function every 30 seconds
-    setInterval(autoRefreshProducts, 30000); 
+    // Set interval to run the refresh function every 60 seconds
+    setInterval(autoRefreshProducts, 60000); 
 
 }); 
