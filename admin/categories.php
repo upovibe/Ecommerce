@@ -330,7 +330,7 @@ if (isset($_SESSION['flash_message'])) {
                                      <label for="sub-parent" class="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
                                      <select id="sub-parent" x-model="subParentFilter"
                                              class="w-full h-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent sm:text-sm appearance-none cursor-pointer">
-                                        <option value="all">All</option>
+                                        <option value="all">All Parents</option>
                                         <template x-for="parent in parentCategoriesForFilter" :key="parent.id">
                                              <option :value="parent.id" x-text="parent.name"></option>
                                         </template>
@@ -363,7 +363,7 @@ if (isset($_SESSION['flash_message'])) {
                         </div>
                          <!-- Add Button -->
                          <div class="flex-shrink-0">
-                            <button @click="openAddSubcategoryModal()" type="button" class="h-full w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150 shadow hover:shadow-md transform hover:-translate-y-0.5">
+                            <button @click="openAddSubcategoryModal(subParentFilter !== 'all' ? subParentFilter : null)" type="button" class="h-full w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150 shadow hover:shadow-md transform hover:-translate-y-0.5">
                                 <i data-lucide="plus" class="h-4 w-4"></i> <span class="hidden sm:inline">Add Subcategory</span>
                             </button>
                         </div>
@@ -374,10 +374,9 @@ if (isset($_SESSION['flash_message'])) {
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-100">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
                                         <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">In Use</th>
                                         <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Featured</th>
                                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -388,7 +387,7 @@ if (isset($_SESSION['flash_message'])) {
                                         <tr>
                                              <td colspan="6" class="px-6 py-12 text-center">
                                                 <div class="flex flex-col items-center justify-center text-gray-500">
-                                                    <i data-lucide="folder-symlink" class="w-12 h-12 mb-3 text-gray-400"></i>
+                                                    <i data-lucide="folder-search" class="w-12 h-12 mb-3 text-gray-400"></i>
                                                     <p class="font-semibold mb-1">No Subcategories Found</p>
                                                     <p class="text-sm">Try adjusting your search/filters or add a new subcategory.</p>
                                                 </div>
@@ -397,32 +396,25 @@ if (isset($_SESSION['flash_message'])) {
                                     </template>
                                      <template x-for="category in subCategories" :key="category.id">
                                         <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <template x-if="category.image">
-                                                    <img :src="getImageUrl(category.image)" :alt="category.name" class="h-10 w-10 rounded-md object-cover shadow-sm border border-gray-200">
-                                                </template>
-                                                <template x-if="!category.image">
-                                                    <div class="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center">
-                                                        <i data-lucide="image" class="h-5 w-5 text-gray-400"></i>
-                                                    </div>
-                                                </template>
-                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="category.name"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="category.slug || 'N/A'"></td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getParentName(category.parent_id)"></td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="category.slug"></td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
                                                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                                                       :class="category.product_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
                                                       x-text="category.product_count > 0 ? 'Yes' : 'No'"></span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                                                      :class="category.featured ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
+                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                                <span :class="{ 'inline-flex px-2 text-xs font-semibold leading-5 rounded-full': true, 'bg-green-100 text-green-800': category.featured, 'bg-gray-100 text-gray-800': !category.featured }" 
                                                       x-text="category.featured ? 'Yes' : 'No'"></span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <button @click="openEditModal(category)" title="Edit" class="text-indigo-600 hover:text-indigo-900 mr-3 transition duration-150 ease-in-out"><i data-lucide="edit" class="h-4 w-4"></i></button>
-                                                <button @click="confirmDelete(category.id)" title="Delete" class="text-red-600 hover:text-red-900 transition duration-150 ease-in-out"><i data-lucide="trash-2" class="h-4 w-4"></i></button>
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                                <button @click="openEditModal(category)" title="Edit" class="text-blue-600 hover:text-blue-900">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button @click="confirmDelete(category.id)" title="Delete" class="text-red-600 hover:text-red-900">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     </template>
