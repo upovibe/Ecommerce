@@ -95,6 +95,7 @@
 <?php include_once __DIR__ . '/../modals/complete_order_modal.php'; // Include Complete Order Modal ?>
 <?php include_once __DIR__ . '/../modals/finalise_order_modal.php'; // Include Finalise Order Modal ?>
 <?php include_once __DIR__ . '/../modals/checkout_methods_modal.php'; // Include Checkout Methods Modal ?>
+<?php include_once __DIR__ . '/../modals/thank_you_modal.php'; // Include Thank You Modal ?>
 <?php include_once __DIR__ . '/toast.php'; // Include Toast Notifications ?>
 
 </body>

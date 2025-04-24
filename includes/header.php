@@ -74,6 +74,8 @@ $isProductsActive = ($currentPath === $productsPath);
           pickupPersonName: '',
           pickupPersonPhone: '',
           finalOrderDetails: null,
+          isThankYouModalOpen: false,
+          finalOrderDetailsForThankYou: null,
 
           init() {
               this.$watch('selectedProduct', (product) => {

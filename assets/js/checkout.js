@@ -1,11 +1,11 @@
 function sendOrderToWhatsApp(finalOrderDetails, whatsappNumber, currencySymbol) {
     if (!finalOrderDetails) {
         toast?.error('Order details missing.');
-        return;
+        return null;
     }
     if (!whatsappNumber) {
         toast?.error('WhatsApp number not configured.');
-        return;
+        return null;
     }
     const cartItems = Object.values(finalOrderDetails.cart);
     const lines = cartItems.map(item => {
@@ -41,6 +41,13 @@ function sendOrderToWhatsApp(finalOrderDetails, whatsappNumber, currencySymbol) 
 
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
+    
+    return {
+        orderRef: orderRef,
+        total: total,
+        items: cartItems.length,
+        timestamp: new Date().toLocaleString()
+    };
 }
 
 window.sendOrderToWhatsApp = sendOrderToWhatsApp; 
