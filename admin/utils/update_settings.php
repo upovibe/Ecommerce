@@ -33,6 +33,12 @@ $theme_color = trim($_POST['theme_color'] ?? '#3B82F6');
 $whatsapp_message_template = trim($_POST['whatsapp_message_template'] ?? '');
 $footer_text = trim($_POST['footer_text'] ?? '');
 $brand_text_color = trim($_POST['brand_text_color'] ?? '#FFFFFF');
+$facebook_username = trim($_POST['facebook_username'] ?? '');
+$instagram_username = trim($_POST['instagram_username'] ?? '');
+$twitter_username = trim($_POST['twitter_username'] ?? '');
+$tiktok_username = trim($_POST['tiktok_username'] ?? '');
+$linkedin_username = trim($_POST['linkedin_username'] ?? '');
+$youtube_username = trim($_POST['youtube_username'] ?? '');
 
 // === Basic Validation ===
 if (empty($store_name)) {
@@ -60,7 +66,13 @@ if ($db_connected && $conn) {
         'theme_color' => $theme_color,
         'whatsapp_message_template' => $whatsapp_message_template,
         'footer_text' => $footer_text,
-        'brand_text_color' => $brand_text_color
+        'brand_text_color' => $brand_text_color,
+        'facebook_username' => $facebook_username,
+        'instagram_username' => $instagram_username,
+        'twitter_username' => $twitter_username,
+        'tiktok_username' => $tiktok_username,
+        'linkedin_username' => $linkedin_username,
+        'youtube_username' => $youtube_username
     ];
 
     $conn->begin_transaction();
