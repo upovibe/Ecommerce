@@ -59,6 +59,7 @@ if (!defined('ALLOW_ACCESS')) {
                                 <i data-lucide="eye" class="h-5 w-5" data-visible="false"></i>
                             </button>
                         </div>
+                        <p id="new-password-error" class="text-red-600 text-xs mt-1 hidden"></p>
                     </div>
                     <div>
                         <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
@@ -75,6 +76,7 @@ if (!defined('ALLOW_ACCESS')) {
                                 <i data-lucide="eye" class="h-5 w-5" data-visible="false"></i>
                             </button>
                         </div>
+                        <p id="confirm-password-error" class="text-red-600 text-xs mt-1 hidden"></p>
                     </div>
                     <div class="flex items-center gap-4">
                         <button type="button" onclick="window.location.href='logout.php'" 
@@ -94,77 +96,9 @@ if (!defined('ALLOW_ACCESS')) {
     </div>
 </div>
 
-<script>
-function togglePasswordVisibility(inputId) {
-    const input = document.getElementById(inputId);
-    const button = input.nextElementSibling;
-    const icon = button.querySelector('[data-lucide]');
-    const isVisible = icon.getAttribute('data-visible') === 'true';
-    
-    // Toggle password visibility
-    input.type = isVisible ? 'password' : 'text';
-    icon.setAttribute('data-visible', !isVisible);
-    
-    // Update icon
-    icon.setAttribute('data-lucide', isVisible ? 'eye' : 'eye-off');
-    
-    // Update Lucide icons
-    lucide.createIcons();
-}
+<script src="assets/js/passwordModalHandler.js" defer></script>
 
-// Handle password change form submission
-document.getElementById('passwordChangeForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const form = this;
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalButtonContent = submitButton.innerHTML;
-    
-    // Show loading state
-    submitButton.disabled = true;
-    submitButton.innerHTML = `
-        <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Updating...
-    `;
-    
-    try {
-        const formData = new FormData(form);
-        const response = await fetch('utils/update_password.php', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            toast.success(data.message + ' Logging you out...');
-            // Hide the modal immediately
-            const modal = document.getElementById('changePasswordModal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-            // Redirect to logout after a delay
-            setTimeout(() => {
-                window.location.href = 'logout.php';
-            }, 3000); // 3-second delay before logout
-        } else {
-            toast.error(data.message);
-            // Reset the form on error
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalButtonContent;
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        toast.error('An error occurred while updating the password');
-        // Reset the button state
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalButtonContent;
-    }
-});
-
-// Initialize Lucide icons
-lucide.createIcons();
-</script>
+<?php
+// The closing tags should be handled by the including file (e.g., dashboard.php)
+// Do not add closing </body> or </html> here.
+?>

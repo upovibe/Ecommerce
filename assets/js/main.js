@@ -2,59 +2,6 @@
  * Main JavaScript for E-Commerce Template
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize product view buttons
-    initProductViewButtons();
-});
-
-/**
- * Initialize "View Details" buttons for products
- */
-function initProductViewButtons() {
-    const viewButtons = document.querySelectorAll('.view-product-btn');
-    viewButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Get product data from data attributes
-            const productId = this.dataset.productId;
-            const productName = this.dataset.productName;
-            const productPrice = this.dataset.productPrice;
-            const productImage = this.dataset.productImage;
-            const productDescription = this.dataset.productDescription || '';
-            
-            // Parse options if they exist
-            let productOptions = {};
-            if (this.dataset.productOptions) {
-                try {
-                    productOptions = JSON.parse(this.dataset.productOptions);
-                } catch (error) {
-                    console.error('Error parsing product options:', error);
-                }
-            }
-            
-            // Open product modal
-            openProductModal({
-                id: productId,
-                name: productName,
-                price: productPrice,
-                image: productImage,
-                description: productDescription,
-                options: productOptions
-            });
-        });
-    });
-}
-
-/**
- * Handle AJAX errors
- * @param {Error} error - Error object
- */
-function handleAjaxError(error) {
-    console.error('AJAX Error:', error);
-    alert('An error occurred. Please try again later.');
-} 
-
 // --- Homepage Category/Subcategory Logic ---
 
 async function fetchSubcategories(event, element) {
@@ -131,3 +78,104 @@ function showParentCategory(event, buttonElement) {
     if (subcategoryContent) subcategoryContent.style.display = 'none';
     if (parentContent) parentContent.style.display = 'block';
 }
+
+// --- Search Modal Logic --- 
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('modal-search-input');
+    const searchTrigger = document.getElementById('modal-search-trigger');
+
+    // Check if the elements exist on the current page
+    if (!searchInput || !searchTrigger) {
+        // console.log('Search modal elements not found on this page.');
+        return; // Exit if modal elements aren't present
+    }
+
+    function performSearch() {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm) {
+            const productsPagePath = '/products.php';
+            const currentPath = window.location.pathname;
+
+            if (currentPath === productsPagePath && typeof window.fetchAndDisplayProducts === 'function') {
+                // --- Dynamic Update on Products Page ---
+                
+                // 1. Construct URLs
+                const apiSearchUrl = `/api/product_api.php?search=${encodeURIComponent(searchTerm)}`;
+                const displayUrl = `${productsPagePath}?search=${encodeURIComponent(searchTerm)}`;
+                
+                // 2. Update Browser History/URL (without reload)
+                history.pushState({ searchTerm: searchTerm }, `Search Results for "${searchTerm}"`, displayUrl);
+                
+                // 3. Update Page Title (re-select element as it's not global)
+                const pageTitleElement = document.querySelector('.max-w-7xl h2'); 
+                if (pageTitleElement) {
+                    pageTitleElement.textContent = `Search Results for "${searchTerm}"`;
+                }
+                
+                // 4. Fetch and display new products using the global function
+                window.fetchAndDisplayProducts(apiSearchUrl);
+                
+                // 5. Close the modal (optional, assumes modal has close logic)
+                // Example: If using AlpineJS for modal: Alpine.store('modal').close()
+                // Example: If using simple ID toggle:
+                const searchModal = document.getElementById('search-modal'); // Assuming this is the modal ID
+                if (searchModal && typeof searchModal.close === 'function') { // Check if it's a <dialog>
+                     searchModal.close();
+                } else if (searchModal) {
+                    // Fallback for simple hide/show modals
+                    searchModal.classList.add('hidden'); // Or appropriate class
+                }
+                
+            } else {
+                // --- Redirect if not on Products Page ---
+                window.location.href = `/products.php?search=${encodeURIComponent(searchTerm)}`;
+            }
+        } else {
+            // Optional: Provide feedback if search term is empty
+            searchInput.focus(); // Focus input if empty search attempted
+        }
+    }
+
+    // Trigger search on button click
+    searchTrigger.addEventListener('click', performSearch);
+
+    // Trigger search on Enter key press in input
+    searchInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent default form submission (if any)
+            performSearch();
+        }
+    });
+});
+
+// Cart synchronization
+document.addEventListener('cart:updated', function(event) {
+    console.log('Cart updated event from main.js');
+    
+    // Update all product card buttons
+    document.querySelectorAll('.add-to-cart-icon-btn').forEach(button => {
+        const productId = button.dataset.productId;
+        if (!productId) return;
+        
+        const isInCart = cart.isInCart(productId);
+        
+        if (isInCart) {
+            button.innerHTML = `<i data-lucide="check" class="lucide-icon size-4 text-green-600"></i>`;
+            button.classList.remove('text-gray-500', 'hover:text-primary', 'hover:bg-gray-100');
+            button.classList.add('text-green-500', 'bg-green-100', 'cursor-not-allowed');
+            button.disabled = true;
+            button.title = 'Added to Cart';
+        } else {
+            button.innerHTML = `<i data-lucide="shopping-cart" class="lucide-icon size-4"></i>`;
+            button.classList.add('text-gray-500', 'hover:text-primary', 'hover:bg-gray-100');
+            button.classList.remove('text-green-500', 'bg-green-100', 'cursor-not-allowed');
+            button.disabled = false;
+            button.title = 'Add to Cart';
+        }
+        
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons({ nodes: [button] });
+        }
+    });
+});
