@@ -201,21 +201,23 @@ $isProductsActive = ($currentPath === $productsPath);
                     </div>
                     <div class="hidden md:ml-8 md:flex md:space-x-6">
                         <a href="/"
-                            class="<?= $isHomeActive ? 'text-white bg-black/10' : 'text-white/90' ?> relative px-3 py-2 rounded-lg font-medium hover:bg-black/10 hover:text-white transition-all duration-200 group">
+                            style="color: <?= htmlspecialchars($brandTextColor) ?>;"
+                            class="<?= $isHomeActive ? 'bg-black/10' : 'opacity-90' ?> relative px-3 py-2 rounded-lg font-medium hover:bg-black/10 hover:opacity-100 transition-all duration-200 group">
                             Home
                             <?php if ($isHomeActive): ?>
-                                <span class="absolute inset-x-1 -bottom-1 h-0.5 bg-white/80 rounded-full"></span>
+                                <span class="absolute inset-x-1 -bottom-1 h-0.5 rounded-full" style="background-color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;"></span>
                             <?php else: ?>
-                                <span class="absolute inset-x-1 -bottom-1 h-0.5 bg-transparent group-hover:bg-white/30 rounded-full transition-all duration-200"></span>
+                                <span class="absolute inset-x-1 -bottom-1 h-0.5 bg-transparent rounded-full group-hover:bg-current group-hover:opacity-30 transition-all duration-200"></span>
                             <?php endif; ?>
                         </a>
                         <a href="<?= htmlspecialchars($productsPath) ?>"
-                            class="<?= $isProductsActive ? 'text-white bg-black/10' : 'text-white/90' ?> relative px-3 py-2 rounded-lg font-medium hover:bg-black/10 hover:text-white transition-all duration-200 group">
+                            style="color: <?= htmlspecialchars($brandTextColor) ?>;"
+                            class="<?= $isProductsActive ? 'bg-black/10' : 'opacity-90' ?> relative px-3 py-2 rounded-lg font-medium hover:bg-black/10 hover:opacity-100 transition-all duration-200 group">
                             Products
                             <?php if ($isProductsActive): ?>
-                                <span class="absolute inset-x-1 -bottom-1 h-0.5 bg-white/80 rounded-full"></span>
+                                <span class="absolute inset-x-1 -bottom-1 h-0.5 rounded-full" style="background-color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;"></span>
                             <?php else: ?>
-                                <span class="absolute inset-x-1 -bottom-1 h-0.5 bg-transparent group-hover:bg-white/30 rounded-full transition-all duration-200"></span>
+                                <span class="absolute inset-x-1 -bottom-1 h-0.5 bg-transparent rounded-full group-hover:bg-current group-hover:opacity-30 transition-all duration-200"></span>
                             <?php endif; ?>
                         </a>
                     </div>
@@ -260,11 +262,13 @@ $isProductsActive = ($currentPath === $productsPath);
         <div class="md:hidden hidden origin-top" id="mobileMenu" style="background-color: <?= htmlspecialchars($themeColor) ?>;">
             <div class="pt-2 pb-4 px-4 space-y-1">
                 <a href="/"
-                    class="<?= $isHomeActive ? 'bg-black/10 text-white' : 'text-white/90 hover:bg-black/10' ?> block px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
+                    style="color: <?= htmlspecialchars($brandTextColor) ?>;"
+                    class="<?= $isHomeActive ? 'bg-black/10' : 'opacity-90 hover:bg-black/10 hover:opacity-100' ?> block px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
                     Home
                 </a>
                 <a href="<?= htmlspecialchars($productsPath) ?>"
-                    class="<?= $isProductsActive ? 'bg-black/10 text-white' : 'text-white/90 hover:bg-black/10' ?> block px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
+                    style="color: <?= htmlspecialchars($brandTextColor) ?>;"
+                    class="<?= $isProductsActive ? 'bg-black/10' : 'opacity-90 hover:bg-black/10 hover:opacity-100' ?> block px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
                     Products
                 </a>
             </div>

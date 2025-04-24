@@ -4,7 +4,8 @@
 <div x-show="isModalOpen" x-cloak 
      class="fixed inset-0 z-50 overflow-y-auto" 
      aria-labelledby="modal-title" role="dialog" aria-modal="true"
-     @keydown.escape.window="isModalOpen = false">
+     x-data="{ isImageLightboxOpen: false }"
+     @keydown.escape.window="isModalOpen = false; isImageLightboxOpen = false">
     
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <!-- Overlay -->
@@ -44,9 +45,10 @@
                     <div class="md:w-2/5 p-6 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border-r border-gray-200/60">
                         <div class="aspect-w-1 aspect-h-1 w-full max-w-xs mx-auto">
                             <img x-show="viewingProduct.image" :src="viewingProduct.image" :alt="viewingProduct.name" 
-                                 class="w-full h-full object-contain rounded-lg shadow-lg bg-white/50 backdrop-blur-sm">
+                                 @click="isImageLightboxOpen = true" 
+                                 class="w-full h-48 md:h-full object-cover rounded-lg shadow-lg bg-white/50 backdrop-blur-sm cursor-pointer transition-transform hover:scale-105">
                             <img x-show="!viewingProduct.image" src="../assets/images/placeholder.png" alt="Placeholder" 
-                                 class="w-full h-full object-contain rounded-lg shadow-lg bg-white/50 backdrop-blur-sm">
+                                 class="w-full h-48 md:h-full object-contain rounded-lg shadow-lg bg-white/50 backdrop-blur-sm">
                         </div>
                     </div>
 
@@ -172,4 +174,30 @@
 
         </div> 
     </div>
+
+    <!-- Image Lightbox Overlay (Copied from product_modal.php) -->
+    <div x-show="isImageLightboxOpen" x-cloak
+         class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+         @keydown.escape.window="isImageLightboxOpen = false"
+         @click.self="isImageLightboxOpen = false" 
+         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+       
+       <button @click="isImageLightboxOpen = false" class="absolute top-4 right-4 text-white/70 hover:text-white focus:outline-none z-10 bg-black/30 hover:bg-black/50 rounded-full p-2">
+           <span class="sr-only">Close lightbox</span>
+           <i data-lucide="x" class="h-6 w-6"></i>
+       </button>
+
+       <img x-bind:src="viewingProduct?.image || '../assets/images/placeholder.png'" 
+            x-bind:alt="viewingProduct?.name + ' - Full size'" 
+            class="max-w-full max-h-[90vh] object-contain shadow-xl rounded-lg"
+            x-transition:enter="ease-out duration-300" 
+            x-transition:enter-start="opacity-0 scale-95" 
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="ease-in duration-200" 
+            x-transition:leave-start="opacity-100 scale-100" 
+            x-transition:leave-end="opacity-0 scale-95">
+    </div>
+    <!-- End Image Lightbox -->
+
 </div> 
