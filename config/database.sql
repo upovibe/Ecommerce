@@ -95,7 +95,13 @@ INSERT INTO store_settings (setting_key, setting_value) VALUES
 ('currency_symbol', '₵'),
 ('footer_text', '© 2023 E-Commerce Store. All rights reserved.'),
 ('theme_color', '#3B82F6'),
-('brand_text_color', '#FFFFFF');
+('brand_text_color', '#FFFFFF'),
+('facebook_username', 'example_store'),
+('instagram_username', 'example_store'),
+('twitter_username', 'example_store'),
+('tiktok_username', 'example_store'),
+('linkedin_username', ''), -- Optional: Add your LinkedIn Company page username
+('youtube_username', ''); -- Optional: Add your YouTube channel username/handle
 
 -- Insert default content
 INSERT INTO store_content (content_key, content_value) VALUES

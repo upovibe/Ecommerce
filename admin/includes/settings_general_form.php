@@ -60,6 +60,92 @@
             </fieldset>
 
             <fieldset class="space-y-4 border-t pt-4">
+                <legend class="text-md font-medium text-gray-600 mb-2">Social Media</legend>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="facebook_username" class="block text-sm font-medium text-gray-700 mb-1">Facebook Username</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="facebook" class="w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <input type="text" name="facebook_username" id="facebook_username"
+                                class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                value="<?= htmlspecialchars($facebookUsername) ?>">
+                        </div>
+                        <p class="mt-1.5 text-xs text-gray-500">Your Facebook page username (without @)</p>
+                    </div>
+
+                    <div>
+                        <label for="instagram_username" class="block text-sm font-medium text-gray-700 mb-1">Instagram Username</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="instagram" class="w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <input type="text" name="instagram_username" id="instagram_username"
+                                class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                value="<?= htmlspecialchars($instagramUsername) ?>">
+                        </div>
+                        <p class="mt-1.5 text-xs text-gray-500">Your Instagram username (without @)</p>
+                    </div>
+
+                    <div>
+                        <label for="twitter_username" class="block text-sm font-medium text-gray-700 mb-1">Twitter/X Username</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="twitter" class="w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <input type="text" name="twitter_username" id="twitter_username"
+                                class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                value="<?= htmlspecialchars($twitterUsername) ?>">
+                        </div>
+                        <p class="mt-1.5 text-xs text-gray-500">Your Twitter/X username (without @)</p>
+                    </div>
+                </div>
+                <!-- New Row for TikTok, LinkedIn, YouTube -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                    <div>
+                        <label for="tiktok_username" class="block text-sm font-medium text-gray-700 mb-1">TikTok Username</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <!-- Using generic 'at-sign' as Lucide might not have TikTok -->
+                                <i data-lucide="at-sign" class="w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <input type="text" name="tiktok_username" id="tiktok_username"
+                                class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                value="<?= htmlspecialchars($tiktokUsername) ?>">
+                        </div>
+                        <p class="mt-1.5 text-xs text-gray-500">Your TikTok username (without @)</p>
+                    </div>
+
+                    <div>
+                        <label for="linkedin_username" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn Username</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="linkedin" class="w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <input type="text" name="linkedin_username" id="linkedin_username"
+                                class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                value="<?= htmlspecialchars($linkedinUsername) ?>">
+                        </div>
+                        <p class="mt-1.5 text-xs text-gray-500">Your LinkedIn company username (optional)</p>
+                    </div>
+
+                    <div>
+                        <label for="youtube_username" class="block text-sm font-medium text-gray-700 mb-1">YouTube Handle</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="youtube" class="w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <input type="text" name="youtube_username" id="youtube_username"
+                                class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                value="<?= htmlspecialchars($youtubeUsername) ?>">
+                        </div>
+                        <p class="mt-1.5 text-xs text-gray-500">Your YouTube handle (e.g., @YourChannel, optional)</p>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="space-y-4 border-t pt-4">
                  <legend class="text-md font-medium text-gray-600 mb-2">Messaging & Footer</legend>
                 <div>
                     <label for="whatsapp_message_template" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp Message Template</label>

@@ -224,12 +224,18 @@
   "store_settings": {
     "store_name": "E-Commerce Store",
     "store_description": "Your one-stop shop for all your needs",
-    "whatsapp_number": "", 
+    "whatsapp_number": "233542838165", 
     "whatsapp_message_template": "Hello, I want to inquire about:\n{ITEMS}\nTotal: {CURRENCY}{TOTAL}",
     "currency_symbol": "₵", 
     "footer_text": "© 2024 E-Commerce Store. All rights reserved.", 
     "theme_color": "#3B82F6", 
     "brand_text_color": "#FFFFFF", 
-    "logo_path": "/assets/images/logo.png"
+    "logo_path": "/assets/images/logo.png",
+    "facebook_username": "example_store",
+    "instagram_username": "example_store",
+    "twitter_username": "example_store",
+    "tiktok_username": "example_store",
+    "linkedin_username": "",
+    "youtube_username": ""
   }
 } 

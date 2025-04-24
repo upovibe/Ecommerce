@@ -24,6 +24,12 @@ $logoPath = STORE_SETTINGS['store_logo'] ?? '';
 $whatsappTemplate = STORE_SETTINGS['whatsapp_message_template'] ?? '';
 $footerText = STORE_SETTINGS['footer_text'] ?? '© ' . date('Y') . ' ' . ($storeName ?: 'E-Commerce Store') . '. All rights reserved.';
 $brandTextColor = STORE_SETTINGS['brand_text_color'] ?? '#FFFFFF';
+$facebookUsername = STORE_SETTINGS['facebook_username'] ?? '';
+$instagramUsername = STORE_SETTINGS['instagram_username'] ?? '';
+$twitterUsername = STORE_SETTINGS['twitter_username'] ?? '';
+$tiktokUsername = STORE_SETTINGS['tiktok_username'] ?? '';
+$linkedinUsername = STORE_SETTINGS['linkedin_username'] ?? '';
+$youtubeUsername = STORE_SETTINGS['youtube_username'] ?? '';
 
 // Get current content settings from database
 $storeContent = [];

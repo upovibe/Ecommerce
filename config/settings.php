@@ -35,6 +35,31 @@ if (empty($storeSettings['whatsapp_number'])) {
     $storeSettings['whatsapp_number'] = '233542838165'; // Replace with your actual number
 }
 
+// Set default social media usernames if not configured
+if (empty($storeSettings['facebook_username'])) {
+    $storeSettings['facebook_username'] = 'yourstorename'; // Replace with your actual Facebook username
+}
+
+if (empty($storeSettings['instagram_username'])) {
+    $storeSettings['instagram_username'] = 'yourstorename'; // Replace with your actual Instagram username
+}
+
+if (empty($storeSettings['twitter_username'])) {
+    $storeSettings['twitter_username'] = 'yourstorename'; // Replace with your actual Twitter username
+}
+
+if (empty($storeSettings['tiktok_username'])) {
+    $storeSettings['tiktok_username'] = 'yourstorename'; // Replace with your actual TikTok username
+}
+
+if (empty($storeSettings['linkedin_username'])) {
+    $storeSettings['linkedin_username'] = ''; // Replace with your actual LinkedIn username (optional)
+}
+
+if (empty($storeSettings['youtube_username'])) {
+    $storeSettings['youtube_username'] = ''; // Replace with your actual YouTube username (optional)
+}
+
 // Make settings available globally via constant
 define('STORE_SETTINGS', $storeSettings);
 
