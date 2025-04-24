@@ -357,9 +357,9 @@ $categories = getAllCategories(); // Fetch categories
                         <i data-lucide="tag" class="h-5 w-5 mr-2"></i>
                         <span>Manage Categories</span>
                     </a>
-                    <a href="#" @click.prevent="openManageAccountModal()" class="flex items-center p-3 bg-cyan-50 text-cyan-700 rounded-lg hover:bg-cyan-100 transition">
+                    <a href="account.php" class="flex items-center p-3 bg-cyan-50 text-cyan-700 rounded-lg hover:bg-cyan-100 transition">
                         <i data-lucide="user-cog" class="h-5 w-5 mr-2"></i>
-                        <span>Manage Account</span>
+                        <span>Account Settings</span>
                     </a>
                     <a href="settings.php" class="flex items-center p-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition">
                         <i data-lucide="settings" class="h-5 w-5 mr-2"></i>

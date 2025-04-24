@@ -28,15 +28,37 @@ function getStoreSettings() {
     
     // 2. Try to get settings from database
     if ($db_connected && $conn) {
-        $sql = "SELECT setting_key, setting_value FROM store_settings";
-        $result = $conn->query($sql);
+        // First check if the table exists
+        $tableCheckSql = "SHOW TABLES LIKE 'store_settings'";
+        $tableExists = $conn->query($tableCheckSql);
         
-        if ($result) { // Check if query was successful
-            while ($row = $result->fetch_assoc()) {
-                $dbSettings[$row['setting_key']] = $row['setting_value'];
+        if ($tableExists && $tableExists->num_rows > 0) {
+            $sql = "SELECT setting_key, setting_value FROM store_settings";
+            $result = $conn->query($sql);
+            
+            if ($result) { // Check if query was successful
+                while ($row = $result->fetch_assoc()) {
+                    $dbSettings[$row['setting_key']] = $row['setting_value'];
+                }
+            } else {
+                error_log("Error fetching store settings from database: " . $conn->error);
             }
         } else {
-             error_log("Error fetching store settings from database: " . $conn->error);
+            error_log("Note: store_settings table does not exist yet. Using defaults.");
+            // Create the table to prevent future errors
+            $createTableSQL = "CREATE TABLE IF NOT EXISTS store_settings (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                setting_key VARCHAR(50) NOT NULL UNIQUE,
+                setting_value TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )";
+            
+            if ($conn->query($createTableSQL)) {
+                error_log("Created missing store_settings table");
+            } else {
+                error_log("Failed to create store_settings table: " . $conn->error);
+            }
         }
     }
     

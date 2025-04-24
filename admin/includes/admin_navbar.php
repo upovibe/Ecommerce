@@ -7,7 +7,7 @@ if (file_exists(__DIR__ . '/../../config/settings.php')) {
 $adminThemeColor = defined('STORE_SETTINGS') && isset(STORE_SETTINGS['theme_color']) ? STORE_SETTINGS['theme_color'] : '#1F2937'; // Default bg
 $brandTextColor = defined('STORE_SETTINGS') && isset(STORE_SETTINGS['brand_text_color']) ? STORE_SETTINGS['brand_text_color'] : '#FFFFFF'; // Default text
 ?>
-<nav class="shadow-md" style="background-color: <?= htmlspecialchars($adminThemeColor) ?>;">
+<nav x-data="{ isOpen: false }" class="shadow-md sticky top-0 z-50" style="background-color: <?= htmlspecialchars($adminThemeColor) ?>;">
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center justify-between h-16">
             <!-- Logo/Store Name -->
