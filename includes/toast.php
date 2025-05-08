@@ -1,7 +1,9 @@
 <?php
 // Toast container that will be populated by JavaScript
 ?>
-<div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-4"></div>
+<div id="toastContainer" class="fixed top-4 right-4 z-[99999] flex flex-col gap-4 pointer-events-none">
+    <!-- Toasts will be added here -->
+</div>
 
 <script>
 const toast = {
@@ -11,7 +13,7 @@ const toast = {
         
         // Set base classes
         toast.className = `transform transition-all duration-300 ease-out translate-x-full
-                          flex items-center p-4 mb-4 rounded-lg shadow-lg max-w-sm`;
+                          flex items-center p-4 mb-4 rounded-lg shadow-lg max-w-sm pointer-events-auto`;
         
         // Add type-specific classes and icon
         let icon = '';

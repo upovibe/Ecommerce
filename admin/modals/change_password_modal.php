@@ -4,6 +4,9 @@ if (!defined('ALLOW_ACCESS')) {
     exit('Direct access not permitted');
 }
 ?>
+<!-- Toast Container - Moved outside modal -->
+<div id="toast-container" class="fixed top-4 right-4 z-[9999]"></div>
+
 <!-- Force Password Change Modal with Glassy Overlay -->
 <!-- DEBUG: password_needs_change = <?php var_dump($_SESSION['password_needs_change'] ?? 'Not Set'); ?> -->
 <div id="changePasswordModal" 
@@ -43,6 +46,7 @@ if (!defined('ALLOW_ACCESS')) {
                                 <i data-lucide="eye" class="h-5 w-5" data-visible="false"></i>
                             </button>
                         </div>
+                        <p id="current-password-error" class="text-red-600 text-xs mt-1 hidden"></p>
                     </div>
                     <div>
                         <label for="new_password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>

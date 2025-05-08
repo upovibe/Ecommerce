@@ -11,7 +11,7 @@ if (!isset($db_connected) || !$db_connected):
         </div>
         <div class="ml-3">
             <p class="text-sm text-yellow-700">
-                <strong>Note:</strong> The site is running in demo mode because the database connection failed. Demo products and content are being displayed. To connect to a database, please check your configuration in <code>config/db.php</code>.
+                <strong>Note:</strong> The site is running in demo mode because the database connection failed. Demo products and content are being displayed. To connect to a database, please <a href="/install.php" class="text-yellow-800 underline hover:text-yellow-900">run the installation script</a> or check your configuration in <code>config/db.php</code>.
             </p>
         </div>
     </div>

@@ -28,9 +28,10 @@ if (document.getElementById('passwordChangeForm')) {
         const form = this;
         const submitButton = form.querySelector('button[type="submit"]');
         const originalButtonContent = submitButton.innerHTML;
+        const currentPasswordInput = form.querySelector('#current_password');
         const newPasswordInput = form.querySelector('#new_password');
         const confirmPasswordInput = form.querySelector('#confirm_password');
-        const currentPasswordInput = form.querySelector('#current_password'); // Added current password input for error highlighting
+        const currentPasswordError = form.querySelector('#current-password-error');
         const newPasswordError = form.querySelector('#new-password-error');
         const confirmPasswordError = form.querySelector('#confirm-password-error');
 
@@ -43,13 +44,15 @@ if (document.getElementById('passwordChangeForm')) {
         }
 
         // Clear previous errors
+        currentPasswordError.textContent = '';
+        currentPasswordError.classList.add('hidden');
+        currentPasswordInput.classList.remove('border-red-500', 'focus:ring-red-500');
         newPasswordError.textContent = '';
         newPasswordError.classList.add('hidden');
         newPasswordInput.classList.remove('border-red-500', 'focus:ring-red-500');
         confirmPasswordError.textContent = '';
         confirmPasswordError.classList.add('hidden');
         confirmPasswordInput.classList.remove('border-red-500', 'focus:ring-red-500');
-        currentPasswordInput.classList.remove('border-red-500', 'focus:ring-red-500'); // Clear current password error styling
         
         const currentPassword = currentPasswordInput.value; // Get value
         const newPassword = newPasswordInput.value;
@@ -131,6 +134,8 @@ if (document.getElementById('passwordChangeForm')) {
                 // Add red border to current password field if backend indicates it's wrong
                 if (data.message && data.message.toLowerCase().includes('incorrect current password')) {
                     currentPasswordInput.classList.add('border-red-500', 'focus:ring-red-500');
+                    currentPasswordError.textContent = 'Current password is incorrect';
+                    currentPasswordError.classList.remove('hidden');
                 }
                 // Reset the form on error
                 submitButton.disabled = false;
