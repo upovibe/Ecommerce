@@ -79,20 +79,21 @@ $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
 </head>
 <body class="min-h-screen relative">
     <!-- Background image with overlay -->
-    <div class="fixed inset-0 z-0">
-        <img src="../assets/images/Ecommerce-bg.jpg" alt="" class="w-full h-full object-cover brightness-[0.15]">
-    </div>
-
+    <div class="fixed inset-0 z-0"> 
+        <img src="../assets/images/phirmhostImg.png" alt="" class="w-screen h-screen object-cover object-top ">
+    </div> 
+     <!-- logo -->
+     <div class="text-center mr-[10em]  ">
+                <img src="../assets/images/phirmhostLogo.png" alt="Store Logo" class="mx-auto h-20 mb-6 drop-shadow-2xl w-[395px] h-[151px]">
+     </div>  
     <!-- Main content -->
-    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="max-w-md w-full space-y-8">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-10 ">
+        <div class="max-w-md w-full h-full space-y-8 ml-auto mr-[10em] mb-auto mt-[10em]">
             <!-- Logo Section - removed animation -->
-            <div class="text-center">
-                <img src="../assets/images/phirmhost.png" alt="Store Logo" class="mx-auto h-20 mb-6 drop-shadow-2xl">
-                <h1 class="text-3xl font-bold text-white mb-2 drop-shadow-lg">Admin Login</h1>
-                <div class="h-1 w-24 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full mb-4"></div>
-                <p class="text-blue-100"><?= htmlspecialchars($storeName) ?> Dashboard</p>
-            </div>
+            
+                <!-- <div class="h-1 w-24 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full mb-4"></div> -->
+               
+            
 
             <?php if ($installSuccess): ?>
             <div class="mb-6 rounded-lg bg-green-50 p-4 border-l-4 border-green-500 animate-fade-in">
@@ -113,7 +114,9 @@ $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
             </div>
             <?php endif; ?>
 
-            <div class="bg-white shadow-2xl rounded-xl overflow-hidden">
+            <div class="bg-white shadow-2xl rounded-xl overflow-hidden  h-[400px]">
+            <h1 class="text-3xl font-bold text-white mb-2 drop-shadow-lg">Admin Login</h1>
+            <p class="text-blue-100"><?= htmlspecialchars($storeName) ?> Dashboard</p>
                 <div class="p-8">
                     <?php if ($error): ?>
                         <div class="mb-6 rounded-lg bg-red-50 p-4 border-l-4 border-red-500 animate-shake">
