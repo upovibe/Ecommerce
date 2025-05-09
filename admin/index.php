@@ -78,46 +78,22 @@ $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="relative min-h-screen">
-    <!-- Background image with overlay -->
-    <div class="fixed inset-0 z-0"> 
-        <img src="../assets/images/phirmhostImg.png" alt="" class="object-cover object-top w-screen h-screen ">
-    </div> 
-     <!-- logo -->
-     <div class="text-center mr-[10em]  ">
-                <img src="../assets/images/phirmhostLogo.png" alt="Store Logo" class="mx-auto  mb-6 drop-shadow-2xl w-[395px] h-[151px]">
-     </div>  
+    <!-- Background image with dark overlay -->
+    <div class="fixed inset-0 z-0">
+        <img src="../assets/images/phirmhostImg.png" alt="" class="object-cover object-top w-full h-full brightness-75">
+        <div class="absolute inset-0 bg-black/30"></div>
+    </div>
+    <!-- Logo and Title -->
+    <div class="absolute z-10 flex flex-col items-center transform -translate-x-1/2 top-10 left-1/2">
+        <img src="../assets/images/phirmhostLogo.png" alt="Store Logo" class="mx-auto h-20 mb-2 drop-shadow-2xl w-[220px]">
+    </div>
     <!-- Main content -->
-    <div class="relative z-10 flex items-center justify-center min-h-screen px-4 py-12 sm:px-6 lg:px-8 ">
-        <div class="max-w-md w-full h-full space-y-8 ml-auto mr-[10em] mb-auto mt-[5em]">
-            <!-- Logo Section - removed animation -->
-            
-                <!-- <div class="w-24 h-1 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div> -->
-               
-            
-
-            <?php if ($installSuccess): ?>
-            <div class="p-4 mb-6 border-l-4 border-green-500 rounded-lg bg-green-50 animate-fade-in">
-                <div class="flex">
-                    <i data-lucide="check-circle" class="w-5 h-5 mr-2 text-green-500"></i>
-                    <div>
-                        <p class="font-medium text-green-800">Installation Successful!</p>
-                        <p class="mt-1 text-sm text-green-700"><?= htmlspecialchars($installMessage) ?></p>
-                        <div class="p-2 mt-2 bg-white bg-opacity-50 rounded">
-                            <p class="text-sm font-medium text-gray-700">Default Credentials:</p>
-                            <div class="grid grid-cols-2 gap-2 mt-1 text-sm">
-                                <div>Username: <span class="font-medium">admin</span></div>
-                                <div>Password: <span class="font-medium">admin123</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <?php endif; ?>
-
-            <div class="bg-white shadow-2xl rounded-2xl overflow-hidden  h-[500px] pt-10">
-            <h1 class="mb-2 text-3xl text-center text-black font-boldd drop-shadow-lg">Admin Login</h1>
-            <p class="text-center text-black"><?= htmlspecialchars($storeName) ?> Dashboard</p>
-                <div class="p-8">
+    <div class="relative z-10 flex items-center justify-end min-h-screen px-4 py-12 sm:px-6 lg:px-8">
+        <div class="w-full max-w-md mr-24">
+            <div class="overflow-hidden bg-white shadow-2xl rounded-2xl">
+                <div class="p-10">
+                    <h1 class="mb-1 text-3xl font-bold text-center text-gray-900">Admin Login</h1>
+                    <p class="mb-8 text-base text-center text-gray-600">E-commerce Store Dashboard</p>
                     <?php if ($error): ?>
                         <div class="p-4 mb-6 border-l-4 border-red-500 rounded-lg bg-red-50 animate-shake">
                             <div class="flex">
@@ -126,7 +102,6 @@ $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
                             </div>
                         </div>
                     <?php endif; ?>
-
                     <form method="POST" action="" class="space-y-6" id="loginForm">
                         <div>
                             <label for="username" class="block mb-1 text-sm font-bold text-gray-700">Username</label>
@@ -139,12 +114,11 @@ $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
                                     placeholder="Enter your username">
                             </div>
                         </div>
-
                         <div>
                             <label for="password" class="block mb-1 text-sm font-bold text-gray-700">Password</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <i data-lucide="key" class="w-5 h-5 text-blue-500"></i>
+                                    <i data-lucide="lock" class="w-5 h-5 text-blue-500"></i>
                                 </div>
                                 <input type="password" id="password" name="password" required
                                     class="w-full px-3 py-2 pl-10 transition-all duration-200 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -156,82 +130,41 @@ $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
                                 </button>
                             </div>
                         </div>
-                        <div class="py-5 ">
                         <button type="submit" id="loginButton"
-                            class="w-1/2  mx-auto flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ">
-                            <svg class="hidden w-5 h-5 mr-3 -ml-1 text-white animate-spin" id="loadingSpinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <!-- <i data-lucide="log-in" class="w-5 h-5 mr-2" id="loginIcon"></i> -->
-                            <span id="buttonText">Login to Dashboard</span>
+                            class="w-full flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-lg font-semibold">
+                            <i data-lucide="log-in" class="w-5 h-5 mr-2" id="loginIcon"></i>
+                            <span id="buttonText">Login to dashboard</span>
                         </button>
                         </div>
                        
                     </form>
-                </div>
-                <div class="text-center">
-                <a href="../index.php" class="inline-flex items-center text-base text-black transition-colors hover:text-blue-400">
-                    <i data-lucide="circle-arrow-left" class="w-5 h-5 mr-2"></i>
-                    Back to Store
-                </a>
-            </div>
-            </div>
-   
-           
-
-            <?php if (!$db_connected): ?>
-            <div class="p-4 border rounded-lg bg-amber-50 border-amber-100 animate-fade-in">
-                <div class="flex items-start">
-                    <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500 mt-0.5 mr-2"></i>
-                    <div>
-                        <p class="font-medium text-amber-800">Setup Required</p>
-                        <p class="mt-1 text-sm text-amber-700">Database connection is not configured.</p>
-                        <?php if (file_exists('../install.php')): ?>
-                            <a href="../install.php" class="inline-block mt-2 text-sm font-medium text-blue-600 hover:text-blue-700">
-                                Run the installer →
-                            </a>
-                        <?php else: ?>
-                            <p class="mt-1 text-sm text-amber-700">Please check your database configuration in config/db.php</p>
-                        <?php endif; ?>
+                    <div class="mt-8 text-center">
+                        <a href="../index.php" class="inline-flex items-center text-base font-medium text-gray-500 transition-colors hover:text-blue-600">
+                            <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
+                            Back to store
+                        </a>
                     </div>
                 </div>
             </div>
-            <?php endif; ?>
         </div>
     </div>
-
     <script>
     function togglePasswordVisibility(inputId) {
         const input = document.getElementById(inputId);
         const button = input.nextElementSibling;
         const icon = button.querySelector('[data-lucide]');
         const isVisible = icon.getAttribute('data-visible') === 'true';
-        
-        // Toggle password visibility
         input.type = isVisible ? 'password' : 'text';
         icon.setAttribute('data-visible', !isVisible);
-        
-        // Update icon
         icon.setAttribute('data-lucide', isVisible ? 'eye' : 'eye-off');
-        
-        // Update Lucide icons
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
-    lucide.createIcons();
-
-    // Add form submission handling
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        const button = document.getElementById('loginButton');
-        const spinner = document.getElementById('loadingSpinner');
-        const loginIcon = document.getElementById('loginIcon');
-        const buttonText = document.getElementById('buttonText');
-
-        // Disable the button and show loading state
-        button.disabled = true;
-        spinner.classList.remove('hidden');
-        loginIcon.classList.add('hidden');
-        buttonText.textContent = 'Logging in...';
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     });
     </script>
 </body>
