@@ -72,9 +72,17 @@
                         <?= STORE_SETTINGS['store_description'] ?? 'Your one-stop shop for all your needs' ?>
                     </p>
                     <!-- PhirmHost Logo and Text -->
-                    <div class="mt-4 flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg w-fit">
+                    <div class="mt-4 flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg w-fit group relative">
                         <span class="text-sm font-medium" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Powered by</span>
                         <img src="/assets/images/phirmhost-ads.png" alt="PhirmHost" class="h-6 w-auto">
+                        <!-- Tooltip -->
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 text-center">
+                            Want a stunning website like this? 
+                            <a href="https://wa.me/233542838165?text=Hello!%20I%20saw%20your%20amazing%20website%20and%20I%20would%20love%20to%20get%20one%20for%20my%20business.%20Could%20you%20please%20tell%20me%20more%20about%20your%20web%20development%20services%3F" target="_blank" class="block mt-1 text-blue-400 hover:text-blue-300 hover:underline">
+                                Let's build you one →
+                            </a>
+                            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -99,11 +107,11 @@
                 </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t flex flex-col md:flex-row items-start md:items-center gap-4 justify-between <?= $borderColorClass ?> text-center text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.7;">
+            <div class="mt-8 pt-6 border-t flex flex-col md:flex-row items-start md:items-center gap-4 justify-between <?= $borderColorClass ?> text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.7;">
                 <p class="mt-2 text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.9;">
                     Want a stunning website like this?
                     <a href="https://wa.me/233542838165?text=Hello!%20I%20saw%20your%20amazing%20website%20and%20I%20would%20love%20to%20get%20one%20for%20my%20business.%20Could%20you%20please%20tell%20me%20more%20about%20your%20web%20development%20services%3F" target="_blank" class="font-medium hover:underline" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
-                        Let's build yours together →
+                        Let's build you one →
                     </a>
                 </p>
                 <?= STORE_SETTINGS['footer_text'] ?? '© ' . date('Y') . ' E-Commerce Store. All rights reserved.' ?>
