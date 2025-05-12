@@ -115,7 +115,9 @@ document.addEventListener('alpine:init', () => {
         formatCurrency(amount) {
             const symbol = initialData.currencySymbol || '$'; // Use symbol from initial data
             try {
-                return symbol + parseFloat(amount).toLocaleString('en-US', {
+                // Ensure the symbol is properly decoded if it's a Unicode escape sequence
+                const decodedSymbol = symbol.startsWith('\\u') ? JSON.parse('"' + symbol + '"') : symbol;
+                return decodedSymbol + parseFloat(amount).toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 });

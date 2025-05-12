@@ -62,7 +62,7 @@ if ($db_connected && $conn) {
         'store_name' => $store_name,
         'store_description' => $store_description,
         'whatsapp_number' => $whatsapp_number,
-        'currency_symbol' => $currency_symbol,
+        'currency_symbol' => mb_convert_encoding($currency_symbol, 'UTF-8', 'auto'),
         'theme_color' => $theme_color,
         'whatsapp_message_template' => $whatsapp_message_template,
         'footer_text' => $footer_text,

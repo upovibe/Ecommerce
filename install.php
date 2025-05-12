@@ -173,7 +173,7 @@ try {
         <div class="max-w-lg w-full space-y-8">
             <!-- Logo Section - removed animation -->
             <div class="text-center">
-                <img src="assets/images/phirmhost.png" alt="Phirmhost Logo" class="mx-auto h-20 mb-6 drop-shadow-2xl">
+                <img src="assets/images/PHIRMHOST LOGO FINAL ORG BK.png" alt="Phirmhost Logo" class="mx-auto h-20 mb-6 drop-shadow-2xl">
                 <h1 class="text-3xl font-bold text-white mb-2 drop-shadow-lg">Database Setup</h1>
                 <div class="h-1 w-24 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full mb-4"></div>
                 <p class="text-blue-100">Configure your database connection to get started</p>

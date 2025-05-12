@@ -131,7 +131,7 @@ $initialProducts = $initialData['products'];
     <?php include_once 'includes/admin_navbar.php'; ?>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-        x-data="productManager(<?= htmlspecialchars(json_encode($initialProducts, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, <?= htmlspecialchars(json_encode($categories, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, '<?= htmlspecialchars($currencySymbol) ?>')" @keydown.escape.window="isModalOpen = false">
+        x-data="productManager(<?= htmlspecialchars(json_encode($initialProducts, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, <?= htmlspecialchars(json_encode($categories, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG)) ?>, <?= json_encode($currencySymbol, JSON_UNESCAPED_UNICODE) ?>)" @keydown.escape.window="isModalOpen = false">
 
         <!-- Breadcrumbs -->
         <?php include_once 'includes/breadcrumbs.php'; ?>
