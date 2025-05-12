@@ -15,7 +15,8 @@
     $borderColorClass = 'border-white/20'; // Default semi-transparent white border
 
     // Helper function to generate social link if username is set
-    function renderSocialLink($platform, $usernameKey, $baseUrl, $iconIdentifier, $hoverColorClass, $isLucide = false) {
+    function renderSocialLink($platform, $usernameKey, $baseUrl, $iconIdentifier, $hoverColorClass, $isLucide = false)
+    {
         global $brandTextColor; // Make brand text color accessible
         $username = STORE_SETTINGS[$usernameKey] ?? '';
         if (!empty($username)) {
@@ -25,9 +26,9 @@
             } elseif ($platform === 'tiktok') {
                 $url = rtrim($baseUrl, '/') . '/@' . ltrim($username, '@');
             } elseif ($platform === 'youtube') {
-                 $url = rtrim($baseUrl, '/') . '/' . ltrim($username, '@'); // Handles channels and handles like @channel
+                $url = rtrim($baseUrl, '/') . '/' . ltrim($username, '@'); // Handles channels and handles like @channel
             } elseif ($platform === 'linkedin') {
-                 $url = rtrim($baseUrl, '/') . '/company/' . ltrim($username, '@'); // Assuming company page
+                $url = rtrim($baseUrl, '/') . '/company/' . ltrim($username, '@'); // Assuming company page
             } else {
                 $url = rtrim($baseUrl, '/') . '/' . ltrim($username, '@');
             }
@@ -38,7 +39,7 @@
                        style="color: ' . htmlspecialchars($brandTextColor) . ';" 
                        class="' . $hoverColorClass . ' transition-colors duration-300 opacity-80 hover:opacity-100">
                         <span class="sr-only">' . ucfirst($platform) . '</span>';
-            
+
             if ($isLucide) {
                 echo '<i data-lucide="' . htmlspecialchars($iconIdentifier) . '" class="h-6 w-6"></i>';
             } else {
@@ -70,6 +71,11 @@
                     <p class="text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;">
                         <?= STORE_SETTINGS['store_description'] ?? 'Your one-stop shop for all your needs' ?>
                     </p>
+                    <!-- PhirmHost Logo and Text -->
+                    <div class="mt-4 flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg w-fit">
+                        <span class="text-sm font-medium" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Powered by</span>
+                        <img src="/assets/images/phirmhost-ads.png" alt="PhirmHost" class="h-6 w-auto">
+                    </div>
                 </div>
                 <div>
                     <h3 class="text-lg font-semibold mb-4" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Quick Links</h3>
@@ -93,8 +99,15 @@
                 </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t <?= $borderColorClass ?> text-center text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.7;">
+            <div class="mt-8 pt-6 border-t flex flex-col md:flex-row items-start md:items-center gap-4 justify-between <?= $borderColorClass ?> text-center text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.7;">
+                <p class="mt-2 text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.9;">
+                    Want a stunning website like this?
+                    <a href="https://wa.me/233542838165?text=Hello!%20I%20saw%20your%20amazing%20website%20and%20I%20would%20love%20to%20get%20one%20for%20my%20business.%20Could%20you%20please%20tell%20me%20more%20about%20your%20web%20development%20services%3F" target="_blank" class="font-medium hover:underline" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
+                        Let's build yours together →
+                    </a>
+                </p>
                 <?= STORE_SETTINGS['footer_text'] ?? '© ' . date('Y') . ' E-Commerce Store. All rights reserved.' ?>
+
             </div>
         </div>
     </footer>
@@ -114,43 +127,49 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Custom Scripts -->
 
-<script>
-    // Initialize AOS
-    AOS.init({
-        duration: 800, // Animation duration
-        once: true // Only animate elements once
-    });
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800, // Animation duration
+            once: true // Only animate elements once
+        });
 
-    // Subcategory fetching and display logic removed from here
+        // Subcategory fetching and display logic removed from here
 
-    // Render Lucide icons added via PHP/HTML
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-</script> 
+        // Render Lucide icons added via PHP/HTML
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
 
-<?php include_once __DIR__ . '/../modals/search_modal.php'; ?>
-<?php include_once __DIR__ . '/../modals/cart_modal.php'; // Include Cart Modal ?>
-<?php include_once __DIR__ . '/../modals/complete_order_modal.php'; // Include Complete Order Modal ?>
-<?php include_once __DIR__ . '/../modals/finalise_order_modal.php'; // Include Finalise Order Modal ?>
-<?php include_once __DIR__ . '/../modals/checkout_methods_modal.php'; // Include Checkout Methods Modal ?>
-<?php include_once __DIR__ . '/../modals/thank_you_modal.php'; // Include Thank You Modal ?>
-<?php include_once __DIR__ . '/toast.php'; // Include Toast Notifications ?>
+    <?php include_once __DIR__ . '/../modals/search_modal.php'; ?>
+    <?php include_once __DIR__ . '/../modals/cart_modal.php'; // Include Cart Modal 
+    ?>
+    <?php include_once __DIR__ . '/../modals/complete_order_modal.php'; // Include Complete Order Modal 
+    ?>
+    <?php include_once __DIR__ . '/../modals/finalise_order_modal.php'; // Include Finalise Order Modal 
+    ?>
+    <?php include_once __DIR__ . '/../modals/checkout_methods_modal.php'; // Include Checkout Methods Modal 
+    ?>
+    <?php include_once __DIR__ . '/../modals/thank_you_modal.php'; // Include Thank You Modal 
+    ?>
+    <?php include_once __DIR__ . '/toast.php'; // Include Toast Notifications 
+    ?>
 
-<!-- Floating WhatsApp Button -->
-<div class="fixed bottom-6 right-6 z-50">
-    <a href="https://api.whatsapp.com/send?phone=<?= STORE_SETTINGS['whatsapp_number'] ?>&text=Hello!%20%F0%9F%91%8B%20I%20have%20a%20question%20about%20your%20store%27s%20hours%20and%20shipping%20policies.%20Could%20you%20please%20provide%20more%20details%3F%20%F0%9F%93%A6%F0%9F%9A%9B"
-       class="relative flex items-center justify-center w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 shadow-lg transition-all duration-300 hover:scale-110"
-       target="_blank"
-       aria-label="Chat on WhatsApp">
-        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-        </svg>
-        <!-- Glowing Green Dot Indicator -->
-        <span class="absolute top-0 right-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-white animate-ping"></span>
-    </a>
-</div>
+    <!-- Floating WhatsApp Button -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <a href="https://api.whatsapp.com/send?phone=<?= STORE_SETTINGS['whatsapp_number'] ?>&text=Hello!%20%F0%9F%91%8B%20I%20have%20a%20question%20about%20your%20store%27s%20hours%20and%20shipping%20policies.%20Could%20you%20please%20provide%20more%20details%3F%20%F0%9F%93%A6%F0%9F%9A%9B"
+            class="relative flex items-center justify-center w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 shadow-lg transition-all duration-300 hover:scale-110"
+            target="_blank"
+            aria-label="Chat on WhatsApp">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+            </svg>
+            <!-- Glowing Green Dot Indicator -->
+            <span class="absolute top-0 right-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-white animate-ping"></span>
+        </a>
+    </div>
 
-</body>
+    </body>
 
     </html>
