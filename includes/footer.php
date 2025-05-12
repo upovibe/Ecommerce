@@ -73,16 +73,20 @@
                     </p>
                     <!-- PhirmHost Logo and Text -->
                     <div class="mt-4 flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg w-fit group relative">
-                        <!-- Active status dot -->
-                        <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-600/80 rounded-full ring-2 ring-green-600/20 animate-ping"></div>
-                        <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-600/80 rounded-full"></div>
+                        <!-- Glowing effect instead of green dot -->
+                        <div class="absolute -top-1 -right-1 w-3 h-3">
+                            <div class="absolute w-full h-full bg-green-500 rounded-full animate-ping opacity-75"></div>
+                            <div class="absolute w-full h-full bg-green-500 rounded-full"></div>
+                            <div class="absolute w-full h-full bg-green-500 rounded-full animate-pulse"></div>
+                        </div>
                         <span class="text-sm font-medium" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Powered by</span>
-                        <img src="/assets/images/phirmhost-ads.png" alt="PhirmHost" class="h-6 w-auto">
+                        <img src="/assets/images/phirmhost-ads.png" alt="PhirmHost" class="h-6 w-auto animate-glow">
                         <!-- Tooltip -->
                         <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 text-center">
                             Want a stunning website like this? 
-                            <a href="https://wa.me/233542838165?text=Hello!%20I%20saw%20your%20amazing%20website%20and%20I%20would%20love%20to%20get%20one%20for%20my%20business.%20Could%20you%20please%20tell%20me%20more%20about%20your%20web%20development%20services%3F" target="_blank" class="block mt-1 text-blue-400 hover:text-blue-300 hover:underline">
-                                Let's build you one →
+                            <a href="https://wa.me/233542838165?text=Hello!%20I%20saw%20your%20amazing%20website%20and%20I%20would%20love%20to%20get%20one%20for%20my%20business.%20Could%20you%20please%20tell%20me%20more%20about%20your%20web%20development%20services%3F" target="_blank" class="block mt-1 text-blue-400 hover:text-blue-300 hover:underline animate-text-glow">
+                                <span class="animate-text-glow">Let's build you one</span>
+                                <span class="ml-1 inline-block animate-arrow-glow text-green-500 text-xl">→</span>
                             </a>
                             <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
                         </div>
@@ -195,6 +199,148 @@
     }
     .animate-bounce-x {
         animation: bounce-x 1s infinite;
+        position: relative;
+    }
+    .animate-bounce-x::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: rgba(34, 197, 94, 0.2);
+        border-radius: 50%;
+        z-index: -1;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes glow {
+        0%, 100% {
+            filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.7));
+            transform: scale(1);
+        }
+        50% {
+            filter: drop-shadow(0 0 15px rgba(34, 197, 94, 0.9));
+            transform: scale(1.05);
+        }
+    }
+    .animate-glow {
+        animation: glow 1.5s infinite;
+        position: relative;
+    }
+    .animate-glow::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: rgba(34, 197, 94, 0.2);
+        border-radius: 50%;
+        z-index: -1;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 0.2;
+        }
+    }
+
+    @keyframes link-glow {
+        0%, 100% {
+            text-shadow: 0 0 8px rgba(59, 130, 246, 0.7);
+            transform: scale(1);
+        }
+        50% {
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.9);
+            transform: scale(1.05);
+        }
+    }
+    .animate-link-glow {
+        animation: link-glow 1.5s infinite;
+        position: relative;
+    }
+    .animate-link-glow::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: rgba(59, 130, 246, 0.2);
+        border-radius: 4px;
+        z-index: -1;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes arrow-glow {
+        0%, 100% {
+            text-shadow: 0 0 10px rgba(34, 197, 94, 0.8),
+                         0 0 20px rgba(34, 197, 94, 0.6),
+                         0 0 30px rgba(34, 197, 94, 0.4);
+            transform: translateX(0) scale(1);
+        }
+        50% {
+            text-shadow: 0 0 15px rgba(34, 197, 94, 1),
+                         0 0 25px rgba(34, 197, 94, 0.8),
+                         0 0 35px rgba(34, 197, 94, 0.6);
+            transform: translateX(5px) scale(1.1);
+        }
+    }
+    .animate-arrow-glow {
+        animation: arrow-glow 1.5s infinite;
+        display: inline-block;
+        position: relative;
+    }
+    .animate-arrow-glow::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0) 70%);
+        border-radius: 50%;
+        z-index: -1;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes text-glow {
+        0%, 100% {
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.8),
+                         0 0 20px rgba(59, 130, 246, 0.6),
+                         0 0 30px rgba(59, 130, 246, 0.4);
+            transform: scale(1);
+        }
+        50% {
+            text-shadow: 0 0 15px rgba(59, 130, 246, 1),
+                         0 0 25px rgba(59, 130, 246, 0.8),
+                         0 0 35px rgba(59, 130, 246, 0.6);
+            transform: scale(1.02);
+        }
+    }
+    .animate-text-glow {
+        animation: text-glow 1.5s infinite;
+        position: relative;
+        display: inline-block;
+    }
+    .animate-text-glow::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0) 70%);
+        border-radius: 8px;
+        z-index: -1;
+        animation: pulse 1.5s infinite;
     }
     </style>
 
