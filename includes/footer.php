@@ -73,6 +73,9 @@
                     </p>
                     <!-- PhirmHost Logo and Text -->
                     <div class="mt-4 flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg w-fit group relative">
+                        <!-- Active status dot -->
+                        <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-600/80 rounded-full ring-2 ring-green-600/20 animate-ping"></div>
+                        <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-600/80 rounded-full"></div>
                         <span class="text-sm font-medium" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Powered by</span>
                         <img src="/assets/images/phirmhost-ads.png" alt="PhirmHost" class="h-6 w-auto">
                         <!-- Tooltip -->
@@ -110,8 +113,9 @@
             <div class="mt-8 pt-6 border-t flex flex-col md:flex-row items-start md:items-center gap-4 justify-between <?= $borderColorClass ?> text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.7;">
                 <p class="mt-2 text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.9;">
                     Want a stunning website like this?
-                    <a href="https://wa.me/233542838165?text=Hello!%20I%20saw%20your%20amazing%20website%20and%20I%20would%20love%20to%20get%20one%20for%20my%20business.%20Could%20you%20please%20tell%20me%20more%20about%20your%20web%20development%20services%3F" target="_blank" class="font-medium hover:underline" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
-                        Let's build you one →
+                    <a href="https://wa.me/233542838165?text=Hello!%20I%20saw%20your%20amazing%20website%20and%20I%20would%20love%20to%20get%20one%20for%20my%20business.%20Could%20you%20please%20tell%20me%20more%20about%20your%20web%20development%20services%3F" target="_blank" class="font-medium hover:underline inline-flex items-center" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
+                        Let's build you one 
+                        <span class="ml-1 inline-block animate-bounce-x text-green-500">→</span>
                     </a>
                 </p>
                 <?= STORE_SETTINGS['footer_text'] ?? '© ' . date('Y') . ' E-Commerce Store. All rights reserved.' ?>
@@ -177,6 +181,22 @@
             <span class="absolute top-0 right-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-white animate-ping"></span>
         </a>
     </div>
+
+    <style>
+    @keyframes bounce-x {
+        0%, 100% {
+            transform: translateX(0);
+            text-shadow: 0 0 5px rgba(34, 197, 94, 0.5);
+        }
+        50% {
+            transform: translateX(5px);
+            text-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+        }
+    }
+    .animate-bounce-x {
+        animation: bounce-x 1s infinite;
+    }
+    </style>
 
     </body>
 
