@@ -68,5 +68,3 @@ define('STORE_URL', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "h
 
 // Also define the database connection status for potential checks elsewhere
 define('DB_CONNECTED', $db_connected);
-
-?> 
