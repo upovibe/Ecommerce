@@ -72,5 +72,4 @@ function getStoreSettings() {
     
     return $settings;
 }
-
 ?> 
