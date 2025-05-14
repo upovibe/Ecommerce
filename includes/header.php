@@ -190,6 +190,12 @@ $isContactActive = ($currentPath === $contactPath);
       }"
       @cart:updated.window="handleCartUpdate($event)" >
     <nav class="shadow-lg sticky top-0 z-30 animate-header-load" style="background-color: <?= htmlspecialchars($themeColor) ?>;">
+        <div class="w-full mx-auto p-1 flex justify-center items-center border-b"  style="border-color: <?= htmlspecialchars($brandTextColor) ?>; border-color: rgba(255, 255, 255, 0.19);">
+        <span class="text-lg font-semibold mx-auto" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
+                            <?= STORE_SETTINGS['store_name'] ?? 'E-Commerce Store' ?>
+                        </span>
+        </div>
+        <div >
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 md:h-20">
                 <div class="flex items-center">
@@ -198,9 +204,6 @@ $isContactActive = ($currentPath === $contactPath);
                             <img class="h-14 w-auto"
                             src="<?= htmlspecialchars(STORE_SETTINGS['store_logo'] ?? '/assets/images/logo.png') ?>"
                             alt="<?= htmlspecialchars(STORE_SETTINGS['store_name'] ?? 'E-Commerce Store') ?> Logo">
-                            <span class="text-lg font-semibold" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
-                            <?= STORE_SETTINGS['store_name'] ?? 'E-Commerce Store' ?>
-                        </span>
                         </a>
                     </div>
                     <div class="hidden md:ml-8 md:flex md:space-x-6">
@@ -291,6 +294,7 @@ $isContactActive = ($currentPath === $contactPath);
                     Contact
                 </a>
             </div>
+        </div>
         </div>
     </nav>
     <script>
