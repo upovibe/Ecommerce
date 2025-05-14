@@ -448,7 +448,7 @@ $categories = getAllCategories(); // Fetch categories
                 <div>
                     <h3 class="text-sm font-medium text-gray-700 mb-3">Powered By</h3>
                     <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 flex flex-col items-center">
-                        <div class="flex items-center justify-center mb-3 px-2 py-1 bg-gray-800/50 w-fit rounded-lg">
+                        <div class="flex items-center justify-center mb-3 px-2 py-1 bg-gray-800/80 w-fit rounded-lg">
                             <img src="../assets/images/phirmhost-ads.png" alt="Phirmhost" class="h-12 object-contain mb-2">
                         </div>
                         <p class="text-sm text-center text-gray-600 mb-3">Your e-commerce store is powered by Phirmhost, a leading hosting provider for online businesses.</p>

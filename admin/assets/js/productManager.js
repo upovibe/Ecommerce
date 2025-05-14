@@ -83,7 +83,7 @@ document.addEventListener('alpine:init', () => {
                 if (this.selectedCategoryId === 'uncategorized') {
                     filtered = filtered.filter(p => p.category_id === null || p.category_id === '' || p.category_id === 0);
                 } else {
-                    // Compare as numbers since category_id from DB is likely int, selectedCategoryId might be string from select
+                    // Compare as numbers since category_id from DB is likely int, selectedCategoryId might be string
                     filtered = filtered.filter(p => Number(p.category_id) === Number(this.selectedCategoryId));
                 }
             }
@@ -106,6 +106,22 @@ document.addEventListener('alpine:init', () => {
                     filtered = filtered.filter(p => !p.is_active);
                 }
             }
+
+            // Add cache-busting parameter to all filtered product images
+            filtered = filtered.map(product => {
+                if (product.image) {
+                    // Clone the product to avoid modifying the original
+                    const newProduct = {...product};
+                    // Add timestamp parameter if not already present
+                    if (newProduct.image.indexOf('?') === -1) {
+                        newProduct.image = newProduct.image + '?v=' + new Date().getTime();
+                    } else if (newProduct.image.indexOf('v=') === -1) {
+                        newProduct.image = newProduct.image + '&v=' + new Date().getTime();
+                    }
+                    return newProduct;
+                }
+                return product;
+            });
 
             console.log('[Getter] filteredProducts - Output:', filtered);
             return filtered;
@@ -165,6 +181,17 @@ document.addEventListener('alpine:init', () => {
         },
         openModal(product) {
             this.viewingProduct = product;
+            
+            // Add cache-busting to image URL for view modal
+            if (this.viewingProduct && this.viewingProduct.image) {
+                const timestamp = new Date().getTime();
+                if (this.viewingProduct.image.indexOf('?') === -1) {
+                    this.viewingProduct.image += `?v=${timestamp}`;
+                } else {
+                    this.viewingProduct.image += `&v=${timestamp}`;
+                }
+            }
+            
             this.viewingProductOptions = []; // Clear previous options
             this.isLoadingDetails = true; // Show loading indicator
             this.isModalOpen = true;
@@ -343,6 +370,15 @@ document.addEventListener('alpine:init', () => {
                 .then(data => {
                     if (data.success && data.product) {
                         const product = data.product;
+                        
+                        // Add cache-busting parameter to image URL
+                        let imageUrl = product.image || '../assets/images/placeholder.png';
+                        if (imageUrl.indexOf('?') === -1) {
+                            imageUrl = imageUrl + '?v=' + new Date().getTime();
+                        } else {
+                            imageUrl = imageUrl + '&v=' + new Date().getTime();
+                        }
+                        
                         this.editingProduct = {
                             id: product.id,
                             name: product.name,
@@ -353,7 +389,7 @@ document.addEventListener('alpine:init', () => {
                             categoryId: product.category_id || '',
                             isFeatured: Boolean(product.featured),
                             is_active: Boolean(product.is_active),
-                            imageUrl: product.image ? product.image : '../assets/images/placeholder.png',
+                            imageUrl: imageUrl,
                             productOptions: data.options ? data.options.map(opt => ({ ...opt, values: Array.isArray(opt.values) ? opt.values.join(', ') : opt.values })) : [],
                             discountPercentageEnabled: product.discount_percentage !== null,
                             discountPercentage: product.discount_percentage,
@@ -421,73 +457,77 @@ document.addEventListener('alpine:init', () => {
             formData.append('product_name', this.editingProduct.name);
             // Auto-generate slug on backend or send if editable
             // formData.append('product_slug', this.editingProduct.slug);
-            formData.append('product_description', this.editingProduct.description);
-            formData.append('product_price', this.editingProduct.price);
-            formData.append('product_stock', this.editingProduct.stock);
-            formData.append('category_id', this.editingProduct.categoryId);
-            if (this.editingProduct.isFeatured) formData.append('featured', '1');
+            formData.append('product_description', this.editingProduct.description || '');
+            formData.append('product_price', this.editingProduct.price || 0);
+            formData.append('product_stock', this.editingProduct.stock || 0);
+            formData.append('category_id', this.editingProduct.categoryId || '');
+            formData.append('featured', this.editingProduct.isFeatured ? '1' : '0');
             formData.append('is_active', this.editingProduct.is_active ? '1' : '0');
             formData.append('backorder', this.editingProduct.backorder ? '1' : '0');
-
-            // Handle discount percentage
-            if (this.editingProduct.discountPercentageEnabled && this.editingProduct.discountPercentage !== null && this.editingProduct.discountPercentage > 0 && this.editingProduct.discountPercentage <= 100) {
-                 formData.append('discount_percentage', this.editingProduct.discountPercentage);
-            } else {
-                 formData.append('remove_discount', '1'); // Flag to set discount to NULL
+            
+            // Discount handling
+            if (this.editingProduct.discountPercentageEnabled && this.editingProduct.discountPercentage !== null && 
+                this.editingProduct.discountPercentage > 0 && this.editingProduct.discountPercentage <= 100) {
+                formData.append('discount_percentage', this.editingProduct.discountPercentage);
+            } else if (this.editingProduct.discountPercentageEnabled === false) {
+                formData.append('remove_discount', '1'); // Signal to remove discount
             }
-
-            // Handle options
+            
+            // Options handling - send as JSON string
             if (this.editingProduct.optionsEnabled && this.editingProduct.productOptions.length > 0) {
-                const validOptions = this.editingProduct.productOptions.filter(opt => opt.name.trim() !== '' && opt.values.trim() !== '');
-                 if (validOptions.length > 0) {
-                     // Ensure values are arrays before stringifying for backend
-                     const optionsToSend = validOptions.map(opt => ({ ...opt, values: opt.values.split(',').map(v => v.trim()).filter(v => v) }));
-                     formData.append('product_options', JSON.stringify(optionsToSend));
-                 } else {
-                     // Send flag to remove options if all are invalid but toggle is enabled
-                     formData.append('remove_options', '1'); 
-                 }
-            } else {
-                 formData.append('remove_options', '1'); // Flag to remove all options if toggle disabled
+                const validOptions = this.editingProduct.productOptions.filter(opt => 
+                    opt.name && opt.name.trim() !== '' && opt.values && opt.values.trim() !== '');
+                
+                if (validOptions.length > 0) {
+                    formData.append('product_options', JSON.stringify(validOptions));
+                }
+            } else if (this.editingProduct.optionsEnabled === false) {
+                formData.append('remove_options', '1'); // Signal to remove all options
             }
-
+            
+            // Image upload - only if a new file was selected
             if (this.newEditImageFile) {
                 formData.append('product_image', this.newEditImageFile, this.newEditImageFile.name);
             }
-
+            
             fetch('utils/update_product.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        toast.success(data.message || 'Product updated successfully!');
-                        const index = this.allProducts.findIndex(p => p.id === this.editingProduct.id);
-                        if (index !== -1 && data.product) {
-                            // Ensure boolean values are correct after update
-                            data.product.is_active = Boolean(data.product.is_active);
-                            data.product.featured = Boolean(data.product.featured);
-                            data.product.backorder = Boolean(data.product.backorder);
-                            this.allProducts = this.allProducts.map(p =>
-                                p.id === data.product.id ? { ...p, ...data.product } : p
-                            );
-                        } else {
-                             console.warn('Backend did not return updated product object or product not found in list.');
-                             // Manually refresh if needed, or rely on user refresh
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toast.success(data.message || 'Product updated successfully!');
+                    // Update the product in the allProducts array
+                    if (data.product) {
+                        // Add a cache-busting parameter to the image URL
+                        if (data.product.image) {
+                            const timestamp = new Date().getTime();
+                            if (data.product.image.indexOf('?') === -1) {
+                                data.product.image += `?v=${timestamp}`;
+                            } else {
+                                data.product.image += `&v=${timestamp}`;
+                            }
                         }
-                        this.closeEditModal();
-                    } else {
-                        toast.error(data.message || 'Failed to update product.');
+                        
+                        // Find and update the product in the array
+                        const index = this.allProducts.findIndex(p => p.id === data.product.id);
+                        if (index !== -1) {
+                            this.allProducts[index] = data.product;
+                        }
                     }
-                })
-                .catch(error => {
-                    console.error('Error updating product:', error);
-                    toast.error('An error occurred while updating.');
-                })
-                .finally(() => {
-                    this.isUpdating = false;
-                });
+                    this.closeEditModal();
+                } else {
+                    toast.error(data.message || 'Failed to update product.');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating product:', error);
+                toast.error('An error occurred while updating.');
+            })
+            .finally(() => {
+                this.isUpdating = false;
+            });
         },
         // --- End Edit Modal Functions ---
 

@@ -4,6 +4,10 @@ require_once '../../config/settings.php';
 require_once './helpers.php'; // Include helpers
 
 header('Content-Type: application/json');
+// Add cache control headers
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
 
 // Check if user is logged in
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
@@ -76,14 +80,25 @@ if ($db_connected && $conn) {
         $imagePath = $currentProduct['image']; // Keep current image by default
         $oldImagePath = null;
         if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
-            $newImagePath = handleImageUpload($_FILES['product_image'], '/assets/images/products/');
+            // If there's an existing image, extract its filename to reuse
+            $existingFileName = null;
+            if ($imagePath) {
+                $pathInfo = pathinfo($imagePath);
+                $existingFileName = $pathInfo['filename']; // Without extension
+            }
+            
+            // Pass the existing filename to reuse for the new upload
+            $newImagePath = handleImageUpload($_FILES['product_image'], '/assets/images/products/', $existingFileName ? $existingFileName : 'image');
+            
             if ($newImagePath === null) {
                 throw new Exception('Image upload failed. Check file type, size (max 2MB), and permissions.');
             }
-            // If upload successful and there was an old image, mark it for deletion
-            if ($imagePath) {
-                $oldImagePath = $imagePath;
+            
+            // If the paths are different (despite trying to reuse the filename), clean up the old file
+            if ($imagePath && $imagePath !== $newImagePath && file_exists("../.." . $imagePath)) {
+                @unlink("../.." . $imagePath);
             }
+            
             $imagePath = $newImagePath; // Update image path to the new one
         }
 
@@ -188,10 +203,7 @@ if ($db_connected && $conn) {
         // --- Commit Transaction and Delete Old Image (if needed) ---
         $conn->commit();
         
-        // Delete old image file *after* successful commit
-        if ($oldImagePath && $oldImagePath !== $imagePath && file_exists("../.." . $oldImagePath)) {
-             @unlink("../.." . $oldImagePath); // Use @ to suppress errors if file deletion fails
-        }
+        // Old image is already deleted during the upload process if needed
         
          // --- Fetch Updated Product Data to Send Back ---
          $finalProductSql = "SELECT p.*, c.name as category_name 

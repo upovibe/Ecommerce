@@ -37,7 +37,7 @@ if (!function_exists("handleImageUpload")) {
      *
      * @param array $file The $_FILES["image_field_name"] array.
      * @param string $relativeUploadDir The target directory relative to the project root (e.g., 'uploads/categories/').
-     * @param string $filePrefix Prefix for the saved filename (e.g., 'product', 'category').
+     * @param string $filePrefix Prefix for the saved filename (e.g., 'product', 'category'). If an existing filename is provided, it will be used instead.
      * @return string|null The path to the uploaded file relative to the project root, or null on failure.
      */
     function handleImageUpload(array $file, string $relativeUploadDir, string $filePrefix = 'image'): ?string
@@ -72,8 +72,15 @@ if (!function_exists("handleImageUpload")) {
 
         $fileName = basename($file["name"]);
         $imageFileType = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-        // Use the provided file prefix
-        $newFileName = $filePrefix . "_" . time() . "_" . uniqid() . "." . $imageFileType;
+        
+        // If filePrefix looks like an existing filename (no timestamp/uniqid attached), use it directly
+        if (strpos($filePrefix, '_') !== false && strlen($filePrefix) > 10) {
+            $newFileName = $filePrefix . '.' . $imageFileType;
+        } else {
+            // Otherwise, generate a new filename with timestamp and uniqid
+            $newFileName = $filePrefix . "_" . time() . "_" . uniqid() . "." . $imageFileType;
+        }
+        
         $targetFilePath = $absoluteUploadDir . '/' . $newFileName; 
         
         // The web path is the CLEAN relative path (preserving leading slash if present) + the new filename
