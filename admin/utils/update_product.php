@@ -76,7 +76,7 @@ if ($db_connected && $conn) {
         $imagePath = $currentProduct['image']; // Keep current image by default
         $oldImagePath = null;
         if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
-            $newImagePath = handleImageUpload($_FILES['product_image'], '../../assets/images/products/'); 
+            $newImagePath = handleImageUpload($_FILES['product_image'], '/assets/images/products/');
             if ($newImagePath === null) {
                 throw new Exception('Image upload failed. Check file type, size (max 2MB), and permissions.');
             }

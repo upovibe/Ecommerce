@@ -53,6 +53,9 @@ if (!function_exists("handleImageUpload")) {
         $projectRoot = dirname(__DIR__, 2); // Goes up two levels from utils/ to project root
         $absoluteUploadDir = $projectRoot . '/' . trim($relativeUploadDir, '/');
 
+        // Clean the relative upload dir to remove any ../ references but preserve the leading slash
+        $cleanRelativeDir = str_replace('../', '', $relativeUploadDir);
+        
         // Ensure the directory exists and is writable
         if (!is_dir($absoluteUploadDir)) {
             error_log("Attempting to create directory: " . $absoluteUploadDir);
@@ -73,8 +76,8 @@ if (!function_exists("handleImageUpload")) {
         $newFileName = $filePrefix . "_" . time() . "_" . uniqid() . "." . $imageFileType;
         $targetFilePath = $absoluteUploadDir . '/' . $newFileName; 
         
-        // The web path is the relative path passed in + the new filename
-        $webPath = trim($relativeUploadDir, '/') . '/' . $newFileName; 
+        // The web path is the CLEAN relative path (preserving leading slash if present) + the new filename
+        $webPath = ltrim($cleanRelativeDir, '/') === '' ? $newFileName : $cleanRelativeDir . '/' . $newFileName;
 
         // Allow certain file formats
         $allowedTypes = ["jpg", "png", "jpeg", "gif", "webp"];
