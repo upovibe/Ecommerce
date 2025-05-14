@@ -66,9 +66,12 @@ $productBannerSubtitle = $storeContent['product_banner_subtitle'] ?? 'Product su
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
 
-<body class="bg-gray-50 font-sans antialiased">
+<body class="bg-gray-50 font-sans antialiased" x-data x-cloak>
     <!-- Navigation -->
     <?php include_once 'includes/admin_navbar.php'; ?>
 
@@ -88,9 +91,11 @@ $productBannerSubtitle = $storeContent['product_banner_subtitle'] ?? 'Product su
             <?php include_once 'includes/settings_brand_identity.php'; ?>
 
             <div class="lg:col-span-2" x-data="{
-                    tab: new URLSearchParams(window.location.search).get('tab') === 'content' ? 'content' : 'general',
+                    tab: new URLSearchParams(window.location.search).get('tab') === 'content' ? 'content' : 
+                         new URLSearchParams(window.location.search).get('tab') === 'contact' ? 'contact' : 'general',
                     isSavingGeneral: false,
                     isSavingContent: false,
+                    isSavingContact: false,
 
                     async saveGeneralSettings(event) {
                         this.isSavingGeneral = true;
@@ -139,6 +144,31 @@ $productBannerSubtitle = $storeContent['product_banner_subtitle'] ?? 'Product su
                         } finally {
                             this.isSavingContent = false;
                         }
+                    },
+
+                    async saveContactSettings(event) {
+                        this.isSavingContact = true;
+                        const form = event.target;
+                        const formData = new FormData(form);
+                        
+                        try {
+                            const response = await fetch('utils/update_contact_settings.php', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                toast.success(result.message || 'Contact settings updated successfully!');
+                                setTimeout(() => { window.location.reload(); }, 1000); // Reload after 1 second to show toast
+                            } else {
+                                toast.error(result.message || 'Failed to update contact settings.');
+                            }
+                        } catch (error) {
+                            console.error('Error saving contact settings:', error);
+                            toast.error('An unexpected error occurred.');
+                        } finally {
+                            this.isSavingContact = false;
+                        }
                     }
                 }">
                 <div class="border-b border-gray-200 mb-4">
@@ -156,6 +186,13 @@ $productBannerSubtitle = $storeContent['product_banner_subtitle'] ?? 'Product su
                             @click="tab = 'content'">
                             <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
                             Store
+                        </button>
+                        <button
+                            class="flex items-center px-4 py-2 text-sm font-medium rounded-t-lg focus:outline-none"
+                            :class="tab === 'contact' ? 'bg-white border-l border-t border-r text-blue-600 shadow-sm' : 'text-gray-500 hover:text-blue-600'"
+                            @click="tab = 'contact'">
+                            <i data-lucide="mail" class="w-4 h-4 mr-2"></i>
+                            Contact
                         </button>
                     </nav>
                 </div>
@@ -178,6 +215,15 @@ $productBannerSubtitle = $storeContent['product_banner_subtitle'] ?? 'Product su
                         x-transition:leave-start="opacity-100 transform scale-100"
                         x-transition:leave-end="opacity-0 transform scale-95">
                         <?php include_once 'includes/settings_store_content.php'; ?>
+                    </div>
+                    <div x-show="tab === 'contact'" x-cloak
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform scale-95"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-150 absolute w-full"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-95">
+                        <?php include_once 'includes/settings_contact_form.php'; ?>
                     </div>
                 </div>
             </div>

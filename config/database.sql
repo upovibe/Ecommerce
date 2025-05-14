@@ -173,3 +173,58 @@ INSERT INTO product_options (product_id, option_name, option_values) VALUES (9, 
 
 -- Note: The admin user update statement should be executed after creating an admin user
 -- This is typically done in the PHP installation script
+
+-- Contact settings table
+CREATE TABLE contact_settings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    setting_key VARCHAR(50) NOT NULL UNIQUE,
+    setting_value TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- FAQs table
+CREATE TABLE faqs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    display_order INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    page_location VARCHAR(50) DEFAULT 'contact',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Store maps table
+CREATE TABLE store_maps (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    location_name VARCHAR(100) NOT NULL,
+    address TEXT,
+    map_url TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default contact settings
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('business_hours_weekdays', '9am - 6pm');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('business_hours_saturday', '10am - 4pm');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('business_hours_sunday', 'Closed');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_email', 'contact@example.com');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_phone', '+1234567890');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_form_enabled', 'true');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_page_title', 'Contact Us');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_page_subtitle', 'We\'d love to hear from you! Send us a message and we\'ll respond as soon as possible.');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_banner_image', '/assets/images/Ecommerce-bg.jpg');
+
+-- Insert default FAQs
+INSERT INTO faqs (question, answer, display_order, page_location) VALUES
+('What payment methods do you accept?', 'We accept various payment methods including credit/debit cards, mobile money, and bank transfers. All payments are secure and encrypted.', 1, 'contact'),
+('How long does shipping take?', 'Shipping times vary depending on your location. Typically, local deliveries take 1-3 business days, while international shipping can take 7-14 business days.', 2, 'contact'),
+('What is your return policy?', 'We offer a 30-day return policy. If you\'re not satisfied with your purchase, you can return it within 30 days for a full refund or exchange. Items must be unused and in their original packaging.', 3, 'contact'),
+('Do you ship internationally?', 'Yes, we ship to most countries worldwide. International shipping rates and delivery times vary by location. Please contact us for specific information about shipping to your country.', 4, 'contact');
+
+-- Insert a demo store map
+INSERT INTO store_maps (location_name, address, map_url, display_order) VALUES
+('Main Store', '123 Commerce St, Example City', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.9!3d40.7!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQyJzAwLjAiTiA3M8KwNTQnMDAuMCJX!5e0!3m2!1sen!2sus!4v1600000000000!5m2!1sen!2sus', 1);

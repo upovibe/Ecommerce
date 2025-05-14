@@ -237,5 +237,53 @@
     "tiktok_username": "upovibe",
     "linkedin_username": "upovibe",
     "youtube_username": ""
-  }
+  },
+  "_description_contact_settings": "Demo contact page settings.",
+  "contact_settings": {
+    "business_hours_weekdays": "9am - 6pm",
+    "business_hours_saturday": "10am - 4pm",
+    "business_hours_sunday": "Closed",
+    "contact_email": "contact@example.com",
+    "contact_phone": "+1234567890",
+    "contact_form_enabled": "true",
+    "contact_page_title": "Contact Us",
+    "contact_page_subtitle": "We'd love to hear from you! Send us a message and we'll respond as soon as possible.",
+    "contact_banner_image": "/assets/images/Ecommerce-bg.jpg"
+  },
+  "_description_faqs": "Demo frequently asked questions for contact page.",
+  "faqs": [
+    {
+      "question": "What payment methods do you accept?",
+      "answer": "We accept various payment methods including credit/debit cards, mobile money, and bank transfers. All payments are secure and encrypted.",
+      "display_order": 1,
+      "page_location": "contact"
+    },
+    {
+      "question": "How long does shipping take?",
+      "answer": "Shipping times vary depending on your location. Typically, local deliveries take 1-3 business days, while international shipping can take 7-14 business days.",
+      "display_order": 2,
+      "page_location": "contact"
+    },
+    {
+      "question": "What is your return policy?",
+      "answer": "We offer a 30-day return policy. If you're not satisfied with your purchase, you can return it within 30 days for a full refund or exchange. Items must be unused and in their original packaging.",
+      "display_order": 3,
+      "page_location": "contact"
+    },
+    {
+      "question": "Do you ship internationally?",
+      "answer": "Yes, we ship to most countries worldwide. International shipping rates and delivery times vary by location. Please contact us for specific information about shipping to your country.",
+      "display_order": 4,
+      "page_location": "contact"
+    }
+  ],
+  "_description_store_maps": "Demo store locations for contact page.",
+  "store_maps": [
+    {
+      "location_name": "Main Store",
+      "address": "123 Commerce St, Example City",
+      "map_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.9!3d40.7!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQyJzAwLjAiTiA3M8KwNTQnMDAuMCJX!5e0!3m2!1sen!2sus!4v1600000000000!5m2!1sen!2sus",
+      "display_order": 1
+    }
+  ]
 } 

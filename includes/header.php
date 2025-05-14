@@ -11,9 +11,11 @@ $currencySymbolPhp = STORE_SETTINGS['currency_symbol'] ?? '$';
 $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $homePath = '/index.php';
 $productsPath = '/products.php';
+$contactPath = '/contact.php';
 
 $isHomeActive = ($currentPath === '/' || $currentPath === $homePath);
 $isProductsActive = ($currentPath === $productsPath);
+$isContactActive = ($currentPath === $contactPath);
 ?>
 
 <!DOCTYPE html>
@@ -219,6 +221,16 @@ $isProductsActive = ($currentPath === $productsPath);
                                 <span class="absolute inset-x-1 -bottom-1 h-0.5 bg-transparent rounded-full group-hover:bg-current group-hover:opacity-30 transition-all duration-200"></span>
                             <?php endif; ?>
                         </a>
+                        <a href="<?= htmlspecialchars($contactPath) ?>"
+                            style="color: <?= htmlspecialchars($brandTextColor) ?>;"
+                            class="<?= $isContactActive ? 'bg-black/10' : 'opacity-90' ?> relative px-3 py-2 rounded-lg font-medium hover:bg-black/10 hover:opacity-100 transition-all duration-200 group">
+                            Contact
+                            <?php if ($isContactActive): ?>
+                                <span class="absolute inset-x-1 -bottom-1 h-0.5 rounded-full" style="background-color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;"></span>
+                            <?php else: ?>
+                                <span class="absolute inset-x-1 -bottom-1 h-0.5 bg-transparent rounded-full group-hover:bg-current group-hover:opacity-30 transition-all duration-200"></span>
+                            <?php endif; ?>
+                        </a>
                     </div>
                 </div>
 
@@ -269,6 +281,11 @@ $isProductsActive = ($currentPath === $productsPath);
                     style="color: <?= htmlspecialchars($brandTextColor) ?>;"
                     class="<?= $isProductsActive ? 'bg-black/10' : 'opacity-90 hover:bg-black/10 hover:opacity-100' ?> block px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
                     Products
+                </a>
+                <a href="<?= htmlspecialchars($contactPath) ?>"
+                    style="color: <?= htmlspecialchars($brandTextColor) ?>;"
+                    class="<?= $isContactActive ? 'bg-black/10' : 'opacity-90 hover:bg-black/10 hover:opacity-100' ?> block px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
+                    Contact
                 </a>
             </div>
         </div>

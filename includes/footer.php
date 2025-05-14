@@ -97,6 +97,7 @@
                     <ul class="space-y-2 text-sm">
                         <li><a href="/" class="hover:opacity-80" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Home</a></li>
                         <li><a href="<?= htmlspecialchars($productsPath) ?>" class="hover:opacity-80" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Products</a></li>
+                        <li><a href="<?= htmlspecialchars($contactPath ?? '/contact.php') ?>" class="hover:opacity-80" style="color: <?= htmlspecialchars($brandTextColor) ?>;">Contact</a></li>
                     </ul>
                 </div>
                 <div>
