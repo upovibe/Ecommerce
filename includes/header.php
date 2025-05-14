@@ -193,10 +193,9 @@ $isProductsActive = ($currentPath === $productsPath);
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <a href="/" class="flex items-center space-x-2">
-                            <img class="h-8 md:h-10 w-auto" src="<?= htmlspecialchars($logoPath) ?>" alt="<?= htmlspecialchars($storeName) ?> Logo">
-                            <span class="font-bold text-xl md:text-2xl tracking-tight" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
-                                <?= htmlspecialchars($storeName) ?>
-                            </span>
+                            <img class="h-14 w-auto"
+                            src="<?= htmlspecialchars(STORE_SETTINGS['store_logo'] ?? '/assets/images/logo.png') ?>"
+                            alt="<?= htmlspecialchars(STORE_SETTINGS['store_name'] ?? 'E-Commerce Store') ?> Logo">
                         </a>
                     </div>
                     <div class="hidden md:ml-8 md:flex md:space-x-6">
