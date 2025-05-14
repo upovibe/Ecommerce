@@ -187,15 +187,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
                         </div>
                         <div class="ml-3">
                             <dt class="text-base font-medium text-gray-900">Business Hours</dt>
-                            <dd class="mt-1 text-sm text-gray-500">
-                                <div class="grid grid-cols-2 gap-1">
-                                    <span class="font-medium">Monday - Friday:</span>
-                                    <span><?= htmlspecialchars($businessHoursWeekdays) ?></span>
-                                    <span class="font-medium">Saturday:</span>
-                                    <span><?= htmlspecialchars($businessHoursSaturday) ?></span>
-                                    <span class="font-medium">Sunday:</span>
-                                    <span><?= htmlspecialchars($businessHoursSunday) ?></span>
-                                </div>
+                            <dd class="mt-2 text-sm text-gray-500">
+                                <ul class="space-y-2">
+                                    <li class="flex items-center">
+                                        <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-100 text-blue-600 mr-2">
+                                            <i data-lucide="calendar" class="h-3 w-3"></i>
+                                        </span>
+                                        <span class="font-medium mr-2">Monday - Friday:</span>
+                                        <span class="bg-gray-100 px-2 py-0.5 rounded"><?= htmlspecialchars($businessHoursWeekdays) ?></span>
+                                    </li>
+                                    <li class="flex items-center">
+                                        <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-indigo-100 text-indigo-600 mr-2">
+                                            <i data-lucide="calendar" class="h-3 w-3"></i>
+                                        </span>
+                                        <span class="font-medium mr-2">Saturday:</span>
+                                        <span class="bg-gray-100 px-2 py-0.5 rounded"><?= htmlspecialchars($businessHoursSaturday) ?></span>
+                                    </li>
+                                    <li class="flex items-center">
+                                        <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-purple-100 text-purple-600 mr-2">
+                                            <i data-lucide="calendar" class="h-3 w-3"></i>
+                                        </span>
+                                        <span class="font-medium mr-2">Sunday:</span>
+                                        <span class="bg-gray-100 px-2 py-0.5 rounded"><?= htmlspecialchars($businessHoursSunday) ?></span>
+                                    </li>
+                                </ul>
                             </dd>
                         </div>
                     </div>
