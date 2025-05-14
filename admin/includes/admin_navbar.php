@@ -17,7 +17,7 @@ $brandTextColor = defined('STORE_SETTINGS') && isset(STORE_SETTINGS['brand_text_
                     $storeNameSimple = defined('STORE_SETTINGS') && isset(STORE_SETTINGS['store_name']) ? STORE_SETTINGS['store_name'] : 'Admin';
                     if ($logoPathSimple && !empty($logoPathSimple)):
                 ?>
-                    <img src="<?= htmlspecialchars($logoPathSimple) ?>" alt="Logo" class="h-8 max-h-8 mr-2 object-contain">
+                    <img src="<?= htmlspecialchars($logoPathSimple) ?>" alt="Logo" class="h-12  mr-2 object-contain">
                 <?php else: ?>
                     <i data-lucide="shield" class="w-5 h-5 mr-2" style="color: <?= htmlspecialchars($brandTextColor) ?>;"></i>
                     <span><?= htmlspecialchars($storeNameSimple) ?></span>
