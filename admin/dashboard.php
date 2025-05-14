@@ -424,9 +424,9 @@ $categories = getAllCategories(); // Fetch categories
                             <img src="../assets/images/phirmhost.png" alt="Phirmhost" class="h-12 object-contain mb-2">
                         </div>
                         <p class="text-sm text-center text-gray-600 mb-3">Your e-commerce store is powered by Phirmhost, a leading hosting provider for online businesses.</p>
-                        <a href="https://phirmhost.com" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                        <a href="https://wa.me/233542838165?text=Hello!%20I%20saw%20your%20amazing%20website%20and%20I%20would%20love%20to%20get%20one%20for%20my%20business.%20Could%20you%20please%20tell%20me%20more%20about%20your%20web%20development%20services%3F" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
                             <i data-lucide="external-link" class="h-3.5 w-3.5 mr-1"></i>
-                            Visit Phirmhost.com
+                            Let's build you one
                         </a>
                     </div>
                 </div>
