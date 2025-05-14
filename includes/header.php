@@ -198,6 +198,9 @@ $isContactActive = ($currentPath === $contactPath);
                             <img class="h-14 w-auto"
                             src="<?= htmlspecialchars(STORE_SETTINGS['store_logo'] ?? '/assets/images/logo.png') ?>"
                             alt="<?= htmlspecialchars(STORE_SETTINGS['store_name'] ?? 'E-Commerce Store') ?> Logo">
+                            <span class="text-lg font-semibold" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
+                            <?= STORE_SETTINGS['store_name'] ?? 'E-Commerce Store' ?>
+                        </span>
                         </a>
                     </div>
                     <div class="hidden md:ml-8 md:flex md:space-x-6">

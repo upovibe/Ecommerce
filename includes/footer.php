@@ -59,13 +59,14 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
                     <!-- Logo and Store Name (Header Style) -->
-                    <a href="/" class="flex flex-col items-start space-x-2 mb-4">
+                    <a href="/" class="flex flex-col items-start space-x-2 mb-2">
                         <img class="h-20 w-auto"
                             src="<?= htmlspecialchars(STORE_SETTINGS['store_logo'] ?? '/assets/images/logo.png') ?>"
                             alt="<?= htmlspecialchars(STORE_SETTINGS['store_name'] ?? 'E-Commerce Store') ?> Logo">
+                            <?php /*
                         <span class="text-lg font-semibold" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
                             <?= STORE_SETTINGS['store_name'] ?? 'E-Commerce Store' ?>
-                        </span>
+                        </span>*/ ?>
                     </a>
                     <!-- Store Description -->
                     <p class="text-sm" style="color: <?= htmlspecialchars($brandTextColor) ?>; opacity: 0.8;">
