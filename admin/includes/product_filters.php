@@ -35,7 +35,7 @@
         <button @click="isFilterDropdownOpen = !isFilterDropdownOpen" type="button"
             class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             <i data-lucide="sliders-horizontal" class="size-4 text-gray-500"></i>
-            <span x-show="minPrice || maxPrice || selectedCategoryId || selectedStockStatus || selectedActiveStatus" x-cloak class="ml-1.5 w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span x-show="minPrice || maxPrice || selectedCategoryId || selectedSubcategoryId || selectedStockStatus || selectedActiveStatus" x-cloak class="ml-1.5 w-2 h-2 bg-blue-500 rounded-full"></span>
         </button>
     </div>
 
@@ -68,13 +68,26 @@
         <!-- Category Filter -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <label for="filter-category" class="text-sm text-gray-700 font-medium flex-shrink-0 w-20">Category:</label>
-            <select id="filter-category" x-model="selectedCategoryId"
+            <select id="filter-category" x-model="selectedCategoryId" @change="selectedSubcategoryId = ''"
                 class="block w-full pl-3 pr-8 py-1.5 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 <option value="">All Categories</option>
                 <template x-for="category in categories" :key="category.id">
                     <option :value="category.id" x-text="category.name"></option>
                 </template>
                 <option value="uncategorized">Uncategorized</option>
+            </select>
+        </div>
+
+        <!-- Subcategory Filter (shows only when a category is selected) -->
+        <div x-show="selectedCategoryId && selectedCategoryId !== 'uncategorized'" 
+             class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+            <label for="filter-subcategory" class="text-sm text-gray-700 font-medium flex-shrink-0 w-20">Subcategory:</label>
+            <select id="filter-subcategory" x-model="selectedSubcategoryId"
+                class="block w-full pl-3 pr-8 py-1.5 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <option value="">All Subcategories</option>
+                <template x-for="subcategory in getSubcategoriesForCategory(selectedCategoryId)" :key="subcategory.id">
+                    <option :value="subcategory.id" x-text="subcategory.name"></option>
+                </template>
             </select>
         </div>
 
@@ -102,11 +115,10 @@
 
         <!-- Clear Filters Button -->
         <div class="border-t pt-3 mt-3 flex justify-end">
-            <button @click="minPrice = null; maxPrice = null; selectedCategoryId = ''; selectedStockStatus = ''; selectedActiveStatus = ''; isFilterDropdownOpen = false"
+            <button @click="minPrice = null; maxPrice = null; selectedCategoryId = ''; selectedSubcategoryId = ''; selectedStockStatus = ''; selectedActiveStatus = ''; isFilterDropdownOpen = false"
                 class="text-sm text-blue-600 hover:underline">
                 Clear All Filters
             </button>
         </div>
-
     </div>
 </div> 

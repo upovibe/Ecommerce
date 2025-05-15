@@ -43,6 +43,7 @@ document.addEventListener('alpine:init', () => {
         productStock: 0,
         categoryId: '', // Use empty string for default "Uncategorized"
         selectedCategoryId: '', // Added for category filtering
+        selectedSubcategoryId: '', // Add subcategory state
         selectedStockStatus: '', // Added for stock status filtering
         selectedActiveStatus: '', // Added for active status filtering
         productToDeleteId: null,
@@ -53,9 +54,13 @@ document.addEventListener('alpine:init', () => {
         isManageAccountModalOpen: false,
 
         // Getters
+        getSubcategoriesForCategory(categoryId) {
+            if (!categoryId || categoryId === 'uncategorized') return [];
+            const category = this.categories.find(c => c.id === parseInt(categoryId));
+            return category ? (category.subcategories || []) : [];
+        },
         get filteredProducts() {
-            console.log('[Getter] filteredProducts - Input:', this.allProducts);
-            let filtered = this.allProducts;
+            let filtered = [...this.allProducts];
 
             // Search Term Filter
             if (this.searchTerm.trim() !== '') {
@@ -74,17 +79,22 @@ document.addEventListener('alpine:init', () => {
             if (!isNaN(min)) {
                 filtered = filtered.filter(p => p.price >= min);
             }
-            if (!isNaN(max) && max > 0) { // Ensure max is positive
+            if (!isNaN(max) && max > 0) {
                 filtered = filtered.filter(p => p.price <= max);
             }
 
-            // Category Filter
+            // Category and Subcategory Filter
             if (this.selectedCategoryId && this.selectedCategoryId !== '') {
                 if (this.selectedCategoryId === 'uncategorized') {
-                    filtered = filtered.filter(p => p.category_id === null || p.category_id === '' || p.category_id === 0);
+                    filtered = filtered.filter(p => !p.category_id || p.category_id === '' || p.category_id === 0);
                 } else {
-                    // Compare as numbers since category_id from DB is likely int, selectedCategoryId might be string
-                    filtered = filtered.filter(p => Number(p.category_id) === Number(this.selectedCategoryId));
+                    if (this.selectedSubcategoryId && this.selectedSubcategoryId !== '') {
+                        // If subcategory is selected, filter by subcategory
+                        filtered = filtered.filter(p => Number(p.category_id) === Number(this.selectedSubcategoryId));
+                    } else {
+                        // If only category is selected, show all products in that category
+                        filtered = filtered.filter(p => Number(p.category_id) === Number(this.selectedCategoryId));
+                    }
                 }
             }
 
@@ -93,7 +103,6 @@ document.addEventListener('alpine:init', () => {
                 if (this.selectedStockStatus === 'in_stock') {
                     filtered = filtered.filter(p => p.stock > 0);
                 } else if (this.selectedStockStatus === 'out_of_stock') {
-                    // Check for null, undefined, or 0 or less
                     filtered = filtered.filter(p => !p.stock || p.stock <= 0);
                 }
             }
@@ -123,7 +132,6 @@ document.addEventListener('alpine:init', () => {
                 return product;
             });
 
-            console.log('[Getter] filteredProducts - Output:', filtered);
             return filtered;
         },
 

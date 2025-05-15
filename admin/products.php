@@ -24,11 +24,35 @@ function getAllProductsAndCategories() {
 
     // Fetch Categories first (needed by products)
     if ($db_connected && $conn) {
-        $sql_cat = "SELECT id, name FROM categories ORDER BY name ASC";
+        // First get parent categories
+        $sql_cat = "SELECT id, name, parent_id FROM categories ORDER BY name ASC";
         $result_cat = $conn->query($sql_cat);
         if ($result_cat) {
             while ($row = $result_cat->fetch_assoc()) {
-                $categories[] = $row;
+                // If it's a parent category (no parent_id)
+                if (empty($row['parent_id'])) {
+                    // Get subcategories for this parent
+                    $subSql = "SELECT id, name FROM categories WHERE parent_id = ? ORDER BY name ASC";
+                    $stmt = $conn->prepare($subSql);
+                    $stmt->bind_param('i', $row['id']);
+                    $stmt->execute();
+                    $subResult = $stmt->get_result();
+                    
+                    $subcategories = [];
+                    while ($subRow = $subResult->fetch_assoc()) {
+                        $subcategories[] = [
+                            'id' => (int)$subRow['id'],
+                            'name' => $subRow['name']
+                        ];
+                    }
+                    $stmt->close();
+
+                    $categories[] = [
+                        'id' => (int)$row['id'],
+                        'name' => $row['name'],
+                        'subcategories' => $subcategories
+                    ];
+                }
             }
         }
     }
