@@ -18,6 +18,23 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentCategory = '';
     let currentSubcategory = '';
 
+    // Get initial products from the data attribute
+    try {
+        const initialProductsData = productGrid.dataset.initialProducts;
+        if (initialProductsData) {
+            allProducts = JSON.parse(initialProductsData);
+            // Remove the data attribute to free up memory
+            delete productGrid.dataset.initialProducts;
+        }
+    } catch (error) {
+        console.error('Error parsing initial products:', error);
+    }
+
+    // Initialize Lucide icons for the pre-rendered content
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
     // --- Helper Functions ---
 
     function escapeHTML(str) {
@@ -86,28 +103,30 @@ document.addEventListener('DOMContentLoaded', function() {
     window.fetchAndDisplayProducts = function(url) {
         if (!productGrid) return;
         
-        // Show loading state
-        productGrid.innerHTML = `
-            <div class="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                ${Array(8).fill().map(() => `
-                    <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer w-full">
-                        <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
-                            <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
-                            <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
-                            <div class="absolute bg-gray-200 bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
-                                <div class="h-5 bg-gray-300 rounded w-2/3"></div>
+        // Only show loading state if we don't have products yet
+        if (!allProducts.length) {
+            productGrid.innerHTML = `
+                <div class="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    ${Array(8).fill().map(() => `
+                        <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer w-full">
+                            <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
+                                <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
+                                <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
+                                <div class="absolute bg-gray-200 bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
+                                    <div class="h-5 bg-gray-300 rounded w-2/3"></div>
+                                </div>
+                            </div>
+                            <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
+                                <div class="product-header flex justify-between items-center mt-1">
+                                    <div class="h-6 bg-gray-300 rounded w-1/2"></div>
+                                    <div class="bg-gray-300 rounded h-6 w-6 ml-auto"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
-                            <div class="product-header flex justify-between items-center mt-1">
-                                <div class="h-6 bg-gray-300 rounded w-1/2"></div>
-                                <div class="bg-gray-300 rounded h-6 w-6 ml-auto"></div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
+                    `).join('')}
+                </div>
+            `;
+        }
 
         // Convert the old API URL to the new v2 format
         const oldUrl = new URL(url, window.location.origin);
@@ -116,6 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
         oldUrl.searchParams.forEach((value, key) => {
             newUrl.searchParams.set(key, value);
         });
+
+        // Add cache busting only when necessary
+        if (window.productCacheNeedsUpdate) {
+            newUrl.searchParams.set('_t', Date.now());
+            window.productCacheNeedsUpdate = false;
+        }
 
         fetch(newUrl)
             .then(response => {
@@ -128,25 +153,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!productGrid) return;
 
                 if (!data.success || !Array.isArray(data.products)) {
-                    showEmptyState(
-                        'Error Loading Products',
-                        'There was a problem fetching the product data. Please try again later.'
-                    );
+                    if (!allProducts.length) {
+                        showEmptyState(
+                            'Error Loading Products',
+                            'There was a problem fetching the product data. Please try again later.'
+                        );
+                    }
                     return;
                 }
 
                 // Store the products
                 allProducts = data.products;
                 
-                // Apply current filters
+                // Apply current filters and display immediately
                 filterAndDisplayProducts();
+
+                // Preload images for better user experience
+                requestIdleCallback(() => {
+                    data.products.forEach(product => {
+                        if (product.image) {
+                            const img = new Image();
+                            img.src = product.image;
+                        }
+                    });
+                });
             })
             .catch(error => {
                 console.error('Error fetching products:', error);
-                showEmptyState(
-                    'Error Loading Products',
-                    'There was a problem connecting to the store. Please check your connection and try again.'
-                );
+                if (!allProducts.length) {
+                    showEmptyState(
+                        'Error Loading Products',
+                        'There was a problem connecting to the store. Please check your connection and try again.'
+                    );
+                }
             });
     };
 
@@ -488,34 +527,37 @@ document.addEventListener('DOMContentLoaded', function() {
         const subSlug = urlParams.get('subcategory_slug');
         const search = urlParams.get('search');
         
-        let initialParams = { category, subcategory_slug: subSlug, search };
-        Object.keys(initialParams).forEach(key => initialParams[key] == null && delete initialParams[key]);
-        if (!initialParams.category) initialParams.category = 'all';
+        // Apply any URL parameters immediately
+        if (search) {
+            currentSearchTerm = search;
+            searchInput.value = search;
+        }
+        
+        if (category !== 'all') {
+            currentCategory = category;
+            if (subSlug) {
+                currentSubcategory = subSlug;
+            }
+            // Fetch subcategories if needed
+            fetchAndDisplaySubcategories(category);
+        }
 
-        console.log("Initial Params:", initialParams);
-
-        // Fetch initial subcategories based on URL
-        fetchAndDisplaySubcategories(category === 'all' ? null : category).then(() => {
-            console.log("Subcategories fetched/displayed for initial load.");
-            // Once subcategories are rendered, update the main view
-            // This call will also set the active classes correctly
-            updateProductView(initialParams);
-        });
+        // Apply filters if any parameters exist
+        if (search || category !== 'all' || subSlug) {
+            filterAndDisplayProducts();
+        }
     }
 
     initializeProductView(); // Run initial setup
 
     // --- Auto Refresh Logic --- 
     function autoRefreshProducts() {
-        console.log('[Auto Refresh] Checking for updates...');
-        // Construct the API URL based on current browser URL params
         const currentParams = new URLSearchParams(window.location.search);
         const apiParams = [];
         const parentSlug = currentParams.get('category');
         const subSlug = currentParams.get('subcategory_slug');
         const search = currentParams.get('search');
 
-        // Build API params similarly to updateProductView
         if (parentSlug && parentSlug !== 'all') apiParams.push(`parent_category_slug=${encodeURIComponent(parentSlug)}`);
         if (subSlug) apiParams.push(`subcategory_slug=${encodeURIComponent(subSlug)}`);
         if (search) apiParams.push(`search=${encodeURIComponent(search)}`);
@@ -527,8 +569,8 @@ document.addEventListener('DOMContentLoaded', function() {
         window.fetchAndDisplayProducts(apiUrl);
     }
 
-    // Set interval to run the refresh function every 60 seconds
-    setInterval(autoRefreshProducts, 60000); 
+    // Set interval to run the refresh function every 5 minutes
+    setInterval(autoRefreshProducts, 300000);
 
     // Search input handler
     if (searchInput) {
