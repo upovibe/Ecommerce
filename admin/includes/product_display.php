@@ -201,3 +201,28 @@
     <!-- End Image Lightbox -->
 
 </div> 
+
+<!-- Product Display Area -->
+<div class="transition-all duration-300 ease-in-out">
+    <!-- No Results Message -->
+    <div x-show="filteredProducts.length === 0" class="text-center py-12 bg-white rounded-lg shadow-sm">
+        <i data-lucide="search-x" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+        <p class="text-gray-500 mb-4">Try adjusting your filters or search terms</p>
+        <button @click="searchTerm = ''; minPrice = null; maxPrice = null; selectedCategoryId = ''; selectedSubcategoryId = ''; selectedStockStatus = ''; selectedActiveStatus = ''; isFilterDropdownOpen = false"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+            Clear All Filters
+        </button>
+    </div>
+
+    <!-- Grid View -->
+    <div x-show="viewMode === 'grid' && filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- ... existing grid view code ... -->
+    </div>
+
+    <!-- List View -->
+    <div x-show="viewMode === 'list' && filteredProducts.length > 0" class="bg-white shadow-sm rounded-lg overflow-hidden">
+        <!-- ... existing list view code ... -->
+    </div>
+</div> 
