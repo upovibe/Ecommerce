@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentCategory = '';
     let currentSubcategory = '';
 
-    // Get initial products from the data attribute
+    // Get initial products and demo mode status
+    const isDemoMode = productGrid?.dataset.isDemo === 'true';
     try {
         const initialProductsData = productGrid.dataset.initialProducts;
         if (initialProductsData) {
@@ -101,8 +102,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Product Fetching and Display ---
     window.fetchAndDisplayProducts = function(url) {
-        if (!productGrid) return;
-        
+        if (!productGrid || isDemoMode) return; // Don't fetch in demo mode
+
         // Only show loading state if we don't have products yet
         if (!allProducts.length) {
             productGrid.innerHTML = `
@@ -552,6 +553,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Auto Refresh Logic --- 
     function autoRefreshProducts() {
+        if (isDemoMode) return; // Don't auto-refresh in demo mode
+        
         const currentParams = new URLSearchParams(window.location.search);
         const apiParams = [];
         const parentSlug = currentParams.get('category');
@@ -569,8 +572,10 @@ document.addEventListener('DOMContentLoaded', function() {
         window.fetchAndDisplayProducts(apiUrl);
     }
 
-    // Set interval to run the refresh function every 5 minutes
-    setInterval(autoRefreshProducts, 300000);
+    // Only set auto-refresh if not in demo mode
+    if (!isDemoMode) {
+        setInterval(autoRefreshProducts, 300000);
+    }
 
     // Search input handler
     if (searchInput) {

@@ -17,12 +17,18 @@ $bannerSubtitle = getStoreContent('product_banner_subtitle');
 // Fetch featured category data
 $featuredCategories = getFeaturedCategories();
 
-// Fetch initial products
-function getInitialProducts() {
-    global $conn, $db_connected;
-    $products = [];
-    
-    if ($db_connected && $conn) {
+// Get demo data if in demo mode
+$isDemoMode = !$db_connected;
+if ($isDemoMode) {
+    $demoDataFile = __DIR__ . '/config/demo_data.json';
+    $demoData = json_decode(file_get_contents($demoDataFile), true);
+    $initialProducts = $demoData['products'];
+} else {
+    // Function to fetch initial products from database
+    function getInitialProducts() {
+        global $conn;
+        $products = [];
+        
         $sql = "SELECT 
                 p.id, 
                 p.name, 
@@ -69,11 +75,12 @@ function getInitialProducts() {
                 ];
             }
         }
+        return $products;
     }
-    return $products;
+    
+    // Fetch initial products from database
+    $initialProducts = getInitialProducts();
 }
-
-$initialProducts = getInitialProducts();
 ?>
 
 <div class="spacey-4 pb-24">
@@ -81,7 +88,7 @@ $initialProducts = getInitialProducts();
     <section
         class="relative bg-cover bg-center py-24 md:py-32"
         style="background-image: url('<?= htmlspecialchars($bannerImage) ?>');">
-        <div class="absolute inset-0 bg-black/50"></div> <!-- Dark overlay -->
+        <div class="absolute inset-0 bg-black/50"></div>
         <div class="relative max-w-7xl mx-auto px-4 text-center space-y-4 text-white">
             <h1 class="text-4xl md:text-5xl font-bold"><?= htmlspecialchars($bannerTitle) ?></h1>
             <p class="text-lg md:text-xl max-w-2xl mx-auto"><?= htmlspecialchars($bannerSubtitle) ?></p>
@@ -111,98 +118,77 @@ $initialProducts = getInitialProducts();
         <div id="product-grid"
             class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
             data-currency-symbol="<?= htmlspecialchars(STORE_SETTINGS['currency_symbol'] ?? '$') ?>"
-            data-initial-products='<?= htmlspecialchars(json_encode($initialProducts)) ?>'>
-            <?php if (empty($initialProducts)): ?>
-                <!-- Loading State only shown if no initial products -->
-                <div class="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    <?php for ($i = 0; $i < 8; $i++): ?>
-                        <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer w-full">
-                            <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
-                                <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
-                                <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
-                                <div class="absolute bg-gray-200 bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
-                                    <div class="h-5 bg-gray-300 rounded w-2/3"></div>
-                                </div>
-                            </div>
-                            <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
-                                <div class="product-header flex justify-between items-center mt-1">
-                                    <div class="h-6 bg-gray-300 rounded w-1/2"></div>
-                                    <div class="bg-gray-300 rounded h-6 w-6 ml-auto"></div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endfor; ?>
-                </div>
-            <?php else: ?>
-                <!-- Render initial products directly -->
-                <?php foreach ($initialProducts as $product): ?>
-                    <div class="product-card bg-white rounded-lg shadow overflow-hidden transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer"
-                         data-product-id="<?= htmlspecialchars($product['id']) ?>"
-                         data-product-name="<?= htmlspecialchars($product['name']) ?>"
-                         data-product-price="<?= htmlspecialchars($product['price']) ?>"
-                         data-product-image="<?= htmlspecialchars($product['image']) ?>"
-                         data-product-description="<?= htmlspecialchars($product['description']) ?>"
-                         data-product-slug="<?= htmlspecialchars($product['slug']) ?>"
-                         data-category-name="<?= htmlspecialchars($product['category_name']) ?>"
-                         data-stock="<?= htmlspecialchars($product['stock']) ?>"
-                         data-is-active="<?= htmlspecialchars($product['is_active'] ? 'true' : 'false') ?>"
-                         data-backorder="<?= htmlspecialchars($product['backorder'] ? 'true' : 'false') ?>"
-                         data-original-price="<?= htmlspecialchars($product['original_price'] ?? '') ?>"
-                         data-discount-percentage="<?= htmlspecialchars($product['discount_percentage'] ?? '') ?>"
-                         data-product-options="<?= htmlspecialchars(json_encode($product['options'] ?? new stdClass())) ?>">
-                        <div class="product-image-container relative h-56 bg-gray-200">
-                            <?php if ($product['discount_percentage']): ?>
-                                <div class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">-<?= htmlspecialchars($product['discount_percentage']) ?>%</div>
-                            <?php endif; ?>
-                            
-                            <?php if (!$product['is_active']): ?>
-                                <div class="absolute top-2 left-2 bg-gray-500 text-white text-xs px-2 py-1 rounded">Inactive</div>
-                            <?php elseif ($product['stock'] === 0 && !$product['backorder']): ?>
-                                <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Out of Stock</div>
-                            <?php elseif ($product['stock'] === 0 && $product['backorder']): ?>
-                                <div class="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded">Backorder</div>
-                            <?php endif; ?>
+            data-initial-products='<?= htmlspecialchars(json_encode($initialProducts)) ?>'
+            data-is-demo="<?= $isDemoMode ? 'true' : 'false' ?>">
+            <!-- Products will be rendered here -->
+            <?php foreach ($initialProducts as $product): ?>
+                <div class="product-card bg-white rounded-lg shadow overflow-hidden transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer"
+                     data-product-id="<?= htmlspecialchars($product['id']) ?>"
+                     data-product-name="<?= htmlspecialchars($product['name']) ?>"
+                     data-product-price="<?= htmlspecialchars($product['price']) ?>"
+                     data-product-image="<?= htmlspecialchars($product['image']) ?>"
+                     data-product-description="<?= htmlspecialchars($product['description']) ?>"
+                     data-product-slug="<?= htmlspecialchars($product['slug']) ?>"
+                     data-category-name="<?= htmlspecialchars($product['category_name']) ?>"
+                     data-stock="<?= htmlspecialchars($product['stock']) ?>"
+                     data-is-active="<?= htmlspecialchars($product['is_active'] ? 'true' : 'false') ?>"
+                     data-backorder="<?= htmlspecialchars($product['backorder'] ? 'true' : 'false') ?>"
+                     data-original-price="<?= htmlspecialchars($product['original_price'] ?? '') ?>"
+                     data-discount-percentage="<?= htmlspecialchars($product['discount_percentage'] ?? '') ?>"
+                     data-product-options='<?= htmlspecialchars(json_encode($product['options'] ?? new stdClass())) ?>'>
+                    <div class="product-image-container relative h-56 bg-gray-200">
+                        <?php if (!empty($product['discount_percentage'])): ?>
+                            <span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full"><?= (int)$product['discount_percentage'] ?>%<span class="hidden md:inline"> OFF</span></span>
+                        <?php endif; ?>
 
-                            <img src="<?= htmlspecialchars($product['image']) ?>"
-                                 alt="<?= htmlspecialchars($product['name']) ?>"
-                                 class="product-image w-full h-full object-cover"
-                                 loading="lazy">
-                            <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/50 to-transparent">
-                                <h3 class="product-name font-semibold text-sm md:text-base text-white truncate pointer-events-none"><?= htmlspecialchars($product['name']) ?></h3>
-                            </div>
-                        </div>
-                        <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
-                            <div class="product-header flex justify-between items-center mt-1">
-                                <div class="price-container">
-                                    <?php if ($product['original_price']): ?>
-                                        <span class="text-gray-500 line-through text-sm"><?= htmlspecialchars(STORE_SETTINGS['currency_symbol'] ?? '$') ?><?= number_format($product['original_price'], 2) ?></span>
-                                    <?php endif; ?>
-                                    <span class="text-gray-900 font-semibold"><?= htmlspecialchars(STORE_SETTINGS['currency_symbol'] ?? '$') ?><?= number_format($product['price'], 2) ?></span>
-                                </div>
-                                <button class="add-to-cart-icon-btn p-1 rounded-full hover:bg-gray-100 transition-colors"
-                                        data-product-id="<?= htmlspecialchars($product['id']) ?>"
-                                        data-product-name="<?= htmlspecialchars($product['name']) ?>"
-                                        data-product-price="<?= htmlspecialchars($product['price']) ?>"
-                                        data-product-image="<?= htmlspecialchars($product['image']) ?>"
-                                        <?= (!$product['is_active'] || ($product['stock'] === 0 && !$product['backorder'])) ? 'disabled' : '' ?>>
-                                    <i data-lucide="shopping-cart" class="size-4 <?= (!$product['is_active'] || ($product['stock'] === 0 && !$product['backorder'])) ? 'text-gray-400' : 'text-gray-600' ?>"></i>
-                                </button>
-                            </div>
+                        <?php if (!$product['is_active']): ?>
+                            <span class="absolute top-2 left-2 bg-gray-700 text-white text-xs font-semibold px-2 py-0.5 rounded">Unavailable</span>
+                        <?php elseif ($product['stock'] === 0): ?>
+                            <?php if ($product['backorder']): ?>
+                                <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-0.5 rounded">Backorder</span>
+                            <?php else: ?>
+                                <span class="absolute top-2 left-2 bg-gray-500 text-white text-xs font-semibold px-2 py-0.5 rounded">Out of Stock</span>
+                            <?php endif; ?>
+                        <?php elseif ($product['stock'] > 0): ?>
+                            <span class="absolute top-2 left-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded"><?= $product['stock'] ?> in Stock</span>
+                        <?php endif; ?>
+
+                        <img src="<?= htmlspecialchars($product['image']) ?>"
+                             alt="<?= htmlspecialchars($product['name']) ?>"
+                             class="product-image w-full h-full object-cover"
+                             loading="lazy">
+                        <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/50 to-transparent">
+                            <h3 class="product-name font-semibold text-sm md:text-base text-white truncate pointer-events-none"><?= htmlspecialchars($product['name']) ?></h3>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                    <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
+                        <div class="product-header flex justify-between items-center mt-1">
+                            <div class="price-container">
+                                <?php if (!empty($product['original_price'])): ?>
+                                    <span class="text-gray-500 line-through text-sm"><?= htmlspecialchars(STORE_SETTINGS['currency_symbol'] ?? '$') ?><?= number_format($product['original_price'], 2) ?></span>
+                                <?php endif; ?>
+                                <span class="text-gray-900 font-semibold"><?= htmlspecialchars(STORE_SETTINGS['currency_symbol'] ?? '$') ?><?= number_format($product['price'], 2) ?></span>
+                            </div>
+                            <button class="add-to-cart-icon-btn p-1.5 rounded-full text-gray-500 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-colors"
+                                    data-product-id="<?= htmlspecialchars($product['id']) ?>"
+                                    data-product-name="<?= htmlspecialchars($product['name']) ?>"
+                                    data-product-price="<?= htmlspecialchars($product['price']) ?>"
+                                    data-product-image="<?= htmlspecialchars($product['image']) ?>"
+                                    <?= (!$product['is_active'] || ($product['stock'] === 0 && !$product['backorder'])) ? 'disabled' : '' ?>>
+                                <i data-lucide="shopping-cart" class="size-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     </section>
 
     <!-- Include Product Modal -->
     <?php require_once __DIR__ . '/modals/product_modal.php'; ?>
-
 </div>
 
-<?php
-require_once __DIR__ . '/includes/footer.php';
-?>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
 
 <!-- Load the product list script -->
 <script src="/assets/js/product-management.js" defer></script>
