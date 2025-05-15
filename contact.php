@@ -186,13 +186,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
                     <?php endif; ?>
                     
                     <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 transition-all duration-300 hover:shadow-lg hover:shadow-gray-100/50">
-                        <div class="flex items-center space-x-4">
-                            <div class="flex-shrink-0">
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0 mt-1">
                                 <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
                                     <i data-lucide="clock" class="h-6 w-6"></i>
                                 </div>
                             </div>
-                            <div class="flex-1">
+                            <div class="flex-1 ">
                                 <dt class="text-base font-medium text-gray-900">Business Hours</dt>
                                 <dd class="mt-2">
                                     <ul class="space-y-2">
