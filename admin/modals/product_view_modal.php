@@ -1,5 +1,5 @@
 <!-- Grid View -->
-<div x-show="viewMode === 'grid'" x-cloak
+<div x-show="viewMode === 'grid' && filteredProducts.length > 0" x-cloak
     class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
     <template x-for="product in filteredProducts" :key="product.id">
         <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 overflow-hidden flex flex-col">
@@ -72,7 +72,7 @@
 </div>
 
 <!-- List View -->
-<div x-show="viewMode === 'list'" x-cloak class="space-y-4">
+<div x-show="viewMode === 'list' && filteredProducts.length > 0" x-cloak class="space-y-4">
     <template x-for="product in filteredProducts" :key="product.id">
         <!-- Individual Product Card -->
         <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 shadow-gray-50 overflow-hidden flex items-center p-2 space-x-3">
@@ -140,10 +140,25 @@
     </template>
 </div>
 
-<!-- No Results Message -->
-<div x-show="filteredProducts.length === 0" x-cloak class="text-center py-10 px-6 bg-white rounded-lg shadow-sm">
+<!-- No Results Messages -->
+<div x-show="!isLoading && allProducts.length === 0" x-cloak class="text-center py-10 px-6 bg-white rounded-lg shadow-sm">
+    <i data-lucide="package-x" class="w-16 h-16 mx-auto text-gray-300"></i>
+    <p class="mt-4 text-lg font-medium text-gray-600">No Products Available</p>
+    <p class="mt-1 text-sm text-gray-500">There are no products in the database yet.</p>
+    <button @click="openAddModal()" 
+        class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+        Add New Product
+    </button>
+</div>
+
+<div x-show="!isLoading && allProducts.length > 0 && filteredProducts.length === 0" x-cloak class="text-center py-10 px-6 bg-white rounded-lg shadow-sm">
     <i data-lucide="search-x" class="w-16 h-16 mx-auto text-gray-300"></i>
-    <p class="mt-4 text-lg font-medium text-gray-600">No products found</p>
-    <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filters.</p>
-    <button @click="searchTerm = ''; minPrice = null; maxPrice = null" class="mt-4 text-sm text-blue-600 hover:underline">Clear Filters</button>
+    <p class="mt-4 text-lg font-medium text-gray-600">No Matching Products</p>
+    <p class="mt-1 text-sm text-gray-500">No products match your current filters or search terms.</p>
+    <button @click="searchTerm = ''; minPrice = null; maxPrice = null; selectedCategoryId = ''; selectedSubcategoryId = ''; selectedStockStatus = ''; selectedActiveStatus = ''; isFilterDropdownOpen = false" 
+        class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+        Clear All Filters
+    </button>
 </div> 
