@@ -66,6 +66,7 @@ global $featuredCategories;
                         <?= htmlspecialchars($category['name']) ?>
                     </option>
                 <?php endforeach; ?>
+                <option value="uncategorized">Uncategorized</option>
             </select>
         </div>
 

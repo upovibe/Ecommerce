@@ -625,7 +625,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Apply category filter
         if (currentCategory && currentCategory !== 'all') {
             console.log('Filtering by category:', currentCategory);
-            if (currentSubcategory) {
+            if (currentCategory === 'uncategorized') {
+                // Filter for uncategorized products
+                filteredProducts = filteredProducts.filter(product => {
+                    return !product.category_slug && !product.parent_category_slug;
+                });
+            } else if (currentSubcategory) {
                 console.log('Filtering by subcategory:', currentSubcategory);
                 filteredProducts = filteredProducts.filter(product => {
                     console.log('Product category data:', {
