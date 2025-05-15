@@ -124,137 +124,151 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
                     </p>
                 </div>
                 
-                <dl class="space-y-4">
+                <dl class="grid grid-cols-1 gap-4">
                     <?php if (!empty($whatsappNumber)): ?>
-                    <div class="flex p-3 bg-green-50 rounded-lg transition-all duration-300 hover:shadow-md">
-                        <div class="flex-shrink-0">
-                            <div class="flex items-center justify-center h-10 w-10 rounded-md bg-green-500 text-white shadow-sm">
-                                <i data-lucide="message-circle" class="h-5 w-5"></i>
+                    <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-50 to-green-100/50 p-4 transition-all duration-300 hover:shadow-lg hover:shadow-green-100/50">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-green-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                                    <i data-lucide="message-circle" class="h-6 w-6"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ml-3">
-                            <dt class="text-base font-medium text-gray-900">WhatsApp</dt>
-                            <dd class="mt-1 text-sm text-gray-500">
-                                <a href="<?= $whatsappLink ?>" target="_blank" class="text-green-600 hover:text-green-800 hover:underline">
-                                    <?= formatPhoneNumber($whatsappNumber) ?>
-                                </a>
-                            </dd>
+                            <div class="flex-1">
+                                <dt class="text-base font-medium text-gray-900">WhatsApp</dt>
+                                <dd class="mt-1">
+                                    <a href="<?= $whatsappLink ?>" target="_blank" class="text-green-600 hover:text-green-800 transition-colors duration-200">
+                                        <?= formatPhoneNumber($whatsappNumber) ?>
+                                    </a>
+                                </dd>
+                            </div>
                         </div>
                     </div>
                     <?php endif; ?>
                     
                     <?php if (!empty($contactEmail)): ?>
-                    <div class="flex p-3 bg-blue-50 rounded-lg transition-all duration-300 hover:shadow-md">
-                        <div class="flex-shrink-0">
-                            <div class="flex items-center justify-center h-10 w-10 rounded-md bg-blue-500 text-white shadow-sm">
-                                <i data-lucide="mail" class="h-5 w-5"></i>
+                    <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 transition-all duration-300 hover:shadow-lg hover:shadow-blue-100/50">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                                    <i data-lucide="mail" class="h-6 w-6"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ml-3">
-                            <dt class="text-base font-medium text-gray-900">Email</dt>
-                            <dd class="mt-1 text-sm text-gray-500">
-                                <a href="mailto:<?= htmlspecialchars($contactEmail) ?>" class="text-blue-600 hover:text-blue-800 hover:underline">
-                                    <?= htmlspecialchars($contactEmail) ?>
-                                </a>
-                            </dd>
+                            <div class="flex-1">
+                                <dt class="text-base font-medium text-gray-900">Email</dt>
+                                <dd class="mt-1">
+                                    <a href="mailto:<?= htmlspecialchars($contactEmail) ?>" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                        <?= htmlspecialchars($contactEmail) ?>
+                                    </a>
+                                </dd>
+                            </div>
                         </div>
                     </div>
                     <?php endif; ?>
                     
                     <?php if (!empty($contactPhone)): ?>
-                    <div class="flex p-3 bg-indigo-50 rounded-lg transition-all duration-300 hover:shadow-md">
-                        <div class="flex-shrink-0">
-                            <div class="flex items-center justify-center h-10 w-10 rounded-md bg-indigo-500 text-white shadow-sm">
-                                <i data-lucide="phone" class="h-5 w-5"></i>
+                    <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 p-4 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-100/50">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                                    <i data-lucide="phone" class="h-6 w-6"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ml-3">
-                            <dt class="text-base font-medium text-gray-900">Phone</dt>
-                            <dd class="mt-1 text-sm text-gray-500">
-                                <a href="tel:<?= preg_replace('/[^0-9+]/', '', $contactPhone) ?>" class="text-indigo-600 hover:text-indigo-800 hover:underline">
-                                    <?= htmlspecialchars($contactPhone) ?>
-                                </a>
-                            </dd>
+                            <div class="flex-1">
+                                <dt class="text-base font-medium text-gray-900">Phone</dt>
+                                <dd class="mt-1">
+                                    <a href="tel:<?= preg_replace('/[^0-9+]/', '', $contactPhone) ?>" class="text-indigo-600 hover:text-indigo-800 transition-colors duration-200">
+                                        <?= htmlspecialchars($contactPhone) ?>
+                                    </a>
+                                </dd>
+                            </div>
                         </div>
                     </div>
                     <?php endif; ?>
                     
-                    <div class="flex p-3 bg-gray-100 rounded-lg transition-all duration-300 hover:shadow-md">
-                        <div class="flex-shrink-0">
-                            <div class="flex items-center justify-center h-10 w-10 rounded-md shadow-sm" style="background-color: <?= htmlspecialchars($themeColor) ?>; color: white;">
-                                <i data-lucide="clock" class="h-5 w-5"></i>
+                    <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 transition-all duration-300 hover:shadow-lg hover:shadow-gray-100/50">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                                    <i data-lucide="clock" class="h-6 w-6"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ml-3">
-                            <dt class="text-base font-medium text-gray-900">Business Hours</dt>
-                            <dd class="mt-2 text-sm text-gray-500">
-                                <ul class="space-y-2">
-                                    <li class="flex items-center">
-                                        <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-100 text-blue-600 mr-2">
-                                            <i data-lucide="calendar" class="h-3 w-3"></i>
-                                        </span>
-                                        <span class="font-medium mr-2">Monday - Friday:</span>
-                                        <span class="bg-gray-100 px-2 py-0.5 rounded"><?= htmlspecialchars($businessHoursWeekdays) ?></span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-indigo-100 text-indigo-600 mr-2">
-                                            <i data-lucide="calendar" class="h-3 w-3"></i>
-                                        </span>
-                                        <span class="font-medium mr-2">Saturday:</span>
-                                        <span class="bg-gray-100 px-2 py-0.5 rounded"><?= htmlspecialchars($businessHoursSaturday) ?></span>
-                                    </li>
-                                    <li class="flex items-center">
-                                        <span class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-purple-100 text-purple-600 mr-2">
-                                            <i data-lucide="calendar" class="h-3 w-3"></i>
-                                        </span>
-                                        <span class="font-medium mr-2">Sunday:</span>
-                                        <span class="bg-gray-100 px-2 py-0.5 rounded"><?= htmlspecialchars($businessHoursSunday) ?></span>
-                                    </li>
-                                </ul>
-                            </dd>
+                            <div class="flex-1">
+                                <dt class="text-base font-medium text-gray-900">Business Hours</dt>
+                                <dd class="mt-2">
+                                    <ul class="space-y-2">
+                                        <li class="flex items-center text-sm text-gray-600">
+                                            <span class="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                                                <i data-lucide="calendar" class="h-3 w-3"></i>
+                                            </span>
+                                            <span class="font-medium">Mon - Fri:</span>
+                                            <span class="ml-2 bg-white/50 px-2 py-0.5 rounded"><?= htmlspecialchars($businessHoursWeekdays) ?></span>
+                                        </li>
+                                        <li class="flex items-center text-sm text-gray-600">
+                                            <span class="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                                                <i data-lucide="calendar" class="h-3 w-3"></i>
+                                            </span>
+                                            <span class="font-medium">Sat:</span>
+                                            <span class="ml-2 bg-white/50 px-2 py-0.5 rounded"><?= htmlspecialchars($businessHoursSaturday) ?></span>
+                                        </li>
+                                        <li class="flex items-center text-sm text-gray-600">
+                                            <span class="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+                                                <i data-lucide="calendar" class="h-3 w-3"></i>
+                                            </span>
+                                            <span class="font-medium">Sun:</span>
+                                            <span class="ml-2 bg-white/50 px-2 py-0.5 rounded"><?= htmlspecialchars($businessHoursSunday) ?></span>
+                                        </li>
+                                    </ul>
+                                </dd>
+                            </div>
                         </div>
                     </div>
                     
                     <?php if (!empty($facebookUsername) || !empty($instagramUsername) || !empty($twitterUsername) || !empty($linkedinUsername)): ?>
-                    <div class="flex p-3 bg-gray-100 rounded-lg transition-all duration-300 hover:shadow-md">
-                        <div class="flex-shrink-0">
-                            <div class="flex items-center justify-center h-10 w-10 rounded-md bg-gray-700 text-white shadow-sm">
-                                <i data-lucide="share-2" class="h-5 w-5"></i>
-                            </div>
-                        </div>
-                        <div class="ml-3">
-                            <dt class="text-base font-medium text-gray-900">Follow Us</dt>
-                            <dd class="mt-2 text-gray-500">
-                                <div class="flex space-x-5">
-                                    <?php if (!empty($facebookUsername)): ?>
-                                    <a href="https://facebook.com/<?= htmlspecialchars(ltrim($facebookUsername, '@')) ?>" target="_blank" class="text-blue-500 hover:text-blue-700 transition-all duration-200 hover:scale-110">
-                                        <i data-lucide="facebook" class="h-6 w-6"></i>
-                                        <span class="sr-only">Facebook</span>
-                                    </a>
-                                    <?php endif; ?>
-                                    
-                                    <?php if (!empty($instagramUsername)): ?>
-                                    <a href="https://instagram.com/<?= htmlspecialchars(ltrim($instagramUsername, '@')) ?>" target="_blank" class="text-pink-500 hover:text-pink-700 transition-all duration-200 hover:scale-110">
-                                        <i data-lucide="instagram" class="h-6 w-6"></i>
-                                        <span class="sr-only">Instagram</span>
-                                    </a>
-                                    <?php endif; ?>
-                                    
-                                    <?php if (!empty($twitterUsername)): ?>
-                                    <a href="https://twitter.com/<?= htmlspecialchars(ltrim($twitterUsername, '@')) ?>" target="_blank" class="text-blue-400 hover:text-blue-600 transition-all duration-200 hover:scale-110">
-                                        <i data-lucide="twitter" class="h-6 w-6"></i>
-                                        <span class="sr-only">Twitter</span>
-                                    </a>
-                                    <?php endif; ?>
-                                    
-                                    <?php if (!empty($linkedinUsername)): ?>
-                                    <a href="https://linkedin.com/company/<?= htmlspecialchars(ltrim($linkedinUsername, '@')) ?>" target="_blank" class="text-blue-700 hover:text-blue-900 transition-all duration-200 hover:scale-110">
-                                        <i data-lucide="linkedin" class="h-6 w-6"></i>
-                                        <span class="sr-only">LinkedIn</span>
-                                    </a>
-                                    <?php endif; ?>
+                    <div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 transition-all duration-300 hover:shadow-lg hover:shadow-gray-100/50">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-gray-600 to-gray-700 text-white shadow-sm transition-transform duration-300 group-hover:scale-110">
+                                    <i data-lucide="share-2" class="h-6 w-6"></i>
                                 </div>
-                            </dd>
+                            </div>
+                            <div class="flex-1">
+                                <dt class="text-base font-medium text-gray-900">Follow Us</dt>
+                                <dd class="mt-2">
+                                    <div class="flex space-x-4">
+                                        <?php if (!empty($facebookUsername)): ?>
+                                        <a href="https://facebook.com/<?= htmlspecialchars(ltrim($facebookUsername, '@')) ?>" target="_blank" 
+                                           class="text-blue-500 hover:text-blue-700 transition-all duration-200 hover:scale-110">
+                                            <i data-lucide="facebook" class="h-5 w-5"></i>
+                                            <span class="sr-only">Facebook</span>
+                                        </a>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (!empty($instagramUsername)): ?>
+                                        <a href="https://instagram.com/<?= htmlspecialchars(ltrim($instagramUsername, '@')) ?>" target="_blank" 
+                                           class="text-pink-500 hover:text-pink-700 transition-all duration-200 hover:scale-110">
+                                            <i data-lucide="instagram" class="h-5 w-5"></i>
+                                            <span class="sr-only">Instagram</span>
+                                        </a>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (!empty($twitterUsername)): ?>
+                                        <a href="https://twitter.com/<?= htmlspecialchars(ltrim($twitterUsername, '@')) ?>" target="_blank" 
+                                           class="text-blue-400 hover:text-blue-600 transition-all duration-200 hover:scale-110">
+                                            <i data-lucide="twitter" class="h-5 w-5"></i>
+                                            <span class="sr-only">Twitter</span>
+                                        </a>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (!empty($linkedinUsername)): ?>
+                                        <a href="https://linkedin.com/company/<?= htmlspecialchars(ltrim($linkedinUsername, '@')) ?>" target="_blank" 
+                                           class="text-blue-700 hover:text-blue-900 transition-all duration-200 hover:scale-110">
+                                            <i data-lucide="linkedin" class="h-5 w-5"></i>
+                                            <span class="sr-only">LinkedIn</span>
+                                        </a>
+                                        <?php endif; ?>
+                                    </div>
+                                </dd>
+                            </div>
                         </div>
                     </div>
                     <?php endif; ?>
