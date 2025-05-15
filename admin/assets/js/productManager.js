@@ -92,8 +92,15 @@ document.addEventListener('alpine:init', () => {
                         // If subcategory is selected, filter by subcategory
                         filtered = filtered.filter(p => Number(p.category_id) === Number(this.selectedSubcategoryId));
                     } else {
-                        // If only category is selected, show all products in that category
-                        filtered = filtered.filter(p => Number(p.category_id) === Number(this.selectedCategoryId));
+                        // If only category is selected, show all products in that category and its subcategories
+                        const category = this.categories.find(c => c.id === Number(this.selectedCategoryId));
+                        if (category) {
+                            const subcategoryIds = category.subcategories.map(sub => sub.id);
+                            filtered = filtered.filter(p => 
+                                Number(p.category_id) === Number(this.selectedCategoryId) || 
+                                subcategoryIds.includes(Number(p.category_id))
+                            );
+                        }
                     }
                 }
             }

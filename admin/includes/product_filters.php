@@ -68,7 +68,7 @@
         <!-- Category Filter -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <label for="filter-category" class="text-sm text-gray-700 font-medium flex-shrink-0 w-20">Category:</label>
-            <select id="filter-category" x-model="selectedCategoryId" @change="selectedSubcategoryId = ''"
+            <select id="filter-category" x-model="selectedCategoryId" @change="handleCategoryChange"
                 class="block w-full pl-3 pr-8 py-1.5 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 <option value="">All Categories</option>
                 <template x-for="category in categories" :key="category.id">
