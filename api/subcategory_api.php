@@ -7,7 +7,7 @@ function getSubcategories($parentSlug = null) {
     $subcategories = [];
     $fetchAll = ($parentSlug === null || $parentSlug === 'all');
 
-    // --- Try Database First ---
+    // If connected to database, ONLY use database data
     if ($db_connected && $conn) {
         if ($fetchAll) {
              // Fetch all subcategories (categories with a parent)
@@ -17,7 +17,6 @@ function getSubcategories($parentSlug = null) {
                      ORDER BY sub.name";
              $types = '';
              $params = [];
-             error_log("[Get Subcategories] Fetching ALL subcategories from DB.");
         } else {
             // Fetch subcategories for a specific parent
              $sql = "SELECT sub.id, sub.name, sub.slug 
@@ -27,7 +26,6 @@ function getSubcategories($parentSlug = null) {
                     ORDER BY sub.display_order, sub.name";
             $types = 's';
             $params = [$parentSlug];
-            error_log("[Get Subcategories] Fetching subcategories for parent slug '{$parentSlug}' from DB.");
         }
         
         try {
@@ -49,81 +47,58 @@ function getSubcategories($parentSlug = null) {
                         'slug' => $row['slug']
                     ];
                 }
-            } else {
-                 throw new Exception("Query failed: (" . $stmt->errno . ") " . $stmt->error);
             }
             $stmt->close();
         } catch (Exception $e) {
             error_log("[Get Subcategories] DB Error: " . $e->getMessage());
-            // Continue to fallback
         }
+        
+        return $subcategories; // Return database results (even if empty) when connected
     }
 
-    // --- Fallback to Demo Data ---
-    if (!$fetchAll && empty($subcategories)) {
-         error_log("[Get Subcategories] No subcategories found in DB for specific slug '{$parentSlug}' or DB error. Trying demo data.");
-         $jsonFilePath = __DIR__ . '/../config/demo_data.json';
-         if (file_exists($jsonFilePath)) {
-            $jsonContent = file_get_contents($jsonFilePath);
-            $decodedData = json_decode($jsonContent, true);
-            if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['categories']) && is_array($decodedData['categories'])) {
+    // Only use demo data if NOT connected to database
+    $jsonFilePath = __DIR__ . '/../config/demo_data.json';
+    if (file_exists($jsonFilePath)) {
+        $jsonContent = file_get_contents($jsonFilePath);
+        $decodedData = json_decode($jsonContent, true);
+        if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['categories']) && is_array($decodedData['categories'])) {
+            if ($fetchAll) {
+                // Get all subcategories from demo data
                 foreach ($decodedData['categories'] as $parentCat) {
-                    if (isset($parentCat['slug']) && $parentCat['slug'] === $parentSlug && isset($parentCat['subcategories']) && is_array($parentCat['subcategories'])) {
+                    if (isset($parentCat['subcategories']) && is_array($parentCat['subcategories'])) {
                         foreach($parentCat['subcategories'] as $subCat) {
-                             $subcategories[] = [
-                                 'id' => $subCat['id'] ?? null,
-                                 'name' => $subCat['name'] ?? 'Unnamed Subcategory',
-                                 'slug' => $subCat['slug'] ?? null
-                             ];
+                            $subcategories[] = [
+                                'id' => $subCat['id'] ?? null,
+                                'name' => $subCat['name'] ?? 'Unnamed Subcategory',
+                                'slug' => $subCat['slug'] ?? null
+                            ];
                         }
-                        error_log("[Get Subcategories] Found " . count($subcategories) . " subcategories in demo data for slug '{$parentSlug}'.");
+                    }
+                }
+            } else {
+                // Get subcategories for specific parent from demo data
+                foreach ($decodedData['categories'] as $parentCat) {
+                    if (isset($parentCat['slug']) && $parentCat['slug'] === $parentSlug && 
+                        isset($parentCat['subcategories']) && is_array($parentCat['subcategories'])) {
+                        foreach($parentCat['subcategories'] as $subCat) {
+                            $subcategories[] = [
+                                'id' => $subCat['id'] ?? null,
+                                'name' => $subCat['name'] ?? 'Unnamed Subcategory',
+                                'slug' => $subCat['slug'] ?? null
+                            ];
+                        }
                         break;
                     }
                 }
-                 if (empty($subcategories)) {
-                     error_log("[Get Subcategories] Parent slug '{$parentSlug}' not found in demo data categories.");
-                 }
-            } else {
-                 error_log("[Get Subcategories] Error decoding demo JSON or missing 'categories' key: " . json_last_error_msg());
             }
-         } else {
-             error_log("[Get Subcategories] Demo data file not found: " . $jsonFilePath);
-         }
-     } else if ($fetchAll && empty($subcategories)) {
-          error_log("[Get Subcategories] No subcategories found in DB when fetching all. Trying demo data.");
-          $jsonFilePath = __DIR__ . '/../config/demo_data.json';
-          if (file_exists($jsonFilePath)) {
-              $jsonContent = file_get_contents($jsonFilePath);
-              $decodedData = json_decode($jsonContent, true);
-              if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['categories']) && is_array($decodedData['categories'])) {
-                  foreach ($decodedData['categories'] as $parentCat) {
-                      if (isset($parentCat['subcategories']) && is_array($parentCat['subcategories'])) {
-                          foreach($parentCat['subcategories'] as $subCat) {
-                              $subcategories[] = [
-                                  'id' => $subCat['id'] ?? null,
-                                  'name' => $subCat['name'] ?? 'Unnamed Subcategory',
-                                  'slug' => $subCat['slug'] ?? null
-                              ];
-                          }
-                      }
-                  }
-                   error_log("[Get Subcategories] Found " . count($subcategories) . " total subcategories in demo data.");
-              } else {
-                   error_log("[Get Subcategories] Error decoding demo JSON or missing 'categories' key: " . json_last_error_msg());
-              }
-          } else {
-               error_log("[Get Subcategories] Demo data file not found: " . $jsonFilePath);
-          }
-     }
+        }
+    }
 
     return $subcategories;
 }
 
 // --- Script Execution ---
 $parentSlug = isset($_GET['parent_slug']) ? trim($_GET['parent_slug']) : null;
-
 $subcategoriesResult = getSubcategories($parentSlug);
-
 echo json_encode(['success' => true, 'subcategories' => $subcategoriesResult]);
-
 ?> 

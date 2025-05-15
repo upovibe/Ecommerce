@@ -12,14 +12,14 @@ function getFeaturedCategories() {
     
     $categories = [];
     
-    // Try to get categories from database
+    // If connected to database, ONLY use database data
     if ($db_connected && $conn) {
+        // First get all featured parent categories
         $sql = "SELECT 
                     c.id, 
                     c.name, 
                     c.slug, 
-                    c.image, 
-                    (SELECT COUNT(*) FROM categories sub WHERE sub.parent_id = c.id) as subcategory_count 
+                    c.image
                 FROM categories c
                 WHERE c.featured = 1 AND c.parent_id IS NULL
                 ORDER BY c.display_order";
@@ -28,59 +28,56 @@ function getFeaturedCategories() {
         
         if ($result && $result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
+                // Get subcategories for this parent
+                $subSql = "SELECT id, name, slug 
+                          FROM categories 
+                          WHERE parent_id = ? 
+                          ORDER BY display_order, name";
+                $stmt = $conn->prepare($subSql);
+                $stmt->bind_param('i', $row['id']);
+                $stmt->execute();
+                $subResult = $stmt->get_result();
+                
+                $subcategories = [];
+                while ($subRow = $subResult->fetch_assoc()) {
+                    $subcategories[] = [
+                        'id' => (int)$subRow['id'],
+                        'name' => $subRow['name'],
+                        'slug' => $subRow['slug']
+                    ];
+                }
+                $stmt->close();
+
                 $categories[] = [
                     'id' => (int)$row['id'],
                     'name' => $row['name'],
                     'slug' => $row['slug'],
-                    'subcategory_count' => (int)$row['subcategory_count'],
-                    'image' => $row['image']
+                    'subcategories' => $subcategories,
+                    'subcategory_count' => count($subcategories),
+                    'image' => $row['image'] ?: '/assets/images/placeholder.png'
+                ];
+            }
+        }
+        return $categories; // Return database results (even if empty) when connected
+    }
+    
+    // Only load demo data if NOT connected to database
+    $demoDataFile = __DIR__ . '/../config/demo_data.json';
+    if (file_exists($demoDataFile)) {
+        $demoData = json_decode(file_get_contents($demoDataFile), true);
+        if (isset($demoData['categories']) && is_array($demoData['categories'])) {
+            foreach ($demoData['categories'] as $category) {
+                $categories[] = [
+                    'id' => (int)$category['id'],
+                    'name' => $category['name'],
+                    'slug' => $category['slug'],
+                    'subcategories' => $category['subcategories'] ?? [],
+                    'subcategory_count' => count($category['subcategories'] ?? []),
+                    'image' => $category['image'] ?: '/assets/images/placeholder.png'
                 ];
             }
         }
     }
-    
-    // If no categories found in database, try loading from demo JSON file
-    if (empty($categories)) {
-        $jsonFilePath = __DIR__ . '/../config/demo_data.json'; // Path relative to this api file
-        if (file_exists($jsonFilePath)) {
-            $jsonContent = file_get_contents($jsonFilePath);
-            $decodedData = json_decode($jsonContent, true);
-            if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['categories']) && is_array($decodedData['categories'])) {
-                $categories = $decodedData['categories']; 
-                foreach ($categories as &$category) {
-                     if (isset($category['subcategories']) && is_array($category['subcategories'])) {
-                         $category['subcategory_count'] = count($category['subcategories']);
-                     } else {
-                         $category['subcategory_count'] = 0;
-                     }
-                     $category['id'] = $category['id'] ?? null; 
-                     $category['name'] = $category['name'] ?? 'Unnamed Category';
-                     $category['slug'] = $category['slug'] ?? ('category-' . ($category['id'] ?? 'unknown'));
-                     $category['image'] = $category['image'] ?? null; 
-                }
-                unset($category); 
-            } else {
-                error_log('Error decoding demo categories JSON or missing "categories" key: ' . json_last_error_msg());
-                $categories = []; 
-            }
-        } else {
-             error_log('Demo data JSON file not found: ' . $jsonFilePath);
-             $categories = [];
-        }
-    }
-    
-    // Ensure essential keys exist and provide defaults
-    foreach ($categories as &$category) {
-        if (!is_array($category)) {
-            error_log('Invalid category data encountered: ' . print_r($category, true));
-            continue; 
-        }
-        if (empty($category['image'])) {
-            $category['image'] = '/assets/images/placeholder.png'; // Default placeholder
-        }
-        $category['subcategory_count'] = $category['subcategory_count'] ?? 0;
-    }
-    unset($category);
     
     return $categories;
 }

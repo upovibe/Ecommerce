@@ -55,6 +55,7 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
 </section>
 
 <!-- Featured Categories Section -->
+<?php if (!empty($featuredCategories)): ?>
 <section class="py-20 md:py-24 bg-gray-50 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12" data-aos="fade-up">
@@ -103,9 +104,23 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
                 <?php endforeach; ?>
             </div>
         </div>
-        
     </div>
 </section>
+<?php else: ?>
+<section class="py-20 md:py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center" data-aos="fade-up">
+            <div class="mb-6">
+                <i data-lucide="folder" class="mx-auto h-12 w-12 text-gray-400"></i>
+            </div>
+            <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl mb-4">No Categories Yet</h2>
+            <p class="text-xl text-gray-500 max-w-2xl mx-auto">
+                It looks like no categories have been set up yet. Check back soon as we organize our products into browsable categories!
+            </p>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <!-- About Section -->
 <section class="py-20 md:py-24 bg-white overflow-hidden">

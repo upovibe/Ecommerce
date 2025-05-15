@@ -9,7 +9,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const parentTabsContainer = document.getElementById('parent-category-tabs');
     const subcategoryDisplay = document.getElementById('subcategory-display');
     const titleResetButton = document.getElementById('reset-filters-title-btn'); // Get reference to the new button
+    const searchInput = document.getElementById('product-search');
     let subcategorySwiperInstance = null; // Variable to hold the Swiper instance
+    let allProducts = []; // Store all fetched products
+    let currentMinPrice = null;
+    let currentMaxPrice = null;
+    let currentSearchTerm = '';
+    let currentCategory = '';
+    let currentSubcategory = '';
 
     // --- Helper Functions ---
 
@@ -59,163 +66,89 @@ document.addEventListener('DOMContentLoaded', function() {
          }
     }
 
-    // --- Product Fetching and Display ---
-    window.fetchAndDisplayProducts = function(url) { 
-        if (!productGrid) return; // Exit if grid doesn't exist
+    // Function to show empty state message
+    function showEmptyState(message, submessage = '') {
+        if (!productGrid) return;
         
-        // Use skeleton loader - SIMPLIFIED DESIGN
-        const skeletonCardHTML = `
-            <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer  w-full">
-              <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
-                <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
-                <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
-                <div class="absolute bg-gray-200 bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
-                  <div class="h-5 bg-gray-300 rounded w-2/3"></div>
+        productGrid.innerHTML = `
+            <div class="col-span-full text-center py-16 px-6">
+                <div class="max-w-lg mx-auto">
+                    <i data-lucide="package-x" class="mx-auto h-16 w-16 text-gray-400 mb-4"></i>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">${message}</h3>
+                    <p class="text-gray-500 mb-6">${submessage}</p>
                 </div>
-              </div>
-              <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
-                <div class="product-header flex justify-between items-center mt-1">
-                  <div class="h-6 bg-gray-300 rounded w-1/2"></div>
-                  <div class="bg-gray-300 rounded h-6 w-6 ml-auto"></div>
-                </div>
-              </div>
             </div>
         `;
-        let skeletonHTML = '';
-        loadingIndicator?.remove(); // Remove static loader if present
-        for (let i = 0; i < 8; i++) skeletonHTML += skeletonCardHTML;
-        productGrid.innerHTML = skeletonHTML;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 
-        fetch(url)
+    // --- Product Fetching and Display ---
+    window.fetchAndDisplayProducts = function(url) {
+        if (!productGrid) return;
+        
+        // Show loading state
+        productGrid.innerHTML = `
+            <div class="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                ${Array(8).fill().map(() => `
+                    <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer w-full">
+                        <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
+                            <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
+                            <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
+                            <div class="absolute bg-gray-200 bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/20 to-transparent">
+                                <div class="h-5 bg-gray-300 rounded w-2/3"></div>
+                            </div>
+                        </div>
+                        <div class="product-details px-4 pb-4 pt-2 flex flex-col flex-grow gap-2">
+                            <div class="product-header flex justify-between items-center mt-1">
+                                <div class="h-6 bg-gray-300 rounded w-1/2"></div>
+                                <div class="bg-gray-300 rounded h-6 w-6 ml-auto"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        // Convert the old API URL to the new v2 format
+        const oldUrl = new URL(url, window.location.origin);
+        const newUrl = new URL('/api/products_v2.php', window.location.origin);
+        // Copy over the search parameters
+        oldUrl.searchParams.forEach((value, key) => {
+            newUrl.searchParams.set(key, value);
+        });
+
+        fetch(newUrl)
             .then(response => {
                 if (!response.ok) {
-                    return response.text().then(text => { throw new Error(`HTTP error! status: ${response.status}, message: ${text || 'No message'}`); });
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.json();
             })
-            .then(products => {
+            .then(data => {
                 if (!productGrid) return;
-                productGrid.innerHTML = ''; // Clear skeletons
 
-                if (!Array.isArray(products)) {
-                     console.error('Invalid data received from API:', products);
-                     productGrid.innerHTML = '<p class="col-span-full text-red-600 text-center py-10">Error: Invalid data format received from server.</p>';
-                     return;
+                if (!data.success || !Array.isArray(data.products)) {
+                    showEmptyState(
+                        'Error Loading Products',
+                        'There was a problem fetching the product data. Please try again later.'
+                    );
+                    return;
                 }
 
-                if (products.length === 0) {
-                     productGrid.innerHTML = `
-                        <div class="col-span-full text-center py-16 px-6 bg-gray-50 rounded-lg border border-gray-200">
-                            <i data-lucide="frown" class="mx-auto h-12 w-12 text-gray-400"></i>
-                            <h3 class="mt-2 text-xl font-semibold text-gray-800">No Products Found</h3>
-                            <p class="mt-1 text-sm text-gray-500">We couldn't find any products matching your current filters or search term.</p>
-                            <div class="mt-6">
-                                <button id="reset-products-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 hover:bg-blue-50 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                    <i data-lucide="refresh-cw" class="mr-1.5 h-4 w-4"></i> Clear Filters / Search
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                     if (typeof lucide !== 'undefined') lucide.createIcons();
-                } else {
-                    products.forEach(product => {
-                        // Prepare variables for the template
-                        const safeName = escapeHTML(product.name);
-                        const safeImage = escapeHTML(product.image || '/assets/images/product-placeholder.png');
-                        const safeDesc = escapeHTML(product.description || '');
-                        const safeSlug = escapeHTML(product.slug || ''); // Assuming slug is available
-                        const safeCategoryName = escapeHTML(product.category_name || 'Uncategorized');
-                        const priceData = product.price;
-                        const stock = product.stock !== undefined ? product.stock : null; // Assuming stock is available
-                        const isActive = product.is_active !== undefined ? product.is_active : true; // Assuming is_active is available
-                        const backorder = product.backorder !== undefined ? product.backorder : false; // Assuming backorder is available
-                        const originalPrice = product.original_price; // Assuming original_price is available
-                        const discountPercentage = product.discount_percentage; // Assuming discount_percentage is available
-                        // Directly stringify options without HTML escaping for the data attribute
-                        const productOptionsJSON = JSON.stringify(product.options || {}); 
-                        
-                        // Generate Discount Badge HTML
-                        let discountBadgeHTML = '';
-                        if (discountPercentage && parseFloat(discountPercentage) > 0) {
-                             discountBadgeHTML = `<span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">${parseFloat(discountPercentage).toFixed(0)}%<span class="hidden md:inline"> OFF</span></span>`;
-                        }
-                        
-                        // Generate Status Badge HTML (Handles Inactive > Out of Stock > Backorder > In Stock)
-                        let statusBadgeHTML = '';
-                        if (!isActive) {
-                            // Should not happen anymore due to backend filtering, but kept as fallback
-                            statusBadgeHTML = `<span class="absolute top-2 left-2 bg-gray-700 text-white text-xs font-semibold px-2 py-0.5 rounded">Unavailable</span>`; 
-                        } else if (stock !== null && stock <= 0) {
-                            if (backorder) {
-                                statusBadgeHTML = `<span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-0.5 rounded">Backorder</span>`;
-                            } else {
-                                statusBadgeHTML = `<span class="absolute top-2 left-2 bg-gray-500 text-white text-xs font-semibold px-2 py-0.5 rounded">Out of Stock</span>`;
-                            }
-                        } else if (stock !== null && stock > 0) {
-                             // Display stock count if active and in stock
-                             statusBadgeHTML = `<span class="absolute top-2 left-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded">${stock} in Stock</span>`;
-                        } // No badge if stock is null or undefined
-                        
-                        // Generate Price HTML (Always show the final price)
-                        let priceHTML = `<span class="product-price font-semibold text-gray-900">${currencySymbol}${formatNumberWithCommas(product.price)}</span>`;
-                        
-                        // Cart Status Placeholder & Icons (using Lucide)
-                        const isInCart = cart.isInCart(product.id); // Check if product is in cart
-                        const cartIconHTML = `<i data-lucide="shopping-cart" class="lucide-icon size-4"></i>`; // Lucide cart icon tag
-                        const checkIconHTML = `<i data-lucide="check" class="lucide-icon size-4 text-green-600"></i>`; // Lucide check icon tag (added green color)
-                        
-                        // The product card template literal
-                        const productCard = `
-                             <div class="product-card bg-white rounded-lg shadow overflow-hidden transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer"
-                                 data-product-id="${product.id}"
-                                 data-product-name="${safeName}"
-                                 data-product-price="${priceData}"
-                                 data-product-image="${safeImage}"
-                                 data-product-description="${safeDesc}" 
-                                 data-product-slug="${safeSlug}" 
-                                 data-category-name="${safeCategoryName}" 
-                                 data-stock="${stock}" 
-                                 data-is-active="${isActive}" 
-                                 data-backorder="${backorder}" 
-                                 data-original-price="${originalPrice || ''}" 
-                                 data-discount-percentage="${discountPercentage || ''}" 
-                                 data-product-options='${productOptionsJSON}'> 
-                                <div class="product-image-container relative h-56 bg-gray-200"> 
-                                    ${discountBadgeHTML} 
-                                    ${statusBadgeHTML}   
-                                    <img src="${safeImage}" alt="${safeName}" class="product-image w-full h-full object-cover"> 
-                                    <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/50 to-transparent">
-                                         <h3 class="product-name font-semibold text-sm md:text-base text-white truncate pointer-events-none">${safeName}</h3> 
-                                    </div>
-                                </div>
-                                <div class="product-details p-2 flex flex-col flex-grow"> 
-                                     <div class="product-header flex justify-between items-center mt-1"> 
-                                         <span class="product-price text-gray-900">${priceHTML}</span>
-                                         <button type="button" 
-                                                 class="add-to-cart-icon-btn p-1.5 rounded-full ${isInCart ? 'text-green-500 bg-green-100 cursor-not-allowed' : 'text-gray-500 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary'} ml-auto transition-colors duration-200" 
-                                                 title="${isInCart ? 'Added to Cart' : 'Add to Cart'}"
-                                                 data-product-id="${product.id}" 
-                                                 data-product-name="${safeName}" 
-                                                 data-product-price="${priceData}" 
-                                                 data-product-image="${safeImage}" 
-                                                 data-product-options='${productOptionsJSON}'
-                                                 ${isInCart ? 'disabled' : ''}>
-                                             ${isInCart ? checkIconHTML : cartIconHTML}
-                                         </button>
-                                     </div>
-                                 </div>
-                            </div>`;
-
-                        productGrid.insertAdjacentHTML('beforeend', productCard);
-                    });
-                     if (typeof lucide !== 'undefined') lucide.createIcons();
-                }
+                // Store the products
+                allProducts = data.products;
+                
+                // Apply current filters
+                filterAndDisplayProducts();
             })
             .catch(error => {
                 console.error('Error fetching products:', error);
-                if (productGrid) productGrid.innerHTML = `<p class="col-span-full text-red-600 text-center py-10">Error loading products. Please try again later. (${escapeHTML(error.message)})</p>`;
+                showEmptyState(
+                    'Error Loading Products',
+                    'There was a problem connecting to the store. Please check your connection and try again.'
+                );
             });
-    }
+    };
 
     // --- Subcategory Fetching and Display ---
     async function fetchAndDisplaySubcategories(parentSlug) {
@@ -254,17 +187,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
 
                 const swiperWrapper = subcategoryDisplay.querySelector('.swiper-wrapper');
-                if (!swiperWrapper) return; // Should not happen
+                if (!swiperWrapper) return;
 
                 // 3. Add slides with buttons
                 data.subcategories.forEach(sub => {
                     const slide = document.createElement('div');
-                    slide.className = 'swiper-slide !w-auto'; // Important: !w-auto for auto width
+                    slide.className = 'swiper-slide !w-auto';
                     
                     const subLink = document.createElement('button');
                     subLink.className = 'subcategory-link block px-3 py-1 text-sm rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors';
                     subLink.textContent = sub.name;
-                    subLink.dataset.subcategorySlug = sub.slug;
+                    // Convert category name to slug for data attribute
+                    subLink.dataset.subcategorySlug = sub.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
                     
                     slide.appendChild(subLink);
                     swiperWrapper.appendChild(slide);
@@ -276,14 +210,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     spaceBetween: 8,
                     loop: true,
                     centeredSlides: false,
-                    slidesOffsetBefore: 0,
-                    // navigation: { // Removed navigation configuration
-                    //     nextEl: '.subcategory-swiper-button-next',
-                    //     prevEl: '.subcategory-swiper-button-prev',
-                    // },
-                    // freeMode: true, // Optional: Add freeMode for smoother scrolling
+                    slidesOffsetBefore: 0
                 });
-
             } else if (data.success && data.subcategories.length === 0 && !fetchAll) {
                 subcategoryDisplay.innerHTML = '<p class="text-gray-500 text-sm italic">No subcategories found.</p>';
             } else if (!data.success) {
@@ -299,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Update View (URL, Title, Products) ---
     function updateProductView(params = {}) {
-        const { category = 'all', subcategory_slug = null, search = null } = params;
+        const { category = 'all', subcategory_slug = null, search = null, price_min = null, price_max = null } = params;
         const queryParams = []; // For browser URL
         const apiParams = [];   // For API call
         let pageTitle = originalPageTitle;
@@ -321,39 +249,47 @@ document.addEventListener('DOMContentLoaded', function() {
              queryParams.push(`search=${encodeURIComponent(search)}`);
              pageTitle = `Search Results for "${search}"`;
         }
+        if (price_min !== null) {
+            queryParams.push(`price_min=${encodeURIComponent(price_min)}`);
+            pageTitle += ` (Min: ${currencySymbol}${price_min})`;
+        }
+        if (price_max !== null) {
+            queryParams.push(`price_max=${encodeURIComponent(price_max)}`);
+            pageTitle += ` (Max: ${currencySymbol}${price_max})`;
+        }
 
         // Build parameters for API call (using 'parent_category_slug')
         if (parentSlugForApi) apiParams.push(`parent_category_slug=${encodeURIComponent(parentSlugForApi)}`);
         if (subcategory_slug) apiParams.push(`subcategory_slug=${encodeURIComponent(subcategory_slug)}`);
         if (search) apiParams.push(`search=${encodeURIComponent(search)}`);
+        if (price_min !== null) apiParams.push(`price_min=${encodeURIComponent(price_min)}`);
+        if (price_max !== null) apiParams.push(`price_max=${encodeURIComponent(price_max)}`);
         
         // Construct URLs
         let newUrl = window.location.pathname + (queryParams.length > 0 ? `?${queryParams.join('&')}` : '');
         let apiUrl = '/api/product_api.php' + (apiParams.length > 0 ? `?${apiParams.join('&')}` : '');
         
         // Update Browser History and Title
-        // Use replaceState for back/forward nav to work better with filters
         history.replaceState(params, pageTitle, newUrl);
         if (pageTitleElement) pageTitleElement.textContent = pageTitle;
-        document.title = pageTitle; // Update actual document title
+        document.title = pageTitle;
 
         // Show/Hide Title Reset Button
         if (titleResetButton) {
-            const filtersActive = (category && category !== 'all') || subcategory_slug || search;
+            const filtersActive = (category && category !== 'all') || subcategory_slug || search || price_min !== null || price_max !== null;
             titleResetButton.classList.toggle('hidden', !filtersActive);
-            titleResetButton.classList.toggle('flex', filtersActive); // Use inline-flex to show
+            titleResetButton.classList.toggle('flex', filtersActive);
         }
 
         // Fetch Products
         console.log('[updateProductView] Fetching products with API URL:', apiUrl);
         window.fetchAndDisplayProducts(apiUrl);
         
-        // Update active states after fetching products
+        // Update active states
         if (parentTabsContainer) {
              const activeParentTab = parentTabsContainer.querySelector(`.category-tab[data-category-slug="${category}"]`);
              setActiveClass(parentTabsContainer, activeParentTab, 'active');
         }
-         // Ensure subcategory active state is correct AFTER products load
          setActiveSubcategory(subcategory_slug);
     }
 
@@ -593,5 +529,315 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set interval to run the refresh function every 60 seconds
     setInterval(autoRefreshProducts, 60000); 
+
+    // Search input handler
+    if (searchInput) {
+        let debounceTimeout;
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                currentSearchTerm = e.target.value;
+                
+                // Update URL
+                const urlParams = new URLSearchParams(window.location.search);
+                if (currentSearchTerm) urlParams.set('search', currentSearchTerm);
+                else urlParams.delete('search');
+                const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+                history.pushState({}, '', newUrl);
+
+                // Apply filters
+                filterAndDisplayProducts();
+            }, 300);
+        });
+    }
+
+    // Price filter handler
+    window.handlePriceFilter = function(min, max) {
+        currentMinPrice = min ? parseFloat(min) : null;
+        currentMaxPrice = max ? parseFloat(max) : null;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        if (currentMinPrice !== null) urlParams.set('price_min', currentMinPrice);
+        else urlParams.delete('price_min');
+        if (currentMaxPrice !== null) urlParams.set('price_max', currentMaxPrice);
+        else urlParams.delete('price_max');
+        
+        const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+        history.pushState({}, '', newUrl);
+
+        filterAndDisplayProducts();
+    };
+
+    // Function to filter and display products
+    function filterAndDisplayProducts() {
+        if (!productGrid || !allProducts.length) return;
+
+        let filteredProducts = [...allProducts];
+        console.log('Starting filter with products:', filteredProducts.length);
+
+        // Apply category filter
+        if (currentCategory && currentCategory !== 'all') {
+            console.log('Filtering by category:', currentCategory);
+            if (currentSubcategory) {
+                console.log('Filtering by subcategory:', currentSubcategory);
+                filteredProducts = filteredProducts.filter(product => {
+                    console.log('Product category data:', {
+                        productId: product.id,
+                        name: product.name,
+                        categorySlug: product.category_slug,
+                        parentCategorySlug: product.parent_category_slug,
+                        currentCategory,
+                        currentSubcategory
+                    });
+                    
+                    return product.category_slug === currentSubcategory;
+                });
+            } else {
+                // Filter by parent category
+                filteredProducts = filteredProducts.filter(product => {
+                    console.log('Product category data:', {
+                        productId: product.id,
+                        name: product.name,
+                        categorySlug: product.category_slug,
+                        parentCategorySlug: product.parent_category_slug,
+                        currentCategory
+                    });
+
+                    return product.parent_category_slug === currentCategory || 
+                           product.category_slug === currentCategory;
+                });
+            }
+            console.log('After category filtering:', filteredProducts.length);
+        }
+
+        // Apply price filter
+        if (currentMinPrice !== null) {
+            filteredProducts = filteredProducts.filter(product => {
+                const price = parseFloat(product.price);
+                return !isNaN(price) && price >= currentMinPrice;
+            });
+        }
+        if (currentMaxPrice !== null) {
+            filteredProducts = filteredProducts.filter(product => {
+                const price = parseFloat(product.price);
+                return !isNaN(price) && price <= currentMaxPrice;
+            });
+        }
+
+        // Apply search filter
+        if (currentSearchTerm) {
+            const searchLower = currentSearchTerm.toLowerCase();
+            filteredProducts = filteredProducts.filter(product => 
+                (product.name && product.name.toLowerCase().includes(searchLower)) ||
+                (product.description && product.description.toLowerCase().includes(searchLower))
+            );
+        }
+
+        console.log('Final filtered products:', filteredProducts.length);
+        displayProducts(filteredProducts);
+        
+        // Show/Hide Reset Button
+        if (titleResetButton) {
+            const filtersActive = currentMinPrice !== null || currentMaxPrice !== null || 
+                                currentSearchTerm || currentCategory || currentSubcategory;
+            titleResetButton.classList.toggle('hidden', !filtersActive);
+            titleResetButton.classList.toggle('flex', filtersActive);
+        }
+
+        // Update page title
+        updatePageTitle(filteredProducts.length);
+    }
+
+    // Function to update page title based on filters
+    function updatePageTitle(resultCount) {
+        let title = originalPageTitle;
+        const filters = [];
+
+        if (currentCategory) {
+            const categoryElement = document.querySelector(`option[value="${currentCategory}"]`);
+            if (categoryElement) {
+                filters.push(categoryElement.textContent);
+                if (currentSubcategory) {
+                    const subcategoryElement = document.querySelector(`option[value="${currentSubcategory}"]`);
+                    if (subcategoryElement) {
+                        filters.push(subcategoryElement.textContent);
+                    }
+                }
+            }
+        }
+        if (currentSearchTerm) filters.push(`Search: "${currentSearchTerm}"`);
+        if (currentMinPrice !== null) filters.push(`Min: ${currencySymbol}${currentMinPrice}`);
+        if (currentMaxPrice !== null) filters.push(`Max: ${currencySymbol}${currentMaxPrice}`);
+
+        if (filters.length > 0) {
+            title = `${title} (${filters.join(' > ')})`;
+        }
+
+        if (pageTitleElement) pageTitleElement.textContent = title;
+        document.title = title;
+    }
+
+    // Reset all filters
+    window.resetAllFilters = function() {
+        currentMinPrice = null;
+        currentMaxPrice = null;
+        currentSearchTerm = '';
+        currentCategory = '';
+        currentSubcategory = '';
+        
+        // Reset URL
+        history.pushState({}, '', window.location.pathname);
+        
+        // Reset search input
+        if (searchInput) searchInput.value = '';
+        
+        // Reset Alpine.js filter panel state
+        const filterPanel = document.querySelector('[x-data]');
+        if (filterPanel && filterPanel.__x) {
+            filterPanel.__x.updateData({
+                minPrice: null,
+                maxPrice: null,
+                selectedCategory: '',
+                selectedSubcategory: '',
+                isFilterOpen: false
+            });
+        }
+        
+        // Show all products
+        filterAndDisplayProducts();
+    };
+
+    // Reset button click handler
+    if (titleResetButton) {
+        titleResetButton.addEventListener('click', window.resetAllFilters);
+    }
+
+    // Category filter handler
+    window.handleCategoryFilter = function(category, subcategory) {
+        currentCategory = category || '';
+        currentSubcategory = subcategory || '';
+        
+        // Update URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (currentCategory) urlParams.set('category', currentCategory);
+        else urlParams.delete('category');
+        if (currentSubcategory) urlParams.set('subcategory', currentSubcategory);
+        else urlParams.delete('subcategory');
+        
+        const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+        history.pushState({}, '', newUrl);
+
+        filterAndDisplayProducts();
+    };
+
+    // Function to display products
+    function displayProducts(products) {
+        if (!productGrid) return;
+
+        if (products.length === 0) {
+            const message = currentSearchTerm ? 
+                `No products found matching "${currentSearchTerm}"` :
+                'No products found matching your filters';
+            
+            showEmptyState(
+                message,
+                'Try adjusting your filters or search terms'
+            );
+            return;
+        }
+
+        productGrid.innerHTML = '';
+        products.forEach(product => {
+            // Prepare variables for the template
+            const safeName = escapeHTML(product.name);
+            const safeImage = escapeHTML(product.image || '/assets/images/product-placeholder.png');
+            const safeDesc = escapeHTML(product.description || '');
+            const safeSlug = escapeHTML(product.slug || ''); // Assuming slug is available
+            const safeCategoryName = escapeHTML(product.category_name || 'Uncategorized');
+            const priceData = product.price;
+            const stock = product.stock !== undefined ? product.stock : null; // Assuming stock is available
+            const isActive = product.is_active !== undefined ? product.is_active : true; // Assuming is_active is available
+            const backorder = product.backorder !== undefined ? product.backorder : false; // Assuming backorder is available
+            const originalPrice = product.original_price; // Assuming original_price is available
+            const discountPercentage = product.discount_percentage; // Assuming discount_percentage is available
+            // Directly stringify options without HTML escaping for the data attribute
+            const productOptionsJSON = JSON.stringify(product.options || {}); 
+            
+            // Generate Discount Badge HTML
+            let discountBadgeHTML = '';
+            if (discountPercentage && parseFloat(discountPercentage) > 0) {
+                 discountBadgeHTML = `<span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">${parseFloat(discountPercentage).toFixed(0)}%<span class="hidden md:inline"> OFF</span></span>`;
+            }
+            
+            // Generate Status Badge HTML (Handles Inactive > Out of Stock > Backorder > In Stock)
+            let statusBadgeHTML = '';
+            if (!isActive) {
+                // Should not happen anymore due to backend filtering, but kept as fallback
+                statusBadgeHTML = `<span class="absolute top-2 left-2 bg-gray-700 text-white text-xs font-semibold px-2 py-0.5 rounded">Unavailable</span>`; 
+            } else if (stock !== null && stock <= 0) {
+                if (backorder) {
+                    statusBadgeHTML = `<span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-0.5 rounded">Backorder</span>`;
+                } else {
+                    statusBadgeHTML = `<span class="absolute top-2 left-2 bg-gray-500 text-white text-xs font-semibold px-2 py-0.5 rounded">Out of Stock</span>`;
+                }
+            } else if (stock !== null && stock > 0) {
+                 // Display stock count if active and in stock
+                 statusBadgeHTML = `<span class="absolute top-2 left-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded">${stock} in Stock</span>`;
+            } // No badge if stock is null or undefined
+            
+            // Generate Price HTML (Always show the final price)
+            let priceHTML = `<span class="product-price font-semibold text-gray-900">${currencySymbol}${formatNumberWithCommas(product.price)}</span>`;
+            
+            // Cart Status Placeholder & Icons (using Lucide)
+            const isInCart = cart.isInCart(product.id); // Check if product is in cart
+            const cartIconHTML = `<i data-lucide="shopping-cart" class="lucide-icon size-4"></i>`; // Lucide cart icon tag
+            const checkIconHTML = `<i data-lucide="check" class="lucide-icon size-4 text-green-600"></i>`; // Lucide check icon tag (added green color)
+            
+            // The product card template literal
+            const productCard = `
+                 <div class="product-card bg-white rounded-lg shadow overflow-hidden transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer"
+                     data-product-id="${product.id}"
+                     data-product-name="${safeName}"
+                     data-product-price="${priceData}"
+                     data-product-image="${safeImage}"
+                     data-product-description="${safeDesc}" 
+                     data-product-slug="${safeSlug}" 
+                     data-category-name="${safeCategoryName}" 
+                     data-stock="${stock}" 
+                     data-is-active="${isActive}" 
+                     data-backorder="${backorder}" 
+                     data-original-price="${originalPrice || ''}" 
+                     data-discount-percentage="${discountPercentage || ''}" 
+                     data-product-options='${productOptionsJSON}'> 
+                    <div class="product-image-container relative h-56 bg-gray-200"> 
+                        ${discountBadgeHTML} 
+                        ${statusBadgeHTML}   
+                        <img src="${safeImage}" alt="${safeName}" class="product-image w-full h-full object-cover"> 
+                        <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/50 to-transparent">
+                             <h3 class="product-name font-semibold text-sm md:text-base text-white truncate pointer-events-none">${safeName}</h3> 
+                        </div>
+                    </div>
+                    <div class="product-details p-2 flex flex-col flex-grow"> 
+                         <div class="product-header flex justify-between items-center mt-1"> 
+                             <span class="product-price text-gray-900">${priceHTML}</span>
+                             <button type="button" 
+                                     class="add-to-cart-icon-btn p-1.5 rounded-full ${isInCart ? 'text-green-500 bg-green-100 cursor-not-allowed' : 'text-gray-500 hover:text-primary hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary'} ml-auto transition-colors duration-200" 
+                                     title="${isInCart ? 'Added to Cart' : 'Add to Cart'}"
+                                     data-product-id="${product.id}" 
+                                     data-product-name="${safeName}" 
+                                     data-product-price="${priceData}" 
+                                     data-product-image="${safeImage}" 
+                                     data-product-options='${productOptionsJSON}'
+                                     ${isInCart ? 'disabled' : ''}>
+                                     ${isInCart ? checkIconHTML : cartIconHTML}
+                                 </button>
+                         </div>
+                     </div>
+                </div>`;
+
+            productGrid.insertAdjacentHTML('beforeend', productCard);
+        });
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 
 }); 

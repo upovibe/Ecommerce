@@ -34,44 +34,31 @@ $featuredCategories = getFeaturedCategories();
 
     <!-- Product List -->
     <section class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
-        <div class="flex justify-between items-center mb-4">
-            <h2 id="product-list-title" class="text-lg md:text-2xl font-semibold text-gray-800">Products</h2>
-            <button id="reset-filters-title-btn"
-                class="hidden items-center gap-1 p-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors">
-                <i data-lucide="refresh-cw" class="size-4"></i>
-                <span class="hidden md:inline text-nowrap">Reset Filters</span>
-            </button>
-        </div>
-
-        <!-- Parent Category Tabs -->
-        <div id="parent-category-tabs" class="mb-4 flex flex-wrap gap-2 border-b border-gray-200 pb-3">
-            <button
-                data-category-slug="all"
-                class="category-tab px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 active">
-                All Products
-            </button>
-            <?php foreach ($featuredCategories as $category): ?>
-                <?php if (!is_array($category) || empty($category['slug'])) continue; ?>
-                <button
-                    data-category-slug="<?= htmlspecialchars($category['slug']) ?>"
-                    class="category-tab px-4 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    <?= htmlspecialchars($category['name'] ?? 'Unnamed Category') ?>
-                </button>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Subcategory Display Area -->
-        <div id="subcategory-display" class="mb-6 flex flex-wrap gap-2 min-h-[2rem]">
-            <!-- Subcategories will be loaded here by JavaScript -->
+        <div class="flex flex-col items-start mb-8 gap-3">
+            <h2 id="product-list-title" class="text-lg md:text-2xl font-semibold text-gray-800 whitespace-nowrap">Products</h2>
+            <!-- Search Input -->
+            <div class="flex w-full justify-between items-center gap-4 bg-white p-1 rounded-lg shadow-md">
+                <div class="relative flex-grow w-full">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
+                    </div>
+                    <input type="search"
+                        id="product-search"
+                        placeholder="Search products..."
+                        class="block w-full pl-10 pr-3 py-1.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <!-- Add the filter button here -->
+                <?php require_once __DIR__ . '/includes/product_filters.php'; ?>
+            </div>
         </div>
 
         <div id="product-grid"
             class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
             data-currency-symbol="<?= htmlspecialchars(STORE_SETTINGS['currency_symbol'] ?? '$') ?>">
-            <!-- Products will be loaded here by JavaScript -->
-            <div id="loading-products" class="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Loading State -->
+            <div class="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 <?php for ($i = 0; $i < 8; $i++): ?>
-                    <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer  w-full">
+                    <div class="product-card bg-white rounded-lg shadow overflow-hidden animate-pulse transition-shadow duration-300 hover:shadow-lg flex flex-col cursor-pointer w-full">
                         <div class="product-image-container relative h-56 bg-gray-200 w-full min-w-max">
                             <div class="absolute bg-gray-300 top-2 right-2 rounded h-5 w-12"></div>
                             <div class="absolute bg-gray-300 top-2 left-2 rounded h-5 w-14"></div>
@@ -91,10 +78,10 @@ $featuredCategories = getFeaturedCategories();
         </div>
     </section>
 
-</div>
+    <!-- Include Product Modal -->
+    <?php require_once __DIR__ . '/modals/product_modal.php'; ?>
 
-<!-- Include Product Modal -->
-<?php require_once __DIR__ . '/modals/product_modal.php'; ?>
+</div>
 
 <?php
 require_once __DIR__ . '/includes/footer.php';
