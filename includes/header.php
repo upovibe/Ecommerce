@@ -241,12 +241,12 @@ $isContactActive = ($currentPath === $contactPath);
                 </div>
 
                 <div class="flex items-center">
-                    <button id="searchModalButton" type="button" 
+                    <!-- <button id="searchModalButton" type="button" 
                             @click="isSearchModalOpen = true" 
                             class="relative p-2 rounded-full hover:bg-black/10 transition-all duration-200 mr-2" style="color: <?= htmlspecialchars($brandTextColor) ?>;">
                         <span class="sr-only">Search</span>
                         <i data-lucide="search" class="h-6 w-6"></i>
-                    </button>
+                    </button> -->
 
                     <div class="hidden md:block">
                         <button id="cartButton" type="button" 
