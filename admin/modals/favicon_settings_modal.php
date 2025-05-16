@@ -100,6 +100,11 @@ document.getElementById('faviconSettingsForm').addEventListener('submit', async 
     const saveIcon = document.getElementById('faviconSaveIcon');
     const buttonText = document.getElementById('faviconButtonText');
 
+    // Prevent multiple submissions
+    if (button.disabled) {
+        return;
+    }
+
     // Disable the button and show loading state
     button.disabled = true;
     spinner.classList.remove('hidden');
@@ -114,15 +119,25 @@ document.getElementById('faviconSettingsForm').addEventListener('submit', async 
         const result = await response.json();
 
         if (result.success) {
-            // Show success message
-            showNotification('success', result.message);
-            // Close modal
-            closeFaviconModal();
-            // Refresh the page to show new favicon
-            window.location.reload();
+            toast.success(result.message || 'Favicon updated successfully!');
+            // Update the preview image in the Brand Identity section if it exists
+            const brandIdentityPreview = document.querySelector('#brandIdentityFaviconPreview');
+            if (brandIdentityPreview) {
+                brandIdentityPreview.src = result.path + '?v=' + new Date().getTime(); // Add cache buster
+            }
+            // Update the preview in the modal as well
+            const modalPreview = document.getElementById('faviconPreview');
+            if (modalPreview.tagName === 'IMG') {
+                modalPreview.src = result.path + '?v=' + new Date().getTime();
+            }
+            
+            // Close the modal after a short delay
+            setTimeout(() => {
+                closeFaviconModal();
+                window.location.reload(); // Reload the page to show updated favicon
+            }, 1500);
         } else {
-            // Show error message
-            showNotification('error', result.message);
+            toast.error(result.message || 'Failed to update favicon.');
             // Reset button state
             button.disabled = false;
             spinner.classList.add('hidden');
@@ -131,7 +146,7 @@ document.getElementById('faviconSettingsForm').addEventListener('submit', async 
         }
     } catch (error) {
         console.error('Error:', error);
-        showNotification('error', 'An error occurred while updating the favicon');
+        toast.error('An unexpected error occurred during upload.');
         // Reset button state
         button.disabled = false;
         spinner.classList.add('hidden');

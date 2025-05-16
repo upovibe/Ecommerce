@@ -148,6 +148,22 @@ $storeName = STORE_SETTINGS['store_name'] ?? 'E-Commerce Store';
 $currencySymbol = STORE_SETTINGS['currency_symbol'] ?? '$';
 $stats = getStats();
 $categories = getAllCategories(); // Fetch categories
+
+// --- Dynamic Product Stats for Chart ---
+$monthlyStats = [];
+if ($db_connected && $conn) {
+    $result = $conn->query("
+        SELECT DATE_FORMAT(created_at, '%b %Y') as month, COUNT(*) as count
+        FROM products
+        WHERE created_at IS NOT NULL
+        GROUP BY month
+        ORDER BY MIN(created_at) ASC
+        LIMIT 12
+    ");
+    while ($row = $result && $result->fetch_assoc()) {
+        $monthlyStats[] = $row;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -492,17 +508,22 @@ $categories = getAllCategories(); // Fetch categories
         // Initialize Lucide icons
         lucide.createIcons();
 
+        // Pass PHP monthly stats to JS
+        const productMonthlyStats = <?= json_encode($monthlyStats) ?>;
+
         // Initialize chart
         document.addEventListener('DOMContentLoaded', function() {
-            // Sample data for chart
             const ctx = document.getElementById('productsChart').getContext('2d');
+            // Use dynamic data
+            const labels = productMonthlyStats.map(item => item.month);
+            const data = productMonthlyStats.map(item => parseInt(item.count));
             const chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    labels: labels.length ? labels : ['No Data'],
                     datasets: [{
                         label: 'Products Added',
-                        data: [5, 8, 12, 7, 10, <?= $stats['products_total'] ?>],
+                        data: data.length ? data : [0],
                         backgroundColor: 'rgba(59, 130, 246, 0.5)',
                         borderColor: 'rgba(59, 130, 246, 1)',
                         borderWidth: 1
