@@ -353,7 +353,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
             
             <!-- Contact Form -->
             <?php if ($contactFormEnabled === 'true'): ?>
-            <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200" data-aos="fade-left">
+            <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 h-fit" data-aos="fade-left">
                 <div class="mb-5">
                     <h3 class="text-xl font-semibold text-gray-900">Send us a message</h3>
                     <div class="h-1 bg-gradient-to-r from-blue-500 to-blue-600 w-16 mt-2 rounded-full"></div>
@@ -457,7 +457,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
                 </div>
             </div>
             <?php else: ?>
-            <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200" data-aos="fade-left">
+            <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 h-fit" data-aos="fade-left">
                 <div class="mb-5">
                     <h3 class="text-xl font-semibold text-gray-900">Contact Us</h3>
                     <div class="h-1 bg-gradient-to-r from-blue-500 to-blue-600 w-16 mt-2 rounded-full"></div>
