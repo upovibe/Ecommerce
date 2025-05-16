@@ -152,17 +152,26 @@ $categories = getAllCategories(); // Fetch categories
 // --- Dynamic Product Stats for Chart ---
 $monthlyStats = [];
 if ($db_connected && $conn) {
-    $result = $conn->query("
-        SELECT DATE_FORMAT(created_at, '%b %Y') as month, COUNT(*) as count
+    $sql = "
+        SELECT 
+          DATE_FORMAT(created_at, '%e %b %Y') as day_label, 
+          COUNT(*) as count
         FROM products
         WHERE created_at IS NOT NULL
-        GROUP BY month
+        GROUP BY day_label
         ORDER BY MIN(created_at) ASC
-        LIMIT 12
-    ");
-    while ($row = $result && $result->fetch_assoc()) {
-        $monthlyStats[] = $row;
+        LIMIT 31
+    ";
+    $result = $conn->query($sql);
+    if ($result !== false) {
+        while ($row = $result->fetch_assoc()) {
+            $monthlyStats[] = $row;
+        }
     }
+}
+// If the day_label is empty, set a default label
+if (isset($monthlyStats[0]) && $monthlyStats[0]['day_label'] === '') {
+    $monthlyStats[0]['day_label'] = 'Unknown';
 }
 ?>
 <!DOCTYPE html>
@@ -414,9 +423,26 @@ if ($db_connected && $conn) {
 
             <!-- Chart -->
             <div class="bg-white flex flex-col gap-4 justify-between rounded-xl shadow-sm p-6 lg:col-span-2 border border-gray-100">
-                <div class="flex items-center">
+                <div class="flex items-center mb-4">
                     <i data-lucide="bar-chart-2" class="h-5 w-5 text-blue-500 mr-2"></i>
                     <h2 class="text-lg font-semibold text-gray-800">Product Statistics</h2>
+                </div>
+                <!-- Chart Type Tabs -->
+                <div x-data="{ chartType: 'line' }" class="mb-4">
+                    <nav class="flex border-b border-gray-200 -mb-px">
+                        <button type="button"
+                            class="flex items-center whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition"
+                            :class="chartType === 'line' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            @click="chartType = 'line'; window.updateProductsChartType && window.updateProductsChartType('line')">
+                            <i data-lucide='activity' class='w-4 h-4 mr-2'></i> Line Chart
+                        </button>
+                        <button type="button"
+                            class="flex items-center whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm focus:outline-none transition"
+                            :class="chartType === 'bar' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            @click="chartType = 'bar'; window.updateProductsChartType && window.updateProductsChartType('bar')">
+                            <i data-lucide='bar-chart-2' class='w-4 h-4 mr-2'></i> Bar Chart
+                        </button>
+                    </nav>
                 </div>
                 <div class="h-64 mt-auto">
                     <canvas id="productsChart"></canvas>
@@ -515,10 +541,11 @@ if ($db_connected && $conn) {
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('productsChart').getContext('2d');
             // Use dynamic data
-            const labels = productMonthlyStats.map(item => item.month);
+            const labels = productMonthlyStats.map(item => item.day_label);
             const data = productMonthlyStats.map(item => parseInt(item.count));
+            let chartType = 'line';
             const chart = new Chart(ctx, {
-                type: 'bar',
+                type: chartType,
                 data: {
                     labels: labels.length ? labels : ['No Data'],
                     datasets: [{
@@ -526,7 +553,9 @@ if ($db_connected && $conn) {
                         data: data.length ? data : [0],
                         backgroundColor: 'rgba(59, 130, 246, 0.5)',
                         borderColor: 'rgba(59, 130, 246, 1)',
-                        borderWidth: 1
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.3
                     }]
                 },
                 options: {
@@ -542,6 +571,23 @@ if ($db_connected && $conn) {
                     }
                 }
             });
+            // Expose a function to update chart type
+            window.updateProductsChartType = function(type) {
+                chart.config.type = type;
+                // For line chart, keep tension and fill; for bar, remove them
+                if (type === 'line') {
+                    chart.data.datasets[0].fill = false;
+                    chart.data.datasets[0].tension = 0.3;
+                } else {
+                    chart.data.datasets[0].fill = true;
+                    chart.data.datasets[0].tension = 0;
+                }
+                chart.update();
+            };
+            // Re-render Lucide icons in tabs
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
 
             <?php if (isset($showToast) && $showToast): ?>
                 // Show toast notification after password change
