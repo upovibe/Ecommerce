@@ -218,6 +218,15 @@ INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_page_
 INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_page_subtitle', 'We\'d love to hear from you! Send us a message and we\'ll respond as soon as possible.');
 INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_banner_image', '/assets/images/Ecommerce-bg.jpg');
 
+-- Add email configuration settings
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_host', 'smtp.gmail.com');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_port', '587');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_username', '');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_password', '');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_from_email', '');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_from_name', '');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES ('email_enabled', 'false');
+
 -- Insert default FAQs
 INSERT INTO faqs (question, answer, display_order, page_location) VALUES
 ('What payment methods do you accept?', 'We accept various payment methods including credit/debit cards, mobile money, and bank transfers. All payments are secure and encrypted.', 1, 'contact'),

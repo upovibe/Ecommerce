@@ -84,13 +84,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
         $formError = true;
         $errorMessage = 'Please enter a valid email address.';
     } else {
-        // In a real implementation, you would send an email here
-        // For now, we'll just show a success message
-        $formSubmitted = true;
-        $successMessage = 'Thank you for your message! We will get back to you as soon as possible.';
+        // Check if email sending is enabled
+        $emailEnabled = $contactSettings['email_enabled'] ?? 'false';
         
-        // Reset form fields after successful submission
-        $name = $email = $message = $subject = '';
+        if ($emailEnabled === 'true') {
+            // Load PHPMailer
+            require 'vendor/autoload.php';
+            
+            // Create a new PHPMailer instance
+            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+            
+            try {
+                // Server settings
+                $mail->isSMTP();
+                $mail->Host = $contactSettings['smtp_host'] ?? 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = $contactSettings['smtp_username'] ?? '';
+                $mail->Password = $contactSettings['smtp_password'] ?? '';
+                $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = $contactSettings['smtp_port'] ?? 587;
+                
+                // Recipients
+                $mail->setFrom($contactSettings['smtp_from_email'] ?? '', $contactSettings['smtp_from_name'] ?? '');
+                $mail->addAddress($contactEmail, $storeName);
+                $mail->addReplyTo($email, $name);
+                
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = "[Contact Form] " . $subject;
+                
+                // Email body
+                $emailBody = "
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .header { background: #f8f9fa; padding: 20px; border-radius: 5px; }
+                        .content { padding: 20px 0; }
+                        .footer { font-size: 12px; color: #666; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h2>New Contact Form Submission</h2>
+                        </div>
+                        <div class='content'>
+                            <p><strong>Name:</strong> " . htmlspecialchars($name) . "</p>
+                            <p><strong>Email:</strong> " . htmlspecialchars($email) . "</p>
+                            <p><strong>Subject:</strong> " . htmlspecialchars($subject) . "</p>
+                            <p><strong>Message:</strong></p>
+                            <p>" . nl2br(htmlspecialchars($message)) . "</p>
+                        </div>
+                        <div class='footer'>
+                            <p>This email was sent from the contact form on " . htmlspecialchars($storeName) . "</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
+                
+                $mail->Body = $emailBody;
+                $mail->AltBody = strip_tags($emailBody); // Plain text version
+                
+                // Send email
+                $mail->send();
+                
+                $formSubmitted = true;
+                $successMessage = 'Thank you for your message! We will get back to you as soon as possible.';
+                
+                // Reset form fields after successful submission
+                $name = $email = $message = $subject = '';
+                
+            } catch (Exception $e) {
+                $formError = true;
+                $errorMessage = 'Sorry, there was an error sending your message. Please try again later or contact us directly.';
+                // Log the error for debugging
+                error_log('Contact form error: ' . $mail->ErrorInfo);
+            }
+        } else {
+            // Email sending is disabled
+            $formError = true;
+            $errorMessage = 'Email sending is currently disabled. Please contact us directly using the provided contact information.';
+        }
     }
 }
 ?>
@@ -285,7 +361,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
                 
                 <!-- Success Message -->
                 <?php if ($formSubmitted && !$formError): ?>
-                <div class="rounded-md bg-green-50 p-4 mb-6">
+                <div id="success-message" class="rounded-md bg-green-50 p-4 mb-6">
                     <div class="flex">
                         <div class="flex-shrink-0">
                             <i data-lucide="check-circle" class="h-5 w-5 text-green-400"></i>
@@ -304,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
                 
                 <!-- Error Message -->
                 <?php if ($formError): ?>
-                <div class="rounded-md bg-red-50 p-4 mb-6">
+                <div id="error-message" class="rounded-md bg-red-50 p-4 mb-6">
                     <div class="flex">
                         <div class="flex-shrink-0">
                             <i data-lucide="alert-circle" class="h-5 w-5 text-red-400"></i>
@@ -498,6 +574,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
     </div>
 </section>
 <?php endif; ?>
+
+<script>
+// Function to remove messages after a delay
+function removeMessages() {
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+    
+    if (successMessage) {
+        setTimeout(() => {
+            successMessage.style.transition = 'opacity 0.5s ease-out';
+            successMessage.style.opacity = '0';
+            setTimeout(() => {
+                successMessage.remove();
+            }, 500);
+        }, 5000); // Remove after 5 seconds
+    }
+    
+    if (errorMessage) {
+        setTimeout(() => {
+            errorMessage.style.transition = 'opacity 0.5s ease-out';
+            errorMessage.style.opacity = '0';
+            setTimeout(() => {
+                errorMessage.remove();
+            }, 500);
+        }, 5000); // Remove after 5 seconds
+    }
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', removeMessages);
+</script>
 
 <?php
 // Helper function to adjust color brightness

@@ -157,6 +157,167 @@ $contactPageSubtitle = $contactSettings['contact_page_subtitle'] ?? 'We\'d love 
                 </div>
             </div>
         </fieldset>
+
+        <!-- Email Configuration -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h3 class="text-lg font-medium text-gray-900">Email Configuration</h3>
+                <div class="flex items-center">
+                    <label for="email_enabled" class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="email_enabled" id="email_enabled" value="true" 
+                               class="sr-only peer" <?= isset($contactSettings['email_enabled']) && $contactSettings['email_enabled'] === 'true' ? 'checked' : '' ?>>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span class="ml-3 text-sm font-medium text-gray-700">Enable Email Sending</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="space-y-6" id="email-settings" x-data="{ showPassword: false }">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="relative">
+                        <label for="smtp_host" class="block text-sm font-medium text-gray-700 mb-1">SMTP Host</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="server" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="text" name="smtp_host" id="smtp_host" 
+                                   value="<?= htmlspecialchars($contactSettings['smtp_host'] ?? '') ?>" 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="e.g., smtp.gmail.com">
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Your SMTP server hostname</p>
+                    </div>
+
+                    <div class="relative">
+                        <label for="smtp_port" class="block text-sm font-medium text-gray-700 mb-1">SMTP Port</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="hash" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="number" name="smtp_port" id="smtp_port" 
+                                   value="<?= htmlspecialchars($contactSettings['smtp_port'] ?? '') ?>" 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="e.g., 587">
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Common ports: 587 (TLS), 465 (SSL), 25</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="relative">
+                        <label for="smtp_username" class="block text-sm font-medium text-gray-700 mb-1">SMTP Username</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="text" name="smtp_username" id="smtp_username" 
+                                   value="<?= htmlspecialchars($contactSettings['smtp_username'] ?? '') ?>" 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Your email or username">
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Your email address or SMTP username</p>
+                    </div>
+
+                    <div class="relative">
+                        <label for="smtp_password" class="block text-sm font-medium text-gray-700 mb-1">SMTP Password</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="lock" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input :type="showPassword ? 'text' : 'password'" name="smtp_password" id="smtp_password" 
+                                   value="<?= htmlspecialchars($contactSettings['smtp_password'] ?? '') ?>" 
+                                   class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Your password">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <button type="button" @click="showPassword = !showPassword" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                                    <i data-lucide="eye" x-show="!showPassword" class="h-5 w-5"></i>
+                                    <i data-lucide="eye-off" x-show="showPassword" class="h-5 w-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Your email password or app-specific password</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="relative">
+                        <label for="smtp_from_email" class="block text-sm font-medium text-gray-700 mb-1">From Email</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="mail" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="email" name="smtp_from_email" id="smtp_from_email" 
+                                   value="<?= htmlspecialchars($contactSettings['smtp_from_email'] ?? '') ?>" 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="sender@example.com">
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">The email address that will appear as the sender</p>
+                    </div>
+
+                    <div class="relative">
+                        <label for="smtp_from_name" class="block text-sm font-medium text-gray-700 mb-1">From Name</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="user-circle" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="text" name="smtp_from_name" id="smtp_from_name" 
+                                   value="<?= htmlspecialchars($contactSettings['smtp_from_name'] ?? '') ?>" 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Your Store Name">
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">The name that will appear as the sender</p>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="info" class="h-5 w-5 text-blue-400"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-blue-800">Email Provider Setup Instructions</h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <p class="mb-2">Common email provider settings:</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="bg-white/50 p-3 rounded-md">
+                                        <h4 class="font-medium text-blue-900">Gmail</h4>
+                                        <ul class="mt-1 space-y-1 text-blue-800">
+                                            <li>Host: smtp.gmail.com</li>
+                                            <li>Port: 587</li>
+                                            <li>Requires App Password</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-white/50 p-3 rounded-md">
+                                        <h4 class="font-medium text-blue-900">Outlook/Hotmail</h4>
+                                        <ul class="mt-1 space-y-1 text-blue-800">
+                                            <li>Host: smtp.office365.com</li>
+                                            <li>Port: 587</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-white/50 p-3 rounded-md">
+                                        <h4 class="font-medium text-blue-900">Yahoo</h4>
+                                        <ul class="mt-1 space-y-1 text-blue-800">
+                                            <li>Host: smtp.mail.yahoo.com</li>
+                                            <li>Port: 587</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-white/50 p-3 rounded-md">
+                                        <h4 class="font-medium text-blue-900">Custom Domain</h4>
+                                        <ul class="mt-1 space-y-1 text-blue-800">
+                                            <li>Use your hosting provider's SMTP settings</li>
+                                            <li>Check your hosting control panel</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-blue-800">
+                                    <strong>For Gmail users:</strong> Enable 2-Step Verification and generate an App Password in your Google Account settings.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </form>
 
     <!-- Store Maps Section -->
@@ -458,6 +619,22 @@ $contactPageSubtitle = $contactSettings['contact_page_subtitle'] ?? 'We\'d love 
                     previewContactBannerImage();
                 }
             }
+        }
+
+        // Toggle email settings visibility based on enable/disable toggle
+        const emailEnabled = document.getElementById('email_enabled');
+        const emailSettings = document.getElementById('email-settings');
+
+        function updateEmailSettingsVisibility() {
+            if (emailSettings) {
+                emailSettings.style.opacity = emailEnabled.checked ? '1' : '0.5';
+                emailSettings.style.pointerEvents = emailEnabled.checked ? 'auto' : 'none';
+            }
+        }
+
+        if (emailEnabled) {
+            emailEnabled.addEventListener('change', updateEmailSettingsVisibility);
+            updateEmailSettingsVisibility();
         }
     });
 
