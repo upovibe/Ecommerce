@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_form']) && $c
                 $mail->Host = $contactSettings['smtp_host'] ?? 'smtp.gmail.com';
                 $mail->SMTPAuth = true;
                 $mail->Username = $contactSettings['smtp_username'] ?? '';
-                $mail->Password = $contactSettings['smtp_password'] ?? '';
+                $mail->Password = $contactSettings['smtp_auth_key'] ?? '';
                 $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port = $contactSettings['smtp_port'] ?? 587;
                 

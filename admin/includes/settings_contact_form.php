@@ -223,13 +223,13 @@ $contactPageSubtitle = $contactSettings['contact_page_subtitle'] ?? 'We\'d love 
                     </div>
 
                     <div class="relative">
-                        <label for="smtp_password" class="block text-sm font-medium text-gray-700 mb-1">SMTP Password</label>
+                        <label for="smtp_auth_key" class="block text-sm font-medium text-gray-700 mb-1">SMTP Password</label>
                         <div class="relative rounded-md shadow-sm">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i data-lucide="lock" class="h-5 w-5 text-gray-400"></i>
                             </div>
-                            <input :type="showPassword ? 'text' : 'password'" name="smtp_password" id="smtp_password" 
-                                   value="<?= htmlspecialchars($contactSettings['smtp_password'] ?? '') ?>" 
+                            <input :type="showPassword ? 'text' : 'password'" name="smtp_auth_key" id="smtp_auth_key" 
+                                   value="<?= htmlspecialchars($contactSettings['smtp_auth_key'] ?? '') ?>" 
                                    class="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Your password">
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center">

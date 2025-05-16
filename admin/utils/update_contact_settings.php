@@ -54,6 +54,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $businessHoursSaturday = $_POST['business_hours_saturday'] ?? '10am - 4pm';
     $businessHoursSunday = $_POST['business_hours_sunday'] ?? 'Closed';
     
+    // Get SMTP settings
+    $emailEnabled = isset($_POST['email_enabled']) ? 'true' : 'false';
+    $smtpHost = $_POST['smtp_host'] ?? '';
+    $smtpPort = $_POST['smtp_port'] ?? '';
+    $smtpUsername = $_POST['smtp_username'] ?? '';
+    $smtpAuthKey = $_POST['smtp_auth_key'] ?? '';
+    $smtpFromEmail = $_POST['smtp_from_email'] ?? '';
+    $smtpFromName = $_POST['smtp_from_name'] ?? '';
+    
     // Handle contact banner image
     $contactBannerImage = $_POST['contact_banner_image'] ?? '/assets/images/Ecommerce-bg.jpg';
     $removeContactBannerImage = $_POST['remove_contact_banner_image'] ?? '0';
@@ -77,7 +86,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'business_hours_weekdays' => $businessHoursWeekdays,
         'business_hours_saturday' => $businessHoursSaturday,
         'business_hours_sunday' => $businessHoursSunday,
-        'contact_banner_image' => $contactBannerImage
+        'contact_banner_image' => $contactBannerImage,
+        'email_enabled' => $emailEnabled,
+        'smtp_host' => $smtpHost,
+        'smtp_port' => $smtpPort,
+        'smtp_username' => $smtpUsername,
+        'smtp_auth_key' => $smtpAuthKey,
+        'smtp_from_email' => $smtpFromEmail,
+        'smtp_from_name' => $smtpFromName
     ];
     
     // Update settings in database using prepared statements
