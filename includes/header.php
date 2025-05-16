@@ -16,6 +16,9 @@ $contactPath = '/contact.php';
 $isHomeActive = ($currentPath === '/' || $currentPath === $homePath);
 $isProductsActive = ($currentPath === $productsPath);
 $isContactActive = ($currentPath === $contactPath);
+
+$faviconPath = STORE_SETTINGS['store_favicon'] ?? '/assets/images/favicon.ico';
+$faviconVersion = isset($_SESSION['favicon_version']) ? "?v=" . $_SESSION['favicon_version'] : '';
 ?>
 
 <!DOCTYPE html>
@@ -27,7 +30,7 @@ $isContactActive = ($currentPath === $contactPath);
     <title><?= htmlspecialchars($storeName) ?></title>
     <meta name="description" content="<?= htmlspecialchars(STORE_SETTINGS['store_description'] ?? 'Your one-stop shop for all your needs') ?>">
     <!-- Favicon -->
-    <link rel="icon" href="<?= htmlspecialchars($logoPath) ?>" type="image/png">
+    <link rel="icon" type="image/x-icon" href="<?= htmlspecialchars($faviconPath . $faviconVersion) ?>">
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

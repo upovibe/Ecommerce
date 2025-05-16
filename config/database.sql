@@ -108,6 +108,7 @@ INSERT INTO store_settings (setting_key, setting_value) VALUES ('currency_symbol
 INSERT INTO store_settings (setting_key, setting_value) VALUES ('footer_text', '© 2023 E-Commerce Store. All rights reserved.');
 INSERT INTO store_settings (setting_key, setting_value) VALUES ('theme_color', '#3B82F6');
 INSERT INTO store_settings (setting_key, setting_value) VALUES ('brand_text_color', '#FFFFFF');
+INSERT INTO store_settings (setting_key, setting_value) VALUES ('store_favicon', '/assets/images/favicon.ico');
 -- INSERT INTO store_settings (setting_key, setting_value) VALUES ('facebook_username', 'example_store');
 -- INSERT INTO store_settings (setting_key, setting_value) VALUES ('instagram_username', 'example_store');
 -- INSERT INTO store_settings (setting_key, setting_value) VALUES ('twitter_username', 'example_store');
