@@ -220,13 +220,14 @@ INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_page_
 INSERT INTO contact_settings (setting_key, setting_value) VALUES ('contact_banner_image', '/assets/images/Ecommerce-bg.jpg');
 
 -- Add email configuration settings
-INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_host', 'smtp.gmail.com');
-INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_port', '587');
-INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_username', '');
-INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_password', '');
-INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_from_email', '');
-INSERT INTO contact_settings (setting_key, setting_value) VALUES ('smtp_from_name', '');
-INSERT INTO contact_settings (setting_key, setting_value) VALUES ('email_enabled', 'false');
+INSERT INTO contact_settings (setting_key, setting_value) VALUES 
+('smtp_host', 'smtp.example.com'),
+('smtp_port', '587'),
+('smtp_username', 'user@example.com'),
+('smtp_auth_key', 'sample_password_123'),
+('smtp_from_email', 'noreply@example.com'),
+('smtp_from_name', 'Your Store Name'),
+('email_enabled', 'true');
 
 -- Insert default FAQs
 INSERT INTO faqs (question, answer, display_order, page_location) VALUES
