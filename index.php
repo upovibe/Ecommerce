@@ -83,7 +83,6 @@ $whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
                     ?>
                     <div class="swiper-slide">
                          <a href="/products.php?category=<?= htmlspecialchars($categorySlug) ?>" 
-                           target="_blank" 
                            data-category-id="<?= $categoryId ?>" 
                            data-category-name="<?= htmlspecialchars($categoryName) ?>" 
                            data-category-slug="<?= htmlspecialchars($categorySlug) ?>" 
