@@ -17,16 +17,29 @@ $bannerSubtitle = getStoreContent('product_banner_subtitle');
 // Fetch featured category data
 $featuredCategories = getFeaturedCategories();
 
+// Get selected category slug from query string
+$selectedCategory = $_GET['category'] ?? null;
+
 // Get demo data if in demo mode
 $isDemoMode = !$db_connected;
 if ($isDemoMode) {
     $demoDataFile = __DIR__ . '/config/demo_data.json';
     $demoData = json_decode(file_get_contents($demoDataFile), true);
     $initialProducts = $demoData['products'];
+    if (!empty($selectedCategory)) {
+        // Filter demo products by category or parent category slug
+        $initialProducts = array_values(array_filter(
+            $initialProducts,
+            function($p) use ($selectedCategory) {
+                return ($p['category_slug'] === $selectedCategory)
+                    || ($p['parent_category_slug'] === $selectedCategory);
+            }
+        ));
+    }
 } else {
     // Function to fetch initial products from database
     function getInitialProducts() {
-        global $conn;
+        global $conn, $selectedCategory;
         $products = [];
         
         $sql = "SELECT 
@@ -49,8 +62,12 @@ if ($isDemoMode) {
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.id
             LEFT JOIN categories parent ON c.parent_id = parent.id
-            WHERE p.is_active = 1
-            ORDER BY p.name ASC";
+            WHERE p.is_active = 1";
+        if (!empty($selectedCategory)) {
+            $slug = $conn->real_escape_string($selectedCategory);
+            $sql .= " AND (c.slug = '{$slug}' OR parent.slug = '{$slug}')";
+        }
+        $sql .= " ORDER BY p.name ASC";
             
         $result = $conn->query($sql);
         if ($result) {
