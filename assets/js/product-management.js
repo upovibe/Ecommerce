@@ -773,13 +773,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (currentCategory) urlParams.set('category', currentCategory);
         else urlParams.delete('category');
-        if (currentSubcategory) urlParams.set('subcategory', currentSubcategory);
-        else urlParams.delete('subcategory');
+        if (currentSubcategory) urlParams.set('subcategory_slug', currentSubcategory);
+        else urlParams.delete('subcategory_slug');
         
         const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
         history.pushState({}, '', newUrl);
 
-        filterAndDisplayProducts();
+        // Fetch products with new filters
+        const apiUrl = `/api/product_api.php?${urlParams.toString()}`;
+        window.fetchAndDisplayProducts(apiUrl);
     };
 
     // Function to display products

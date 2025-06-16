@@ -62,11 +62,12 @@ global $featuredCategories;
                 <?php foreach ($featuredCategories as $category): ?>
                     <?php if (!is_array($category) || empty($category['slug'])) continue; ?>
                     <option value="<?= htmlspecialchars($category['slug']) ?>" 
-                            data-has-subcategories="<?= !empty($category['subcategories']) ? 'true' : 'false' ?>">
+                            data-has-subcategories="<?= !empty($category['subcategories']) ? 'true' : 'false' ?>"
+                            <?= isset($_GET['category']) && $_GET['category'] === $category['slug'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($category['name']) ?>
                     </option>
                 <?php endforeach; ?>
-                <option value="uncategorized">Uncategorized</option>
+                <option value="uncategorized" <?= isset($_GET['category']) && $_GET['category'] === 'uncategorized' ? 'selected' : '' ?>>Uncategorized</option>
             </select>
         </div>
 
@@ -81,7 +82,8 @@ global $featuredCategories;
                     <?php if (!empty($category['subcategories']) && !empty($category['slug'])): ?>
                         <template x-if="selectedCategory === '<?= htmlspecialchars($category['slug']) ?>'">
                             <?php foreach ($category['subcategories'] as $subcategory): ?>
-                                <option value="<?= htmlspecialchars($subcategory['slug']) ?>">
+                                <option value="<?= htmlspecialchars($subcategory['slug']) ?>"
+                                        <?= isset($_GET['subcategory_slug']) && $_GET['subcategory_slug'] === $subcategory['slug'] ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($subcategory['name']) ?>
                                 </option>
                             <?php endforeach; ?>

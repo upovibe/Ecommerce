@@ -20,7 +20,7 @@ $aboutContent = getStoreContent('about_content'); // Note: This might contain HT
 $aboutImage = getStoreContent('about_image');
 
 // Generate WhatsApp link (used in Hero)
-$whatsappLink = generateWhatsAppLink(STORE_SETTINGS['whatsapp_number'] ?? null);
+$whatsappLink = generateWhatsAppLink(rawNumber: STORE_SETTINGS['whatsapp_number'] ?? null);
 
 ?>
 
