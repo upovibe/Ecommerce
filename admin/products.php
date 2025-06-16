@@ -25,14 +25,14 @@ function getAllProductsAndCategories() {
     // Fetch Categories first (needed by products)
     if ($db_connected && $conn) {
         // First get parent categories
-        $sql_cat = "SELECT id, name, parent_id FROM categories ORDER BY name ASC";
+        $sql_cat = "SELECT id, name, parent_id, slug FROM categories ORDER BY name ASC";
         $result_cat = $conn->query($sql_cat);
         if ($result_cat) {
             while ($row = $result_cat->fetch_assoc()) {
                 // If it's a parent category (no parent_id)
                 if (empty($row['parent_id'])) {
                     // Get subcategories for this parent
-                    $subSql = "SELECT id, name FROM categories WHERE parent_id = ? ORDER BY name ASC";
+                    $subSql = "SELECT id, name, slug FROM categories WHERE parent_id = ? ORDER BY name ASC";
                     $stmt = $conn->prepare($subSql);
                     $stmt->bind_param('i', $row['id']);
                     $stmt->execute();
@@ -42,7 +42,8 @@ function getAllProductsAndCategories() {
                     while ($subRow = $subResult->fetch_assoc()) {
                         $subcategories[] = [
                             'id' => (int)$subRow['id'],
-                            'name' => $subRow['name']
+                            'name' => $subRow['name'],
+                            'slug' => $subRow['slug']
                         ];
                     }
                     $stmt->close();
@@ -50,6 +51,7 @@ function getAllProductsAndCategories() {
                     $categories[] = [
                         'id' => (int)$row['id'],
                         'name' => $row['name'],
+                        'slug' => $row['slug'],
                         'subcategories' => $subcategories
                     ];
                 }
@@ -65,9 +67,13 @@ function getAllProductsAndCategories() {
                         p.image, p.category_id, p.stock, p.featured, 
                         p.is_active, p.backorder,
                         p.created_at, p.updated_at, 
-                        c.name as category_name 
+                        c.name as category_name,
+                        c.slug as category_slug,
+                        parent.name as parent_category_name,
+                        parent.slug as parent_category_slug
                      FROM products p 
                      LEFT JOIN categories c ON p.category_id = c.id 
+                     LEFT JOIN categories parent ON c.parent_id = parent.id
                      ORDER BY p.name ASC"; 
         $result_prod = $conn->query($sql_prod);
         if ($result_prod) {

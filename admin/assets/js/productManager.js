@@ -608,6 +608,11 @@ document.addEventListener('alpine:init', () => {
             // this.isLoading = false; // Set loading false after initial setup
              console.log('Product Manager Initialized');
              console.log('Initial allProducts:', this.allProducts); // Check if data is loaded
+        },
+
+        handleCategoryChange() {
+            // Reset subcategory when category changes
+            this.selectedSubcategoryId = '';
         }
     }));
 });
