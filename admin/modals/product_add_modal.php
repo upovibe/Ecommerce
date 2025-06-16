@@ -73,15 +73,23 @@
                             <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
                             <select name="category_id" id="category_id"
                                 x-model="categoryId"
+                                @change="handleCategoryChange"
                                 class="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
                                 <option value="">Uncategorized</option>
-                                <?php if (!empty($categories)): ?>
-                                    <?php foreach ($categories as $category): ?>
-                                        <option value="<?= htmlspecialchars($category["id"]) ?>">
-                                            <?= htmlspecialchars($category["name"]) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+                                <template x-for="category in categories" :key="category.id">
+                                    <option :value="category.id" x-text="category.name"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div x-show="categoryId && categoryId !== '' && getSubcategoriesForCategory(categoryId).length > 0">
+                            <label for="subcategory_id" class="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+                            <select name="subcategory_id" id="subcategory_id"
+                                x-model="subcategoryId"
+                                class="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
+                                <option value="">Select Subcategory</option>
+                                <template x-for="subcategory in getSubcategoriesForCategory(categoryId)" :key="subcategory.id">
+                                    <option :value="subcategory.id" x-text="subcategory.name"></option>
+                                </template>
                             </select>
                         </div>
                     </div>

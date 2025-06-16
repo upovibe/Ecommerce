@@ -42,6 +42,7 @@ document.addEventListener('alpine:init', () => {
         productPrice: null,
         productStock: 0,
         categoryId: '', // Use empty string for default "Uncategorized"
+        subcategoryId: '', // Add subcategory state
         selectedCategoryId: '', // Added for category filtering
         selectedSubcategoryId: '', // Add subcategory state
         selectedStockStatus: '', // Added for stock status filtering
@@ -55,7 +56,7 @@ document.addEventListener('alpine:init', () => {
 
         // Getters
         getSubcategoriesForCategory(categoryId) {
-            if (!categoryId || categoryId === 'uncategorized') return [];
+            if (!categoryId || categoryId === '') return [];
             const category = this.categories.find(c => c.id === parseInt(categoryId));
             return category ? (category.subcategories || []) : [];
         },
@@ -233,7 +234,6 @@ document.addEventListener('alpine:init', () => {
                 });
         },
         openAddModal() {
-            // Removed fetchCategories() - assuming categories loaded initially
             this.isLoading = false;
             this.isAddModalOpen = true;
             // Reset form fields via state
@@ -252,15 +252,13 @@ document.addEventListener('alpine:init', () => {
             this.productPrice = null;
             this.productStock = 0;
             this.categoryId = '';
+            this.subcategoryId = '';
 
             const fileInput = document.getElementById('product_image');
             if (fileInput) fileInput.value = null;
 
             const form = document.getElementById("addProductForm");
             if (form) form.reset();
-
-            // Reset feedback display in modal (if using separate feedback state)
-            // this.addProductFeedback = { message: '', type: '' };
         },
         closeAddModal() {
             this.isAddModalOpen = false;
@@ -278,7 +276,7 @@ document.addEventListener('alpine:init', () => {
             formData.append('product_description', this.productDescription);
             formData.append('product_price', this.productPrice);
             formData.append('product_stock', this.productStock);
-            formData.append('category_id', this.categoryId);
+            formData.append('category_id', this.subcategoryId || this.categoryId || ''); // Use subcategory if selected, otherwise use category
             if (this.newProductImage) {
                 formData.append('product_image', this.newProductImage, this.newProductImage.name);
             }
@@ -475,7 +473,7 @@ document.addEventListener('alpine:init', () => {
             formData.append('product_description', this.editingProduct.description || '');
             formData.append('product_price', this.editingProduct.price || 0);
             formData.append('product_stock', this.editingProduct.stock || 0);
-            formData.append('category_id', this.editingProduct.categoryId || '');
+            formData.append('category_id', this.editingProduct.subcategoryId || this.editingProduct.categoryId || ''); // Use subcategory if selected, otherwise use category
             formData.append('featured', this.editingProduct.isFeatured ? '1' : '0');
             formData.append('is_active', this.editingProduct.is_active ? '1' : '0');
             formData.append('backorder', this.editingProduct.backorder ? '1' : '0');
@@ -607,12 +605,15 @@ document.addEventListener('alpine:init', () => {
             // Initial data load is handled by PHP rendering
             // this.isLoading = false; // Set loading false after initial setup
              console.log('Product Manager Initialized');
-             console.log('Initial allProducts:', this.allProducts); // Check if data is loaded
+             console.log('Initial allProducts:', this.allProducts);
         },
 
         handleCategoryChange() {
             // Reset subcategory when category changes
-            this.selectedSubcategoryId = '';
+            this.subcategoryId = '';
+            if (this.editingProduct) {
+                this.editingProduct.subcategoryId = '';
+            }
         }
     }));
 });
