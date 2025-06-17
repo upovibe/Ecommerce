@@ -1,22 +1,11 @@
 <?php
 global $featuredCategories;
+// Helper to get selected values from query
+$selectedCategory = $_GET['category'] ?? '';
+$selectedSubcategory = $_GET['subcategory_slug'] ?? '';
 ?>
 <!-- Filter Button and Panel -->
-<div class="relative flex-shrink-0" x-data="{ 
-    isFilterOpen: false,
-    minPrice: null,
-    maxPrice: null,
-    selectedCategory: '',
-    selectedSubcategory: '',
-    clearFilters() {
-        this.minPrice = null;
-        this.maxPrice = null;
-        this.selectedCategory = '';
-        this.selectedSubcategory = '';
-        this.isFilterOpen = false;
-        window.resetAllFilters();
-    }
-}">
+<div class="relative flex-shrink-0" x-data="productFilters()">
     <!-- Filter Button -->
     <button @click="isFilterOpen = !isFilterOpen" type="button"
         class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -61,35 +50,26 @@ global $featuredCategories;
                 <option value="">All Categories</option>
                 <?php foreach ($featuredCategories as $category): ?>
                     <?php if (!is_array($category) || empty($category['slug'])) continue; ?>
-                    <option value="<?= htmlspecialchars($category['slug']) ?>" 
-                            data-has-subcategories="<?= !empty($category['subcategories']) ? 'true' : 'false' ?>"
-                            <?= isset($_GET['category']) && $_GET['category'] === $category['slug'] ? 'selected' : '' ?>>
+                    <option value="<?= htmlspecialchars($category['slug']) ?>"
+                        data-has-subcategories="<?= !empty($category['subcategories']) ? 'true' : 'false' ?>"
+                        <?= $selectedCategory === $category['slug'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($category['name']) ?>
                     </option>
                 <?php endforeach; ?>
-                <option value="uncategorized" <?= isset($_GET['category']) && $_GET['category'] === 'uncategorized' ? 'selected' : '' ?>>Uncategorized</option>
+                <option value="uncategorized" <?= $selectedCategory === 'uncategorized' ? 'selected' : '' ?>>Uncategorized</option>
             </select>
         </div>
 
         <!-- Subcategory Filter (Dynamic) -->
-        <div class="space-y-2" x-show="selectedCategory && document.querySelector(`option[value='${selectedCategory}']`)?.dataset?.hasSubcategories === 'true'">
+        <div class="space-y-2" x-show="selectedCategory && subcategoriesForSelectedCategory.length > 0">
             <label class="text-sm font-medium text-gray-700">Subcategory</label>
             <select x-model="selectedSubcategory"
                 @change="window.handleCategoryFilter(selectedCategory, $event.target.value)"
                 class="block w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
                 <option value="">All Subcategories</option>
-                <?php foreach ($featuredCategories as $category): ?>
-                    <?php if (!empty($category['subcategories']) && !empty($category['slug'])): ?>
-                        <template x-if="selectedCategory === '<?= htmlspecialchars($category['slug']) ?>'">
-                            <?php foreach ($category['subcategories'] as $subcategory): ?>
-                                <option value="<?= htmlspecialchars($subcategory['slug']) ?>"
-                                        <?= isset($_GET['subcategory_slug']) && $_GET['subcategory_slug'] === $subcategory['slug'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($subcategory['name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </template>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+                <template x-for="subcat in subcategoriesForSelectedCategory" :key="subcat.slug">
+                    <option :value="subcat.slug" x-text="subcat.name"></option>
+                </template>
             </select>
         </div>
 
@@ -101,4 +81,28 @@ global $featuredCategories;
             </button>
         </div>
     </div>
-</div> 
+</div>
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('productFilters', () => ({
+        isFilterOpen: false,
+        minPrice: null,
+        maxPrice: null,
+        selectedCategory: '<?= addslashes($selectedCategory) ?>',
+        selectedSubcategory: '<?= addslashes($selectedSubcategory) ?>',
+        categories: <?= json_encode($featuredCategories) ?>,
+        get subcategoriesForSelectedCategory() {
+            const cat = this.categories.find(c => c.slug === this.selectedCategory);
+            return cat && cat.subcategories ? cat.subcategories : [];
+        },
+        clearFilters() {
+            this.minPrice = null;
+            this.maxPrice = null;
+            this.selectedCategory = '';
+            this.selectedSubcategory = '';
+            this.isFilterOpen = false;
+            window.resetAllFilters();
+        }
+    }));
+});
+</script>

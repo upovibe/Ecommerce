@@ -755,8 +755,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Show all products
-        filterAndDisplayProducts();
+        // Fetch all products (no filters)
+        const apiUrl = '/api/product_api.php';
+        window.fetchAndDisplayProducts(apiUrl);
     };
 
     // Reset button click handler
@@ -894,4 +895,4 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-}); 
+});
