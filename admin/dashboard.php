@@ -132,11 +132,37 @@ function getAllCategories()
     global $conn, $db_connected;
     $categories = [];
     if ($db_connected && $conn) {
-        $sql = "SELECT id, name FROM categories ORDER BY name ASC";
-        $result = $conn->query($sql);
-        if ($result && $result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $categories[] = $row;
+        // First get parent categories
+        $sql_cat = "SELECT id, name, parent_id, slug FROM categories ORDER BY name ASC";
+        $result_cat = $conn->query($sql_cat);
+        if ($result_cat) {
+            while ($row = $result_cat->fetch_assoc()) {
+                // If it's a parent category (no parent_id)
+                if (empty($row['parent_id'])) {
+                    // Get subcategories for this parent
+                    $subSql = "SELECT id, name, slug FROM categories WHERE parent_id = ? ORDER BY name ASC";
+                    $stmt = $conn->prepare($subSql);
+                    $stmt->bind_param('i', $row['id']);
+                    $stmt->execute();
+                    $subResult = $stmt->get_result();
+                    
+                    $subcategories = [];
+                    while ($subRow = $subResult->fetch_assoc()) {
+                        $subcategories[] = [
+                            'id' => (int)$subRow['id'],
+                            'name' => $subRow['name'],
+                            'slug' => $subRow['slug']
+                        ];
+                    }
+                    $stmt->close();
+
+                    $categories[] = [
+                        'id' => (int)$row['id'],
+                        'name' => $row['name'],
+                        'slug' => $row['slug'],
+                        'subcategories' => $subcategories
+                    ];
+                }
             }
         }
     }
