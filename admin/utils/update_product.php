@@ -91,7 +91,7 @@ if ($db_connected && $conn) {
             $newImagePath = handleImageUpload($_FILES['product_image'], '/assets/images/products/', $existingFileName ? $existingFileName : 'image');
             
             if ($newImagePath === null) {
-                throw new Exception('Image upload failed. Check file type, size (max 2MB), and permissions.');
+                throw new Exception('Image upload failed. Check file type, size (max 4MB), and permissions.');
             }
             
             // If the paths are different (despite trying to reuse the filename), clean up the old file

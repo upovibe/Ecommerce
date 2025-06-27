@@ -338,8 +338,8 @@ document.addEventListener('alpine:init', () => {
         handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
-                if (file.size > 2 * 1024 * 1024) {
-                    toast.error('Image size exceeds 2MB limit.');
+                if (file.size > 4 * 1024 * 1024) { // 4MB limit
+                    toast.error('Image size exceeds 4MB limit.');
                     event.target.value = null;
                     return;
                 }
@@ -446,8 +446,8 @@ document.addEventListener('alpine:init', () => {
         handleFileEditSelect(event) {
             const file = event.target.files[0];
             if (file) {
-                if (file.size > 2 * 1024 * 1024) {
-                    toast.error('Image size exceeds 2MB limit.');
+                if (file.size > 4 * 1024 * 1024) { // 4MB limit
+                    toast.error('Image size exceeds 4MB limit.');
                     event.target.value = null;
                     return;
                 }

@@ -161,8 +161,8 @@ document.addEventListener('alpine:init', () => {
                 const file = event.target.files[0];
                 if (file) {
                     // Basic validation (same as product upload)
-                    if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                        toast.error('Image size exceeds 2MB limit.');
+                    if (file.size > 4 * 1024 * 1024) { // 4MB limit
+                        toast.error('Image size exceeds 4MB limit.');
                         event.target.value = null; // Clear the input
                         return;
                     }

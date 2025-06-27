@@ -93,8 +93,8 @@ if (!function_exists("handleImageUpload")) {
             return null;
         }
 
-        // Check file size (e.g., 2MB maximum)
-        if ($file["size"] > 2 * 1024 * 1024) {
+        // Check file size (e.g., 4MB maximum)
+        if ($file["size"] > 4 * 1024 * 1024) {
             error_log("Image file size too large: " . $file["size"]);
             return null;
         }

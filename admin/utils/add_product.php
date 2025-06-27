@@ -61,7 +61,7 @@ $imagePath = null;
 if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
     $imagePath = handleImageUpload($_FILES['product_image'], '/assets/images/products/'); 
     if ($imagePath === null) {
-        echo json_encode(['success' => false, 'message' => 'Image upload failed. Check file type, size (max 2MB), and permissions.']);
+        echo json_encode(['success' => false, 'message' => 'Image upload failed. Check file type, size (max 4MB), and permissions.']);
         exit;
     }
 }

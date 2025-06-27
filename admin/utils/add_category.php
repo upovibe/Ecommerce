@@ -51,7 +51,7 @@ if ($parentId === null && isset($_FILES['category_image']) && $_FILES['category_
     $imagePath = handleImageUpload($_FILES['category_image'], $relativeUploadDir, 'category');
     
     if ($imagePath === null) {
-        $response['message'] = 'Image upload failed. Please check file type (jpg, png, gif, webp) and size (max 2MB).';
+        $response['message'] = 'Image upload failed. Please check file type (jpg, png, gif, webp) and size (max 4MB).';
         error_log("Category image upload failed for file: " . ($_FILES['category_image']['name'] ?? 'N/A'));
         echo json_encode($response);
         exit;
