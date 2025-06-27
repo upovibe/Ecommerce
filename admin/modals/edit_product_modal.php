@@ -83,26 +83,65 @@
                                     </div>
                                     <div>
                                         <label for="edit_category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                        <select name="category_id" id="edit_category_id"
-                                                x-model="editingProduct.categoryId"
-                                                @change="handleCategoryChange"
-                                                class="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
-                                            <option value="">Uncategorized</option>
-                                            <template x-for="category in categories" :key="category.id">
-                                                <option :value="category.id" x-text="category.name"></option>
-                                            </template>
-                                        </select>
+                                        
+                                        <!-- Category Input with Dropdown Icon -->
+                                        <div class="relative">
+                                            <!-- Display Mode -->
+                                            <div x-show="!showCategoryDropdown" class="relative">
+                                                <div @click="showCategoryDropdown = true" 
+                                                     class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors">
+                                                    <span x-text="editingProduct.categoryId ? categories.find(c => Number(c.id) == editingProduct.categoryId)?.name || 'Unknown Category' : 'Uncategorized'"></span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Select Mode -->
+                                            <div x-show="showCategoryDropdown" x-cloak class="relative">
+                                                <select name="category_id" id="edit_category_id"
+                                                        x-model="editingProduct.categoryId"
+                                                        @change="handleCategoryChange; showCategoryDropdown = false"
+                                                        class="block w-full px-3 py-2 pr-10 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
+                                                    <option :value="0">Uncategorized</option>
+                                                    <template x-for="category in categories" :key="category.id">
+                                                        <option :value="Number(category.id)" x-text="category.name"></option>
+                                                    </template>
+                                                </select>
+                                                <button type="button" @click="showCategoryDropdown = false" 
+                                                        class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors">
+                                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div x-show="editingProduct.categoryId && editingProduct.categoryId !== '' && getSubcategoriesForCategory(editingProduct.categoryId).length > 0">
+                                    <div x-show="editingProduct.categoryId && editingProduct.categoryId !== 0 && getSubcategoriesForCategory(editingProduct.categoryId).length > 0">
                                         <label for="edit_subcategory_id" class="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
-                                        <select name="subcategory_id" id="edit_subcategory_id"
-                                                x-model="editingProduct.subcategoryId"
-                                                class="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
-                                            <option value="">Select Subcategory</option>
-                                            <template x-for="subcategory in getSubcategoriesForCategory(editingProduct.categoryId)" :key="subcategory.id">
-                                                <option :value="subcategory.id" x-text="subcategory.name"></option>
-                                            </template>
-                                        </select>
+                                        
+                                        <!-- Subcategory Input with Dropdown Icon -->
+                                        <div class="relative">
+                                            <!-- Display Mode -->
+                                            <div x-show="!showSubcategoryDropdown" class="relative">
+                                                <div @click="showSubcategoryDropdown = true" 
+                                                     class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-pointer hover:bg-gray-100 transition-colors">
+                                                    <span x-text="editingProduct.subcategoryId ? getSubcategoriesForCategory(editingProduct.categoryId).find(s => Number(s.id) == editingProduct.subcategoryId)?.name || 'Unknown Subcategory' : 'Select Subcategory'"></span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Select Mode -->
+                                            <div x-show="showSubcategoryDropdown" x-cloak class="relative">
+                                                <select name="subcategory_id" id="edit_subcategory_id"
+                                                        x-model="editingProduct.subcategoryId"
+                                                        @change="showSubcategoryDropdown = false"
+                                                        class="block w-full px-3 py-2 pr-10 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out sm:text-sm">
+                                                    <option :value="0">Select Subcategory</option>
+                                                    <template x-for="subcategory in getSubcategoriesForCategory(editingProduct.categoryId)" :key="subcategory.id">
+                                                        <option :value="Number(subcategory.id)" x-text="subcategory.name"></option>
+                                                    </template>
+                                                </select>
+                                                <button type="button" @click="showSubcategoryDropdown = false" 
+                                                        class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors">
+                                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 

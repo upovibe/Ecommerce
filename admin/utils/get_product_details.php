@@ -23,10 +23,15 @@ $options = [];
 
 // Fetch product data and options from database
 if ($db_connected && $conn) {
-    // Fetch main product details
-    $productSql = "SELECT p.*, c.name as category_name 
+    // Fetch main product details with category hierarchy information
+    $productSql = "SELECT p.*, 
+                          c.name as category_name,
+                          c.parent_id as category_parent_id,
+                          parent.name as parent_category_name,
+                          parent.id as parent_category_id
                    FROM products p 
                    LEFT JOIN categories c ON p.category_id = c.id 
+                   LEFT JOIN categories parent ON c.parent_id = parent.id
                    WHERE p.id = ?";
     $productStmt = $conn->prepare($productSql);
     if ($productStmt) {
@@ -41,6 +46,17 @@ if ($db_connected && $conn) {
                  $productData['discount_percentage'] = $productData['discount_percentage'] === null ? null : (float)$productData['discount_percentage'];
                  $productData['stock'] = (int)$productData['stock'];
                  $productData['featured'] = (bool)$productData['featured'];
+                 
+                 // Determine if the product's category is a parent or subcategory
+                 if ($productData['category_parent_id']) {
+                     // This is a subcategory - set parent as categoryId and current as subcategoryId
+                     $productData['parent_category_id'] = (int)$productData['category_parent_id'];
+                     $productData['subcategory_id'] = (int)$productData['category_id'];
+                 } else {
+                     // This is a parent category - set as categoryId and no subcategory
+                     $productData['parent_category_id'] = (int)$productData['category_id'];
+                     $productData['subcategory_id'] = null;
+                 }
             } else {
                  echo json_encode(['success' => false, 'message' => 'Product not found.']);
                  $productStmt->close();

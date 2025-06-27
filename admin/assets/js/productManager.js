@@ -53,6 +53,9 @@ document.addEventListener('alpine:init', () => {
         isFilterDropdownOpen: false, // State for filter dropdown panel
         // State for the new Manage Account Modal
         isManageAccountModalOpen: false,
+        // New state for dropdown visibility
+        showCategoryDropdown: false,
+        showSubcategoryDropdown: false,
 
         // Getters
         getSubcategoriesForCategory(categoryId) {
@@ -376,6 +379,9 @@ document.addEventListener('alpine:init', () => {
             this.editingProduct = null; 
             this.newEditImageFile = null;
             this.isEditModalOpen = true;
+            // Initialize dropdown visibility
+            this.showCategoryDropdown = false;
+            this.showSubcategoryDropdown = false;
             // Assuming categories already loaded
 
             fetch(`utils/get_product_details.php?id=${productId}`)
@@ -399,7 +405,8 @@ document.addEventListener('alpine:init', () => {
                             description: product.description || '',
                             price: parseFloat(product.price) || 0,
                             stock: parseInt(product.stock) || 0,
-                            categoryId: product.category_id || '',
+                            categoryId: product.parent_category_id ? Number(product.parent_category_id) : 0, // Use 0 instead of null
+                            subcategoryId: product.subcategory_id ? Number(product.subcategory_id) : 0, // Use 0 instead of null
                             isFeatured: Boolean(product.featured),
                             is_active: Boolean(product.is_active),
                             imageUrl: imageUrl,
