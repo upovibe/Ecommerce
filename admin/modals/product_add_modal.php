@@ -130,46 +130,56 @@
                         </div>
                     </div>
 
-                    <!-- Modern Image Upload -->
+                    <!-- Multiple Image Upload -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
-                        <label for="product_image"
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Product Images (Up to 4)</label>
+                        
+                        <!-- Upload Area -->
+                        <label for="product_images"
                             class="relative mt-1 flex justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200 min-h-[150px]">
 
                             <!-- Placeholder Content (Icon & Text) -->
-                            <div x-show="imageUrl === '../assets/images/placeholder.png'" class="space-y-1 text-center">
-                                <i data-lucide="image" class="mx-auto h-12 w-12 text-gray-400"></i>
+                            <div x-show="productImages.length === 0" class="space-y-1 text-center">
+                                <i data-lucide="images" class="mx-auto h-12 w-12 text-gray-400"></i>
                                 <div class="flex text-sm text-gray-600">
                                     <span class="relative bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                        <span>Upload a file</span>
-                                        <!-- Input is now part of the Alpine component -->
-                                        <input type="file" name="product_image" id="product_image" accept="image/*"
-                                            @change="handleFileSelect($event)"
+                                        <span>Upload images</span>
+                                        <input type="file" name="product_images" id="product_images" accept="image/*" multiple
+                                            @change="handleMultipleFileSelect($event)"
                                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                     </span>
                                     <p class="pl-1">or drag and drop</p>
                                 </div>
-                                <p class="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 4MB</p>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 4MB each (Max 4 images)</p>
                             </div>
 
-                            <!-- Image Preview -->
-                            <div x-show="imageUrl !== '../assets/images/placeholder.png'" class="relative w-full h-full flex justify-center items-center" x-cloak>
-                                <img :src="imageUrl" alt="Image Preview"
-                                    class="max-h-48 max-w-full rounded-lg object-contain shadow-sm">
-                                <!-- Optional: Add a button to remove/change image -->
-                                <button type="button" @click="imageUrl = '../assets/images/placeholder.png'; newProductImage = null; document.getElementById('product_image').value = null;"
-                                    class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1">
-                                    <i data-lucide="x" class="w-3 h-3"></i>
-                                </button>
+                            <!-- Multiple Images Preview Grid -->
+                            <div x-show="productImages.length > 0" class="w-fit flex justify-center gap-2 p-3 items-start" x-cloak>
+                                <template x-for="(image, index) in productImages" :key="index">
+                                    <div class="relative group">
+                                        <img :src="image.url" :alt="'Image ' + (index + 1)"
+                                            class="w-full h-20 object-contain rounded-lg shadow-sm border bg-white">
+                                        <button type="button" @click="removeProductImage(index)"
+                                            class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors shadow-md">
+                                            <i data-lucide="x" class="w-3 h-3"></i>
+                                        </button>
+                                    </div>
+                                </template>
                             </div>
-
-                            <!-- Hidden actual file input, triggered by label -->
-                            <input type="file" name="product_image_fallback" id="product_image" accept="image/*"
-                                @change="handleFileSelect($event)"
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer sr-only">
                         </label>
+
+                        <!-- Add More Images Button (when less than 4) -->
+                        <div x-show="productImages.length > 0 && productImages.length < 4" class="mt-2">
+                            <label for="product_images_additional" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
+                                <i data-lucide="plus" class="w-4 h-4 mr-1"></i>
+                                Add More Images (<span x-text="productImages.length"></span>/4)
+                                <input type="file" id="product_images_additional" accept="image/*" multiple
+                                    @change="handleAdditionalFileSelect($event)"
+                                    class="sr-only">
+                            </label>
+                        </div>
                     </div>
-                    <!-- End Modern Image Upload -->
+                    <!-- End Multiple Image Upload -->
 
                     <!-- Status Toggles -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">

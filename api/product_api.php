@@ -120,7 +120,7 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
                         'slug' => $p['slug'] ?? '',
                         'description' => $p['description'] ?? '',
                         'price' => (float)($p['price'] ?? 0),
-                        'image' => $p['image'] ?? '/assets/images/product-placeholder.png',
+                        'image' => isset($p['image']) ? (is_array($p['image']) ? $p['image'] : [$p['image']]) : ['/assets/images/product-placeholder.png'],
                         'category_id' => (int)($p['category_id'] ?? 0),
                         'category_name' => $categoryInfo['name'] ?? 'Uncategorized',
                         'category_slug' => $categoryInfo['slug'] ?? 'uncategorized',
@@ -264,8 +264,28 @@ function getProducts($categorySlug = null, $parentCategorySlug = null, $searchTe
 
             if ($result) {
                 while ($row = $result->fetch_assoc()) {
+                    // Handle multiple images format
                     if (empty($row['image'])) {
-                        $row['image'] = '/assets/images/product-placeholder.png';
+                        $row['image'] = ['/assets/images/product-placeholder.png'];
+                    } else {
+                        try {
+                            // Check if image is JSON array or single string
+                            if (is_string($row['image']) && (strpos($row['image'], '[') === 0 || strpos($row['image'], '"') === 0)) {
+                                $decodedImages = json_decode($row['image'], true);
+                                if (json_last_error() === JSON_ERROR_NONE && is_array($decodedImages)) {
+                                    $row['image'] = $decodedImages;
+                                } else {
+                                    // Fallback to single image
+                                    $row['image'] = [$row['image']];
+                                }
+                            } else {
+                                // Convert single image to array
+                                $row['image'] = [$row['image']];
+                            }
+                        } catch (Exception $e) {
+                            error_log("Error processing images for product {$row['id']}: " . $e->getMessage());
+                            $row['image'] = [$row['image']]; // Fallback
+                        }
                     }
 
                     // Fetch options for this product

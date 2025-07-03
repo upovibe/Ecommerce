@@ -178,36 +178,82 @@
                                     </div>
                                 </div>
 
-                                <!-- Modern Image Upload -->
+                                <!-- Multiple Image Upload -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
-                                    <label for="edit_product_image" 
-                                           class="relative mt-1 flex justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200 min-h-[150px]"> 
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Product Images (Up to 4)</label>
+                                    
+                                    <!-- Upload/Preview Area -->
+                                    <label for="edit_product_images" 
+                                           :class="{ 
+                                               'cursor-pointer hover:bg-gray-100': (!editingProduct.images || editingProduct.images.length === 0) && (!editingProduct.newImages || editingProduct.newImages.length === 0)
+                                           }"
+                                           class="relative mt-1 flex justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg bg-gray-50 transition-colors duration-200 min-h-[120px]"> 
 
-                                        <!-- Preview -->
-                                        <div class="absolute inset-0 flex justify-center items-center p-2"> <!-- Position preview absolutely -->
-                                            <img :src="editingProduct.imageUrl || '../assets/images/placeholder.png'" 
-                                                 alt="Image Preview" 
-                                                 class="max-h-full max-w-full rounded-lg object-contain shadow-sm z-10">
-                                        </div>
-                                        
-                                        <!-- Upload/Overlay Content -->
-                                        <div class="relative z-20 space-y-1 text-center bg-gray-50/80 backdrop-blur-sm p-4 rounded-md"> <!-- Overlay content on top -->
-                                            <i data-lucide="image" class="mx-auto h-10 w-10 text-gray-400"></i>
+                                        <!-- Placeholder Content (when no images) -->
+                                        <div x-show="(!editingProduct.images || editingProduct.images.length === 0) && (!editingProduct.newImages || editingProduct.newImages.length === 0)" class="space-y-1 text-center">
+                                            <i data-lucide="images" class="mx-auto h-10 w-10 text-gray-400"></i>
                                             <div class="flex text-sm text-gray-600">
                                                 <span class="relative bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                                    <span>Change file</span>
-                                                    <input type="file" name="product_image" id="edit_product_image" accept="image/*"
-                                                           @change="handleFileEditSelect($event)" 
+                                                    <span>Add/Replace Images</span>
+                                                    <input type="file" name="product_images" id="edit_product_images" accept="image/*" multiple
+                                                           @change="handleEditMultipleFileSelect($event)" 
                                                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                                 </span>
                                                 <p class="pl-1">or drag and drop</p>
                                             </div>
-                                            <p class="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 4MB</p>
+                                            <p class="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 4MB each (Max 4 total)</p>
+                                        </div>
+
+                                        <!-- Current Images Display (inside preview area) -->
+                                        <div x-show="(editingProduct.images && editingProduct.images.length > 0) || (editingProduct.newImages && editingProduct.newImages.length > 0)" class="w-full flex items-center justify-center" x-cloak>
+                                            <!-- Current Images -->
+                                            <div x-show="editingProduct.images && editingProduct.images.length > 0" class="mb-3">
+                                                <label class="block text-xs font-medium text-gray-600 mb-2 text-center">Current Images:</label>
+                                                <div class="w-fit flex justify-center gap-2 items-start mx-auto">
+                                                    <template x-for="(imageUrl, index) in editingProduct.images" :key="index">
+                                                        <div class="relative group">
+                                                            <img :src="imageUrl" :alt="'Current Image ' + (index + 1)"
+                                                                class="w-full h-20 object-contain rounded-lg shadow-sm border bg-white">
+                                                            <button type="button" @click="removeExistingImage(index)"
+                                                                class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors shadow-md">
+                                                                <i data-lucide="x" class="w-3 h-3"></i>
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                            <!-- New Images Preview -->
+                                            <div x-show="editingProduct.newImages && editingProduct.newImages.length > 0" class="mb-3">
+                                                <label class="block text-xs font-medium text-blue-600 mb-2 text-center">New Images to Upload:</label>
+                                                <div class="w-fit flex justify-center gap-2 items-start mx-auto">
+                                                    <template x-for="(image, index) in editingProduct.newImages" :key="index">
+                                                        <div class="relative group">
+                                                            <img :src="image.url" :alt="'New Image ' + (index + 1)"
+                                                                class="w-full h-20 object-contain rounded-lg shadow-sm border border-blue-300 bg-white">
+                                                            <button type="button" @click="removeNewImage(index)"
+                                                                class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 text-xs hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors shadow-md">
+                                                                <i data-lucide="x" class="w-3 h-3"></i>
+                                                            </button>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
                                         </div>
                                     </label>
+                                    
+                                    <!-- Add More Images Button (when images exist and total < 4) -->
+                                    <div x-show="((editingProduct.images && editingProduct.images.length > 0) || (editingProduct.newImages && editingProduct.newImages.length > 0)) && ((editingProduct.images ? editingProduct.images.length : 0) + (editingProduct.newImages ? editingProduct.newImages.length : 0)) < 4" class="mt-2">
+                                        <label for="edit_product_images_additional" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
+                                            <i data-lucide="plus" class="w-4 h-4 mr-1"></i>
+                                            Add More Images (<span x-text="((editingProduct.images ? editingProduct.images.length : 0) + (editingProduct.newImages ? editingProduct.newImages.length : 0))"></span>/4)
+                                            <input type="file" id="edit_product_images_additional" accept="image/*" multiple
+                                                @change="handleEditMultipleFileSelect($event)"
+                                                class="sr-only">
+                                        </label>
+                                    </div>
                                 </div>
-                                <!-- End Modern Image Upload -->
+                                <!-- End Multiple Image Upload -->
 
                                 <!-- Status Toggles -->
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-5">

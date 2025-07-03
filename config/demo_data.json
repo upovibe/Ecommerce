@@ -45,7 +45,7 @@
       "original_price": 180.00,
       "discount_percentage": 16.67,
       "description": "Sturdy school backpack with multiple compartments and padded shoulder straps.",
-      "image": "/assets/images/demo/backpack.png",
+      "image": ["/assets/images/demo/backpack.png"],
       "category_id": 101,
       "category_name": "School Bags",
       "options": {
@@ -63,7 +63,7 @@
       "original_price": null,
       "discount_percentage": null,
       "description": "Spacious travel duffel bag with wheels and telescopic handle.",
-      "image": "/assets/images/demo/duffel.png",
+      "image": ["/assets/images/demo/duffel.png"],
       "category_id": 102,
       "category_name": "Travel Bags",
       "options": {
@@ -82,7 +82,7 @@
       "original_price": null,
       "discount_percentage": null,
       "description": "Stylish pink sequin purse for girls, perfect for special occasions.",
-      "image": "/assets/images/demo/purse.png",
+      "image": ["/assets/images/demo/purse.png"],
       "category_id": 103,
       "category_name": "Girl's Bags",
       "options": {
@@ -100,7 +100,7 @@
       "original_price": 900.00,
       "discount_percentage": 11.11,
       "description": "Beautiful long body wave wig with realistic lace front.",
-      "image": "/assets/images/demo/wig-lace-bodywave.png",
+      "image": ["/assets/images/demo/wig-lace-bodywave.png"],
       "category_id": 201,
       "category_name": "Lace Front Wigs",
       "options": {
@@ -119,7 +119,7 @@
       "original_price": null,
       "discount_percentage": null,
       "description": "Chic and easy-to-manage short black bob wig.",
-      "image": "/assets/images/demo/wig-synth-bob.png",
+      "image": ["/assets/images/demo/wig-synth-bob.png"],
       "category_id": 202,
       "category_name": "Synthetic Wigs",
       "options": {
@@ -137,7 +137,7 @@
       "original_price": null,
       "discount_percentage": null,
       "description": "Silky straight 18-inch human hair wig.",
-      "image": "/assets/images/demo/wig-human-straight.png",
+      "image": ["/assets/images/demo/wig-human-straight.png"],
       "category_id": 203,
       "category_name": "Human Hair Wigs",
       "options": {
@@ -156,7 +156,7 @@
       "original_price": 300.00,
       "discount_percentage": 16.67,
       "description": "Comfortable running sneakers with cushioned soles for maximum comfort.",
-      "image": "/assets/images/demo/sneakers.png",
+      "image": ["/assets/images/demo/sneakers.png"],
       "category_id": 301,
       "category_name": "Sneakers",
       "options": {
@@ -175,7 +175,7 @@
       "original_price": null,
       "discount_percentage": null,
       "description": "Classic Oxford dress shoes made from genuine leather.",
-      "image": "/assets/images/demo/oxford.png",
+      "image": ["/assets/images/demo/oxford.png"],
       "category_id": 302,
       "category_name": "Formal Shoes",
       "options": {
@@ -194,7 +194,7 @@
       "original_price": 200.00,
       "discount_percentage": 10.00,
       "description": "Elegant stiletto heels for special occasions and formal events.",
-      "image": "/assets/images/demo/heels.png",
+      "image": ["/assets/images/demo/heels.png"],
       "category_id": 303,
       "category_name": "Ladies' Heels",
       "options": {

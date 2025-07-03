@@ -26,7 +26,8 @@ document.addEventListener('alpine:init', () => {
         categories: initialData.categories || [], // Pass categories to Alpine
         productName: '',
         productSlug: '',
-        newProductImage: null,
+        productImages: [], // Array to store multiple images {file: File, url: string}
+        newProductImage: null, // Keep for backward compatibility
         imageUrl: '../assets/images/placeholder.png', // For image preview
         // New state for toggles and options
         isFeatured: false, // For the featured toggle
@@ -160,6 +161,41 @@ document.addEventListener('alpine:init', () => {
                 return symbol + '0.00'; // Fallback
             }
         },
+        getProductThumbnail(imageData) {
+            if (!imageData) {
+                return '../assets/images/placeholder.png';
+            }
+            
+            // Handle JSON array format (new format)
+            if (typeof imageData === 'string' && imageData.startsWith('[')) {
+                try {
+                    const imageArray = JSON.parse(imageData);
+                    if (Array.isArray(imageArray) && imageArray.length > 0) {
+                        return imageArray[0]; // Return first image
+                    }
+                } catch (e) {
+                    console.error('Error parsing image JSON:', e);
+                }
+            }
+            
+            // Handle array format (if already parsed)
+            if (Array.isArray(imageData) && imageData.length > 0) {
+                return imageData[0]; // Return first image
+            }
+            
+            // Handle single string format (legacy format)
+            if (typeof imageData === 'string' && imageData.trim() !== '') {
+                // Check if it's a comma-separated string (multiple images)
+                if (imageData.includes(',')) {
+                    const imageArray = imageData.split(',').map(img => img.trim());
+                    return imageArray[0]; // Return first image
+                }
+                return imageData;
+            }
+            
+            // Fallback to placeholder
+            return '../assets/images/placeholder.png';
+        },
         confirmDelete(productId) {
             if (!productId) return;
             const productName = this.allProducts.find(p => p.id === productId)?.name || 'this product'; // Find name for confirmation message
@@ -199,16 +235,38 @@ document.addEventListener('alpine:init', () => {
             });
         },
         openModal(product) {
+            // Initialize currentImageIndex for multiple image navigation
+            product.currentImageIndex = 0;
             this.viewingProduct = product;
             
-            // Add cache-busting to image URL for view modal
+            // Add cache-busting to image URLs for view modal (handle array format)
             if (this.viewingProduct && this.viewingProduct.image) {
                 const timestamp = new Date().getTime();
-                if (this.viewingProduct.image.indexOf('?') === -1) {
-                    this.viewingProduct.image += `?v=${timestamp}`;
+                
+                // First, convert comma-separated string to array if needed
+                let imageArray;
+                if (Array.isArray(this.viewingProduct.image)) {
+                    imageArray = this.viewingProduct.image;
+                } else if (typeof this.viewingProduct.image === 'string') {
+                    if (this.viewingProduct.image.includes(',')) {
+                        // Handle comma-separated string
+                        imageArray = this.viewingProduct.image.split(',').map(img => img.trim());
+                    } else {
+                        // Handle single string
+                        imageArray = [this.viewingProduct.image];
+                    }
                 } else {
-                    this.viewingProduct.image += `&v=${timestamp}`;
+                    imageArray = [];
                 }
+                
+                // Add cache-busting to all images
+                this.viewingProduct.image = imageArray.map(imageUrl => {
+                    if (imageUrl.indexOf('?') === -1) {
+                        return imageUrl + `?v=${timestamp}`;
+                    } else {
+                        return imageUrl + `&v=${timestamp}`;
+                    }
+                });
             }
             
             this.viewingProductOptions = []; // Clear previous options
@@ -243,6 +301,7 @@ document.addEventListener('alpine:init', () => {
             this.productName = '';
             this.productSlug = '';
             this.newProductImage = null;
+            this.productImages = []; // Reset multiple images array
             this.imageUrl = '../assets/images/placeholder.png';
             this.isFeatured = false;
             this.isActive = true;
@@ -257,8 +316,11 @@ document.addEventListener('alpine:init', () => {
             this.categoryId = '';
             this.subcategoryId = '';
 
-            const fileInput = document.getElementById('product_image');
+            // Reset file inputs
+            const fileInput = document.getElementById('product_images');
             if (fileInput) fileInput.value = null;
+            const additionalInput = document.getElementById('product_images_additional');
+            if (additionalInput) additionalInput.value = null;
 
             const form = document.getElementById("addProductForm");
             if (form) form.reset();
@@ -280,9 +342,14 @@ document.addEventListener('alpine:init', () => {
             formData.append('product_price', this.productPrice);
             formData.append('product_stock', this.productStock);
             formData.append('category_id', this.subcategoryId || this.categoryId || ''); // Use subcategory if selected, otherwise use category
-            if (this.newProductImage) {
-                formData.append('product_image', this.newProductImage, this.newProductImage.name);
+            
+            // Handle multiple images
+            if (this.productImages.length > 0) {
+                this.productImages.forEach((imageObj, index) => {
+                    formData.append(`product_images[${index}]`, imageObj.file, imageObj.file.name);
+                });
             }
+            
             if (this.isFeatured) formData.append('featured', '1');
             if (this.isActive) formData.append('is_active', '1');
             if (this.allowBackorder) formData.append('backorder', '1');
@@ -307,6 +374,42 @@ document.addEventListener('alpine:init', () => {
                     if (data.success) {
                         toast.success(data.message || 'Product added successfully!');
                         if (data.product) {
+                            // Add cache-busting parameter to image URLs for new product
+                            if (data.product.image) {
+                                const timestamp = new Date().getTime();
+                                try {
+                                    // Handle JSON array of images
+                                    if (typeof data.product.image === 'string' && data.product.image.startsWith('[')) {
+                                        const imageArray = JSON.parse(data.product.image);
+                                        const updatedImages = imageArray.map(img => {
+                                            if (img.indexOf('?') === -1) {
+                                                return img + `?v=${timestamp}`;
+                                            } else {
+                                                return img + `&v=${timestamp}`;
+                                            }
+                                        });
+                                        data.product.image = JSON.stringify(updatedImages);
+                                    } else if (Array.isArray(data.product.image)) {
+                                        // Handle actual array
+                                        data.product.image = data.product.image.map(img => {
+                                            if (img.indexOf('?') === -1) {
+                                                return img + `?v=${timestamp}`;
+                                            } else {
+                                                return img + `&v=${timestamp}`;
+                                            }
+                                        });
+                                    } else if (typeof data.product.image === 'string') {
+                                        // Handle single image string
+                                        if (data.product.image.indexOf('?') === -1) {
+                                            data.product.image += `?v=${timestamp}`;
+                                        } else {
+                                            data.product.image += `&v=${timestamp}`;
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.error('Error processing image cache-busting for new product:', e);
+                                }
+                            }
                             this.allProducts.unshift(data.product);
                         }
                         // Reset happens in openAddModal or closeAddModal depending on flow
@@ -356,6 +459,69 @@ document.addEventListener('alpine:init', () => {
                 this.imageUrl = '../assets/images/placeholder.png';
             }
         },
+
+        // Multiple image handling methods
+        handleMultipleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            this.processMultipleFiles(files);
+            event.target.value = null; // Reset input
+        },
+
+        handleAdditionalFileSelect(event) {
+            const files = Array.from(event.target.files);
+            this.processMultipleFiles(files);
+            event.target.value = null; // Reset input
+        },
+
+        processMultipleFiles(files) {
+            const remainingSlots = 4 - this.productImages.length;
+            if (remainingSlots <= 0) {
+                toast.error('Maximum 4 images allowed.');
+                return;
+            }
+
+            const filesToProcess = files.slice(0, remainingSlots);
+            let validFiles = 0;
+
+            filesToProcess.forEach(file => {
+                // Validate file size
+                if (file.size > 4 * 1024 * 1024) {
+                    toast.error(`Image "${file.name}" exceeds 4MB limit.`);
+                    return;
+                }
+
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    toast.error(`Invalid file type for "${file.name}".`);
+                    return;
+                }
+
+                // Add valid file to array
+                this.productImages.push({
+                    file: file,
+                    url: URL.createObjectURL(file)
+                });
+                validFiles++;
+            });
+
+            if (validFiles > 0) {
+                toast.success(`${validFiles} image(s) added successfully.`);
+            }
+
+            if (files.length > filesToProcess.length) {
+                toast.warning(`Only ${remainingSlots} images could be added (4 max).`);
+            }
+        },
+
+        removeProductImage(index) {
+            if (index >= 0 && index < this.productImages.length) {
+                // Revoke the blob URL to free memory
+                URL.revokeObjectURL(this.productImages[index].url);
+                this.productImages.splice(index, 1);
+                toast.info('Image removed.');
+            }
+        },
         // Removed fetchCategories - assuming loaded initially
         // Methods for managing product options
         addOptionGroup() {
@@ -390,13 +556,35 @@ document.addEventListener('alpine:init', () => {
                     if (data.success && data.product) {
                         const product = data.product;
                         
-                        // Add cache-busting parameter to image URL
-                        let imageUrl = product.image || '../assets/images/placeholder.png';
-                        if (imageUrl.indexOf('?') === -1) {
-                            imageUrl = imageUrl + '?v=' + new Date().getTime();
-                        } else {
-                            imageUrl = imageUrl + '&v=' + new Date().getTime();
+                        // Handle multiple images - convert to array format
+                        let images = [];
+                        if (product.image) {
+                            try {
+                                // Check if image is JSON array or single string
+                                if (typeof product.image === 'string' && product.image.startsWith('[')) {
+                                    images = JSON.parse(product.image);
+                                } else if (Array.isArray(product.image)) {
+                                    images = product.image;
+                                } else if (typeof product.image === 'string') {
+                                    images = [product.image]; // Convert single image to array
+                                }
+                                
+                                // Add cache-busting to all images
+                                images = images.map(img => {
+                                    if (img.indexOf('?') === -1) {
+                                        return img + '?v=' + new Date().getTime();
+                                    } else {
+                                        return img + '&v=' + new Date().getTime();
+                                    }
+                                });
+                            } catch (e) {
+                                console.error('Error parsing images:', e);
+                                images = [product.image]; // Fallback to single image
+                            }
                         }
+                        
+                        // Keep legacy imageUrl for backward compatibility
+                        let imageUrl = images.length > 0 ? images[0] : '../assets/images/placeholder.png';
                         
                         this.editingProduct = {
                             id: product.id,
@@ -409,6 +597,8 @@ document.addEventListener('alpine:init', () => {
                             subcategoryId: product.subcategory_id ? Number(product.subcategory_id) : 0, // Use 0 instead of null
                             isFeatured: Boolean(product.featured),
                             is_active: Boolean(product.is_active),
+                            images: images, // Array of current images
+                            newImages: [], // Array for new images to upload
                             imageUrl: imageUrl,
                             productOptions: data.options ? data.options.map(opt => ({ ...opt, values: Array.isArray(opt.values) ? opt.values.join(', ') : opt.values })) : [],
                             discountPercentageEnabled: product.discount_percentage !== null,
@@ -466,6 +656,75 @@ document.addEventListener('alpine:init', () => {
                 // Don't reset to placeholder - keep original image if selection cancelled
             }
         },
+
+        // Edit Modal Multiple Image Methods
+        handleEditMultipleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            
+            if (!this.editingProduct.newImages) {
+                this.editingProduct.newImages = [];
+            }
+            
+            const currentTotal = (this.editingProduct.images ? this.editingProduct.images.length : 0) + this.editingProduct.newImages.length;
+            const remainingSlots = 4 - currentTotal;
+            
+            if (remainingSlots <= 0) {
+                toast.error('Maximum 4 images allowed.');
+                event.target.value = null;
+                return;
+            }
+
+            const filesToProcess = files.slice(0, remainingSlots);
+            let validFiles = 0;
+
+            filesToProcess.forEach(file => {
+                // Validate file size
+                if (file.size > 4 * 1024 * 1024) {
+                    toast.error(`Image "${file.name}" exceeds 4MB limit.`);
+                    return;
+                }
+
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    toast.error(`Invalid file type for "${file.name}".`);
+                    return;
+                }
+
+                // Add valid file to new images array
+                this.editingProduct.newImages.push({
+                    file: file,
+                    url: URL.createObjectURL(file)
+                });
+                validFiles++;
+            });
+
+            if (validFiles > 0) {
+                toast.success(`${validFiles} new image(s) added.`);
+            }
+
+            if (files.length > filesToProcess.length) {
+                toast.warning(`Only ${remainingSlots} images could be added (4 max).`);
+            }
+
+            event.target.value = null;
+        },
+
+        removeExistingImage(index) {
+            if (this.editingProduct && this.editingProduct.images && index >= 0 && index < this.editingProduct.images.length) {
+                this.editingProduct.images.splice(index, 1);
+                toast.info('Image marked for removal.');
+            }
+        },
+
+        removeNewImage(index) {
+            if (this.editingProduct && this.editingProduct.newImages && index >= 0 && index < this.editingProduct.newImages.length) {
+                // Revoke the blob URL to free memory
+                URL.revokeObjectURL(this.editingProduct.newImages[index].url);
+                this.editingProduct.newImages.splice(index, 1);
+                toast.info('New image removed.');
+            }
+        },
         handleProductUpdate() {
             if (!this.editingProduct) return;
             this.isUpdating = true;
@@ -505,9 +764,17 @@ document.addEventListener('alpine:init', () => {
                 formData.append('remove_options', '1'); // Signal to remove all options
             }
             
-            // Image upload - only if a new file was selected
-            if (this.newEditImageFile) {
-                formData.append('product_image', this.newEditImageFile, this.newEditImageFile.name);
+            // Handle multiple images
+            // Send existing images as JSON
+            if (this.editingProduct.images && this.editingProduct.images.length > 0) {
+                formData.append('existing_images', JSON.stringify(this.editingProduct.images));
+            }
+            
+            // Send new images as files
+            if (this.editingProduct.newImages && this.editingProduct.newImages.length > 0) {
+                this.editingProduct.newImages.forEach((imageObj, index) => {
+                    formData.append(`new_images[${index}]`, imageObj.file, imageObj.file.name);
+                });
             }
             
             fetch('utils/update_product.php', {
@@ -520,13 +787,40 @@ document.addEventListener('alpine:init', () => {
                     toast.success(data.message || 'Product updated successfully!');
                     // Update the product in the allProducts array
                     if (data.product) {
-                        // Add a cache-busting parameter to the image URL
+                        // Add cache-busting parameter to image URLs
                         if (data.product.image) {
                             const timestamp = new Date().getTime();
-                            if (data.product.image.indexOf('?') === -1) {
-                                data.product.image += `?v=${timestamp}`;
-                            } else {
-                                data.product.image += `&v=${timestamp}`;
+                            try {
+                                // Handle JSON array of images
+                                if (typeof data.product.image === 'string' && data.product.image.startsWith('[')) {
+                                    const imageArray = JSON.parse(data.product.image);
+                                    const updatedImages = imageArray.map(img => {
+                                        if (img.indexOf('?') === -1) {
+                                            return img + `?v=${timestamp}`;
+                                        } else {
+                                            return img + `&v=${timestamp}`;
+                                        }
+                                    });
+                                    data.product.image = JSON.stringify(updatedImages);
+                                } else if (Array.isArray(data.product.image)) {
+                                    // Handle actual array
+                                    data.product.image = data.product.image.map(img => {
+                                        if (img.indexOf('?') === -1) {
+                                            return img + `?v=${timestamp}`;
+                                        } else {
+                                            return img + `&v=${timestamp}`;
+                                        }
+                                    });
+                                } else if (typeof data.product.image === 'string') {
+                                    // Handle single image string
+                                    if (data.product.image.indexOf('?') === -1) {
+                                        data.product.image += `?v=${timestamp}`;
+                                    } else {
+                                        data.product.image += `&v=${timestamp}`;
+                                    }
+                                }
+                            } catch (e) {
+                                console.error('Error processing image cache-busting:', e);
                             }
                         }
                         
@@ -611,8 +905,6 @@ document.addEventListener('alpine:init', () => {
              });
             // Initial data load is handled by PHP rendering
             // this.isLoading = false; // Set loading false after initial setup
-             console.log('Product Manager Initialized');
-             console.log('Initial allProducts:', this.allProducts);
         },
 
         handleCategoryChange() {

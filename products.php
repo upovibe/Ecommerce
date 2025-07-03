@@ -9,6 +9,38 @@ require_once __DIR__ . '/api/category_api.php';  // Load category data function
 // Include header
 require_once __DIR__ . '/includes/header.php';
 
+// Function to get the first image from product image data
+function getProductThumbnail($imageData) {
+    if (!$imageData) {
+        return '/assets/images/product-placeholder.png';
+    }
+    
+    // Handle JSON array format (new format)
+    if (is_string($imageData) && (strpos($imageData, '[') === 0)) {
+        try {
+            $imageArray = json_decode($imageData, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($imageArray) && count($imageArray) > 0) {
+                return $imageArray[0]; // Return first image
+            }
+        } catch (Exception $e) {
+            error_log('Error parsing image JSON: ' . $e->getMessage());
+        }
+    }
+    
+    // Handle array format (if already parsed)
+    if (is_array($imageData) && count($imageData) > 0) {
+        return $imageData[0]; // Return first image
+    }
+    
+    // Handle single string format (legacy format)
+    if (is_string($imageData) && trim($imageData) !== '') {
+        return $imageData;
+    }
+    
+    // Fallback to placeholder
+    return '/assets/images/product-placeholder.png';
+}
+
 // Fetch banner data
 $bannerImage = getStoreContent('product_page_banner_image');
 $bannerTitle = getStoreContent('product_banner_title');
@@ -180,7 +212,7 @@ if ($isDemoMode) {
                                 <span class="absolute top-2 left-2 bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded"><?= $product['stock'] ?> in Stock</span>
                             <?php endif; ?>
 
-                            <img src="<?= htmlspecialchars($product['image']) ?>"
+                            <img src="<?= htmlspecialchars(getProductThumbnail($product['image'])) ?>"
                                  alt="<?= htmlspecialchars($product['name']) ?>"
                                  class="product-image w-full h-full object-cover"
                                  loading="lazy">

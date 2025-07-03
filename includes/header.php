@@ -65,6 +65,38 @@ $faviconVersion = isset($_SESSION['favicon_version']) ? "?v=" . $_SESSION['favic
           isCartModalOpen: false, 
           cartItems: [],
           viewedProductInCart: false,
+          
+          // Function to get product images array from image data
+          getProductImages(imageData) {
+              if (!imageData) {
+                  return ['/assets/images/placeholder.png'];
+              }
+              
+              // Handle JSON array format (new format)
+              if (typeof imageData === 'string' && imageData.startsWith('[')) {
+                  try {
+                      const imageArray = JSON.parse(imageData);
+                      if (Array.isArray(imageArray) && imageArray.length > 0) {
+                          return imageArray;
+                      }
+                  } catch (e) {
+                      console.error('Error parsing image JSON:', e);
+                  }
+              }
+              
+              // Handle array format (if already parsed)
+              if (Array.isArray(imageData) && imageData.length > 0) {
+                  return imageData;
+              }
+              
+              // Handle single string format (legacy format)
+              if (typeof imageData === 'string' && imageData.trim() !== '') {
+                  return [imageData];
+              }
+              
+              // Fallback to placeholder
+              return ['/assets/images/placeholder.png'];
+          },
           isCompleteOrderModalOpen: false,
           isFinaliseOrderModalOpen: false,
           isCheckoutMethodsModalOpen: false,

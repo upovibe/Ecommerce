@@ -76,30 +76,70 @@ if ($db_connected && $conn) {
             throw new Exception("Product not found.");
         }
 
-        // --- Handle Image Upload/Update ---
-        $imagePath = $currentProduct['image']; // Keep current image by default
-        $oldImagePath = null;
-        if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
-            // If there's an existing image, extract its filename to reuse
-            $existingFileName = null;
-            if ($imagePath) {
-                $pathInfo = pathinfo($imagePath);
-                $existingFileName = $pathInfo['filename']; // Without extension
+        // --- Handle Multiple Images ---
+        $finalImagesArray = [];
+        
+        // Handle existing images
+        if (isset($_POST['existing_images'])) {
+            $existingImages = json_decode($_POST['existing_images'], true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($existingImages)) {
+                $finalImagesArray = $existingImages;
+            }
+        }
+        
+        // Handle new image uploads
+        if (isset($_FILES['new_images']) && is_array($_FILES['new_images']['name'])) {
+            $uploadCount = count($_FILES['new_images']['name']);
+            $maxTotalImages = 4;
+            
+            // Check total image count
+            if (count($finalImagesArray) + $uploadCount > $maxTotalImages) {
+                throw new Exception("Maximum $maxTotalImages images allowed.");
             }
             
-            // Pass the existing filename to reuse for the new upload
-            $newImagePath = handleImageUpload($_FILES['product_image'], '/assets/images/products/', $existingFileName ? $existingFileName : 'image');
-            
-            if ($newImagePath === null) {
-                throw new Exception('Image upload failed. Check file type, size (max 4MB), and permissions.');
+            for ($i = 0; $i < $uploadCount; $i++) {
+                if ($_FILES['new_images']['error'][$i] === UPLOAD_ERR_OK) {
+                    $imageFile = [
+                        'name' => $_FILES['new_images']['name'][$i],
+                        'type' => $_FILES['new_images']['type'][$i],
+                        'tmp_name' => $_FILES['new_images']['tmp_name'][$i],
+                        'error' => $_FILES['new_images']['error'][$i],
+                        'size' => $_FILES['new_images']['size'][$i]
+                    ];
+                    
+                    $newImagePath = handleImageUpload($imageFile, '/assets/images/products/', 'image_' . time() . '_' . $i);
+                    if ($newImagePath === null) {
+                        throw new Exception("Image upload failed for new image " . ($i + 1) . ".");
+                    }
+                    // Ensure path has leading slash for consistency
+                    if ($newImagePath[0] !== '/') {
+                        $newImagePath = '/' . $newImagePath;
+                    }
+                    $finalImagesArray[] = $newImagePath;
+                }
             }
-            
-            // If the paths are different (despite trying to reuse the filename), clean up the old file
-            if ($imagePath && $imagePath !== $newImagePath && file_exists("../.." . $imagePath)) {
-                @unlink("../.." . $imagePath);
+        }
+        
+        // Convert final images array to JSON
+        $imageJson = !empty($finalImagesArray) ? json_encode($finalImagesArray) : null;
+        
+        // Clean up old images that are no longer referenced
+        if ($currentProduct['image']) {
+            try {
+                $oldImages = json_decode($currentProduct['image'], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($oldImages)) {
+                    foreach ($oldImages as $oldImagePath) {
+                        if (!in_array($oldImagePath, $finalImagesArray) && file_exists("../.." . $oldImagePath)) {
+                            @unlink("../.." . $oldImagePath);
+                        }
+                    }
+                } else if (is_string($currentProduct['image']) && !in_array($currentProduct['image'], $finalImagesArray) && file_exists("../.." . $currentProduct['image'])) {
+                    // Handle legacy single image
+                    @unlink("../.." . $currentProduct['image']);
+                }
+            } catch (Exception $e) {
+                error_log("Error cleaning up old images: " . $e->getMessage());
             }
-            
-            $imagePath = $newImagePath; // Update image path to the new one
         }
 
         // --- Slug Generation (if name changed, consider updating slug) ---
@@ -135,12 +175,9 @@ if ($db_connected && $conn) {
         if (!$updateStmt) {
              throw new Exception("Database error preparing product update: " . $conn->error);
         }
-        // Debug Log: Check values just before binding
-        error_log("[Update Product Debug] ID: {$product_id}, Name: {$name}, Active: {$is_active}, Backorder: {$allow_backorder}"); 
-
         $updateStmt->bind_param("sssdddsiiiiii", 
             $name, $slug, $description, $price, $original_price, $discount_percentage, 
-            $imagePath, $category_id, $stock, $featured, 
+            $imageJson, $category_id, $stock, $featured, 
             $is_active, $allow_backorder,
             $product_id
         );
@@ -217,9 +254,6 @@ if ($db_connected && $conn) {
          $updatedProductData = $finalResult->fetch_assoc();
          $finalStmt->close();
          if ($updatedProductData) {
-            // Debug Log: Check data being sent back
-            error_log("[Update Product Debug] Returning Product Data: " . print_r($updatedProductData, true));
-
             $updatedProductData['price'] = (float)$updatedProductData['price'];
             $updatedProductData['original_price'] = $updatedProductData['original_price'] === null ? null : (float)$updatedProductData['original_price'];
             $updatedProductData['discount_percentage'] = $updatedProductData['discount_percentage'] === null ? null : (float)$updatedProductData['discount_percentage'];

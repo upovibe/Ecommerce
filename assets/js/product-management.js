@@ -55,6 +55,38 @@ document.addEventListener('DOMContentLoaded', function() {
          return parsed.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    // Utility function to get the first image from product image data
+    function getProductThumbnail(imageData) {
+        if (!imageData) {
+            return '/assets/images/product-placeholder.png';
+        }
+        
+        // Handle JSON array format (new format)
+        if (typeof imageData === 'string' && imageData.startsWith('[')) {
+            try {
+                const imageArray = JSON.parse(imageData);
+                if (Array.isArray(imageArray) && imageArray.length > 0) {
+                    return imageArray[0]; // Return first image
+                }
+            } catch (e) {
+                console.error('Error parsing image JSON:', e);
+            }
+        }
+        
+        // Handle array format (if already parsed)
+        if (Array.isArray(imageData) && imageData.length > 0) {
+            return imageData[0]; // Return first image
+        }
+        
+        // Handle single string format (legacy format)
+        if (typeof imageData === 'string' && imageData.trim() !== '') {
+            return imageData;
+        }
+        
+        // Fallback to placeholder
+        return '/assets/images/product-placeholder.png';
+    }
+
     // Function to set active class on tabs/links within a container
     // Ensures only one item has the active class
     function setActiveClass(container, clickedElement, activeClass = 'active') {
@@ -478,6 +510,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (body && body._x_dataStack) {
                     const alpineData = body._x_dataStack[0]; // Assuming global Alpine data is the first element
                     if (alpineData) {
+                        // Initialize currentImageIndex for multiple image navigation
+                        product.currentImageIndex = 0;
                         alpineData.selectedProduct = product;
                         alpineData.isProductModalOpen = true;
                         // Re-initialize icons in the modal if needed after content changes
@@ -805,7 +839,7 @@ document.addEventListener('DOMContentLoaded', function() {
         products.forEach(product => {
             // Prepare variables for the template
             const safeName = escapeHTML(product.name);
-            const safeImage = escapeHTML(product.image || '/assets/images/product-placeholder.png');
+            const safeImage = escapeHTML(getProductThumbnail(product.image));
             const safeDesc = escapeHTML(product.description || '');
             const safeSlug = escapeHTML(product.slug || ''); // Assuming slug is available
             const safeCategoryName = escapeHTML(product.category_name || 'Uncategorized');

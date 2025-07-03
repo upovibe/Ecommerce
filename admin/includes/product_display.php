@@ -41,14 +41,32 @@
             <!-- Modal Content -->
             <template x-if="viewingProduct">
                 <div class="flex flex-col md:flex-row" style="max-height: 80vh;">
-                    <!-- Left Side: Image -->
+                    <!-- Left Side: Images -->
                     <div class="md:w-2/5 p-6 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border-r border-gray-200/60">
-                        <div class="aspect-w-1 aspect-h-1 w-full max-w-xs mx-auto">
-                            <img x-show="viewingProduct.image" :src="viewingProduct.image" :alt="viewingProduct.name" 
-                                 @click="isImageLightboxOpen = true" 
-                                 class="w-full h-48 md:h-full object-cover rounded-lg shadow-lg bg-white/50 backdrop-blur-sm cursor-pointer transition-transform hover:scale-105">
-                            <img x-show="!viewingProduct.image" src="../assets/images/placeholder.png" alt="Placeholder" 
-                                 class="w-full h-48 md:h-full object-contain rounded-lg shadow-lg bg-white/50 backdrop-blur-sm">
+                        <div class="w-full max-w-xs mx-auto">
+                            <!-- Main Image Display -->
+                            <div class="aspect-w-1 aspect-h-1 mb-3">
+                                <img x-show="viewingProduct.image && viewingProduct.image.length > 0" 
+                                     :src="viewingProduct.currentImageIndex !== undefined ? viewingProduct.image[viewingProduct.currentImageIndex] : viewingProduct.image[0]" 
+                                     :alt="viewingProduct.name" 
+                                     @click="isImageLightboxOpen = true" 
+                                     class="w-full h-48 md:h-full object-cover rounded-lg shadow-lg bg-white/50 backdrop-blur-sm cursor-pointer transition-transform hover:scale-105">
+                                <img x-show="!viewingProduct.image || viewingProduct.image.length === 0" 
+                                     src="../assets/images/placeholder.png" alt="Placeholder" 
+                                     class="w-full h-48 md:h-full object-contain rounded-lg shadow-lg bg-white/50 backdrop-blur-sm">
+                            </div>
+                            
+                            <!-- Thumbnail Navigation (if multiple images) -->
+                            <div x-show="viewingProduct.image && viewingProduct.image.length > 1" class="flex gap-2 justify-center">
+                                <template x-for="(imageUrl, index) in viewingProduct.image" :key="index">
+                                    <button @click="viewingProduct.currentImageIndex = index"
+                                            :class="{'ring-2 ring-blue-500': (viewingProduct.currentImageIndex || 0) === index}"
+                                            class="w-12 h-12 rounded-md overflow-hidden border hover:border-blue-300 transition-all">
+                                        <img :src="imageUrl" :alt="`Image ${index + 1}`" 
+                                             class="w-full h-full object-cover">
+                                    </button>
+                                </template>
+                            </div>
                         </div>
                     </div>
 
@@ -188,7 +206,7 @@
            <i data-lucide="x" class="h-6 w-6"></i>
        </button>
 
-       <img x-bind:src="viewingProduct?.image || '../assets/images/placeholder.png'" 
+       <img x-bind:src="viewingProduct?.image && viewingProduct.image.length > 0 ? (viewingProduct.currentImageIndex !== undefined ? viewingProduct.image[viewingProduct.currentImageIndex] : viewingProduct.image[0]) : '../assets/images/placeholder.png'" 
             x-bind:alt="viewingProduct?.name + ' - Full size'" 
             class="max-w-full max-h-[90vh] object-contain shadow-xl rounded-lg"
             x-transition:enter="ease-out duration-300" 

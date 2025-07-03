@@ -4,7 +4,7 @@
     <template x-for="product in filteredProducts" :key="product.id">
         <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 overflow-hidden flex flex-col">
             <div @click="openModal(product)" class="block h-48 overflow-hidden relative group cursor-pointer">
-                <img :src="product.image ? product.image : '../assets/images/placeholder.png'"
+                <img :src="getProductThumbnail(product.image)"
                     alt=""
                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
 
@@ -78,7 +78,7 @@
         <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-300 shadow-gray-50 overflow-hidden flex items-center p-2 space-x-3">
             <!-- Image Container -->
             <div class="relative flex-shrink-0">
-                <img :src="product.image ? product.image : '../assets/images/placeholder.png'" alt=""
+                <img :src="getProductThumbnail(product.image)" alt=""
                     class="h-16 w-16 rounded-md object-cover"
                     :class="{ 'opacity-50 grayscale': !product.is_active }">
                 <!-- Stock Badge Overlay -->

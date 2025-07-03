@@ -88,6 +88,31 @@ function getAllProductsAndCategories() {
                 $row['is_active'] = (bool)$row['is_active'];
                 $row['backorder'] = (bool)$row['backorder'];
                 $row['category_id'] = $row['category_id'] ? (int)$row['category_id'] : null;
+                
+                // Process image data - convert JSON to array for consistency
+                if (empty($row['image'])) {
+                    $row['image'] = ['/assets/images/placeholder.png'];
+                } else {
+                    try {
+                        // Check if image is JSON array or single string
+                        if (is_string($row['image']) && (strpos($row['image'], '[') === 0 || strpos($row['image'], '"') === 0)) {
+                            $decodedImages = json_decode($row['image'], true);
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($decodedImages)) {
+                                $row['image'] = $decodedImages;
+                            } else {
+                                // Fallback to single image array
+                                $row['image'] = [$row['image']];
+                            }
+                        } else {
+                            // Convert single image to array
+                            $row['image'] = [$row['image']];
+                        }
+                    } catch (Exception $e) {
+                        error_log("Error processing images for product {$row['id']}: " . $e->getMessage());
+                        $row['image'] = ['/assets/images/placeholder.png']; // Fallback
+                    }
+                }
+                
                  // Calculate availability status
                  if ($row['stock'] > 0) {
                     $row['availability_status'] = 'in_stock';

@@ -56,15 +56,39 @@ $slug = !empty($slug_input) ? generateSlug($slug_input) : generateSlug($name);
 // Check if slug already exists (implement database check if needed for uniqueness)
 // For now, we assume the UNIQUE constraint handles it, but a pre-check is better UX.
 
-// --- Image Upload ---
-$imagePath = null;
-if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
-    $imagePath = handleImageUpload($_FILES['product_image'], '/assets/images/products/'); 
-    if ($imagePath === null) {
-        echo json_encode(['success' => false, 'message' => 'Image upload failed. Check file type, size (max 4MB), and permissions.']);
+// --- Multiple Image Upload ---
+$imagesArray = [];
+if (isset($_FILES['product_images']) && is_array($_FILES['product_images']['name'])) {
+    $uploadCount = count($_FILES['product_images']['name']);
+    $maxImages = 4;
+    
+    if ($uploadCount > $maxImages) {
+        echo json_encode(['success' => false, 'message' => "Maximum $maxImages images allowed."]);
         exit;
     }
+    
+    for ($i = 0; $i < $uploadCount; $i++) {
+        if ($_FILES['product_images']['error'][$i] === UPLOAD_ERR_OK) {
+            $imageFile = [
+                'name' => $_FILES['product_images']['name'][$i],
+                'type' => $_FILES['product_images']['type'][$i],
+                'tmp_name' => $_FILES['product_images']['tmp_name'][$i],
+                'error' => $_FILES['product_images']['error'][$i],
+                'size' => $_FILES['product_images']['size'][$i]
+            ];
+            
+            $imagePath = handleImageUpload($imageFile, '/assets/images/products/', 'image_' . time() . '_' . $i);
+            if ($imagePath === null) {
+                echo json_encode(['success' => false, 'message' => "Image upload failed for image " . ($i + 1) . ". Check file type, size (max 4MB), and permissions."]);
+                exit;
+            }
+            $imagesArray[] = $imagePath;
+        }
+    }
 }
+
+// Convert images array to JSON for database storage
+$imageJson = !empty($imagesArray) ? json_encode($imagesArray) : null;
 
 // --- Database Insertion ---
 try {
@@ -103,7 +127,7 @@ try {
         $stmt->bind_param("sssdddsiiiii", 
             $name, $slug, $description, 
             $price, $original_price, $discount_percentage, // Added original_price, discount_percentage
-            $imagePath, $category_id, $stock, $featured, $is_active, $allow_backorder
+            $imageJson, $category_id, $stock, $featured, $is_active, $allow_backorder
         );
         
         if (!$stmt->execute()) {

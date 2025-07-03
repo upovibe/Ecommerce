@@ -53,10 +53,30 @@ $whatsappNumber = STORE_SETTINGS['whatsapp_number'] ?? '';
                 <!-- Left Side: Image -->
                 <div class="md:w-2/5 p-6 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border-r border-gray-200/60">
                     <div class="w-full max-w-xs mx-auto md:max-w-none">
-                        <img x-bind:src="selectedProduct?.image || '/assets/images/placeholder.png'" 
-                             x-bind:alt="selectedProduct?.name" 
-                             @click="isImageLightboxOpen = true" 
-                             class="w-full h-44 md:h-full object-cover rounded-lg shadow-lg bg-white/50 backdrop-blur-sm cursor-pointer transition-transform hover:scale-105">
+                        <!-- Main Image Display -->
+                        <div class="aspect-w-1 aspect-h-1 mb-3">
+                            <img x-show="selectedProduct?.image && getProductImages(selectedProduct.image).length > 0" 
+                                 :src="selectedProduct ? getProductImages(selectedProduct.image)[selectedProduct.currentImageIndex || 0] : '/assets/images/placeholder.png'" 
+                                 :alt="selectedProduct?.name" 
+                                 @click="isImageLightboxOpen = true" 
+                                 class="w-full h-44 md:h-full object-cover rounded-lg shadow-lg bg-white/50 backdrop-blur-sm cursor-pointer transition-transform hover:scale-105">
+                            <img x-show="!selectedProduct?.image || getProductImages(selectedProduct?.image || '').length === 0" 
+                                 src="/assets/images/placeholder.png" 
+                                 alt="Placeholder" 
+                                 class="w-full h-44 md:h-full object-contain rounded-lg shadow-lg bg-white/50 backdrop-blur-sm">
+                        </div>
+                        
+                        <!-- Thumbnail Navigation (if multiple images) -->
+                        <div x-show="selectedProduct?.image && getProductImages(selectedProduct.image).length > 1" class="flex gap-2 justify-center">
+                            <template x-for="(imageUrl, index) in getProductImages(selectedProduct?.image || '')" :key="index">
+                                <button @click="selectedProduct.currentImageIndex = index"
+                                        :class="{'ring-2 ring-blue-500': (selectedProduct.currentImageIndex || 0) === index}"
+                                        class="w-12 h-12 rounded-md overflow-hidden border hover:border-blue-300 transition-all">
+                                    <img :src="imageUrl" :alt="`Image ${index + 1}`" 
+                                         class="w-full h-full object-cover">
+                                </button>
+                            </template>
+                        </div>
                     </div>
                 </div>
 
@@ -257,7 +277,7 @@ $whatsappNumber = STORE_SETTINGS['whatsapp_number'] ?? '';
                 <i data-lucide="x" class="h-6 w-6"></i>
             </button>
 
-            <img x-bind:src="selectedProduct?.image || '/assets/images/placeholder.png'" 
+            <img x-bind:src="selectedProduct?.image && getProductImages(selectedProduct.image).length > 0 ? getProductImages(selectedProduct.image)[selectedProduct.currentImageIndex || 0] : '/assets/images/placeholder.png'" 
                  x-bind:alt="selectedProduct?.name + ' - Full size'" 
                  class="max-w-full max-h-[90vh] object-contain shadow-xl rounded-lg"
                  x-transition:enter="ease-out duration-300" 
